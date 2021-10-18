@@ -1,0 +1,591 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GuiTab.au3>
+#include <EditConstants.au3>
+
+If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+
+$Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
+$tab = GUICtrlCreatetab(41,70,1232,661,-1,-1)
+GuiCtrlSetState(-1,2048)
+GUICtrlSetFont(-1,12,400,0,"MS Sans Serif")
+GUICtrlCreateTabItem("Start")
+GUICtrlCreateTabItem("Choose Browser")
+GUICtrlCreateTabItem("Launch!")
+
+GUICtrlCreateTabItem("")
+_GUICtrlTab_SetCurFocus($tab,-1)
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,0)&GUICtrlRead ($tab, 1))
+GUICtrlCreateLabel("Welcome to my little GUI helper for Stash!",191,158,908,62,-1,-1)
+GUICtrlSetFont(-1,20,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+GUICtrlCreateTabItem("")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,0)&GUICtrlRead ($tab, 1))
+GUICtrlCreateLabel("StashApp is a great program to manage your porn collection. This little helper will make it easier to run in Windows."&@crlf&"Please start it by tell me where 'stash-win.exe' is.",167,244,937,111,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+$stashPath = GUICtrlCreateInput("",280,391,610,41,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE,$GUI_DROPACCEPTED))
+GUICtrlSetFont(-1,10,400,0,"MS Sans Serif")
+$btnBrowse = GUICtrlCreateButton("Browse",910,391,170,41,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"MS Sans Serif")
+GUICtrlCreateTabItem("")
+$btnNext = GUICtrlCreateButton("Next",960,630,211,57,-1,-1)
+GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_DISABLE))
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,1)&GUICtrlRead ($tab, 1))
+$chooseFirefox = GUICtrlCreateRadio("Firefox",201,286,157,48,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlCreateLabel("Now choose your favorite browser to launch StashApp.",361,150,616,104,-1,-1)
+GUICtrlSetFont(-1,16,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,0)&GUICtrlRead ($tab, 1))
+GUICtrlCreateLabel("If you don't have it yet, you can download it here.",283,470,615,49,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+$btnWebsite = GUICtrlCreateButton("Website",910,470,170,41,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"MS Sans Serif")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,1)&GUICtrlRead ($tab, 1))
+$chooseChrome = GUICtrlCreateRadio("Chrome",201,348,157,48,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+$chooseEdge = GUICtrlCreateRadio("MS Edge",201,415,157,48,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+$browserDetails = GUICtrlCreateLabel("When launch StashApp with Firefox, you will see a robot icon and address bar turns red, indicating the browser is under my program's control."&@crlf&"Other than that, it's all fine.",451,300,656,163,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,2)&GUICtrlRead ($tab, 1))
+GUICtrlCreateLabel("Thank you ! Now it's all ready to launch StashApp.",331,160,547,109,-1,-1)
+GUICtrlSetFont(-1,16,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+GUICtrlCreateLabel("Note: If this is the first time you run StashApp, it will ask you a question about where to store the config file. Since this is windows, you should choose -> 'In the current working directory.'"&@crlf&""&@crlf&"*** After you finish the wizard, you should click on 'Tasks' then 'Scan' to get your files recognized by Stash."&@crlf&"No movies? No Studio and Performers? No problem. This program will help you along the way.",201,290,895,307,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,1)&GUICtrlRead ($tab, 1))
+GUICtrlCreateLabel("My Text",406,270,741,235,$SS_GRAYFRAME,-1)
+GUICtrlSetBkColor(-1,"-2")
+_GUICtrlTab_SetCurFocus($tab,0)
+
+
+
+#cs
+[tab]
+type=tab
+handle=432
+locked=0
+resize=
+x=41
+y=70
+width=1232
+height=661
+func=
+font=MS Sans Serif
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$tab
+text=
+pages=3
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=[BREAK]
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=0
+[0x003A008E]
+order=0
+[TABPAGE2]
+page=2
+text=Choose Browser
+textmode=text
+handle=
+[TABPAGE1]
+page=1
+text=Start
+textmode=text
+handle=
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Initial Settings
+breite=1326
+hoehe=809
+style=-1
+exstyle=-1
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$Initial_Settings
+parent=
+code=
+codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x0012217C]
+type=label
+handle=433
+locked=0
+resize=
+x=191
+y=158
+width=908
+height=62
+func=
+font=Palatino Linotype
+fontsize=20
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Welcome to my little GUI helper for Stash!
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=0
+tabpage=0
+iconindex=
+iconlarge=0
+textmode=text
+[0x001020EA]
+type=label
+handle=434
+locked=0
+resize=
+x=167
+y=244
+width=937
+height=111
+func=
+font=Palatino Linotype
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=StashApp is a great program to manage your porn collection. This little helper will make it easier to run in Windows.[BREAK]Please start it by tell me where 'stash-win.exe' is.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=3
+tabpage=0
+iconindex=
+iconlarge=0
+textmode=text
+[0x00121CA0]
+type=input
+handle=435
+locked=0
+resize=
+x=280
+y=391
+width=610
+height=41
+func=
+font=MS Sans Serif
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$stashPath
+text=
+state=$GUI_SHOW+$GUI_ENABLE+$GUI_DROPACCEPTED
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+order=4
+tabpage=0
+iconindex=
+iconlarge=0
+textmode=text
+[0x00361AF8]
+type=button
+handle=436
+locked=0
+resize=
+x=910
+y=391
+width=170
+height=41
+func=
+font=MS Sans Serif
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnBrowse
+text=Browse
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=5
+tabpage=0
+iconindex=
+iconlarge=0
+textmode=text
+[0x00041C3A]
+type=button
+handle=437
+locked=0
+resize=
+x=960
+y=630
+width=211
+height=57
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnNext
+text=Next
+state=$GUI_SHOW+$GUI_DISABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=6
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00041C78]
+type=radio
+handle=438
+locked=0
+resize=
+x=201
+y=286
+width=157
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chooseFirefox
+text=Firefox
+state=$GUI_SHOW+$GUI_ENABLE
+style=$BS_AUTORADIOBUTTON
+exstyle=
+bgcolour=
+code=
+order=7
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00051C76]
+type=label
+handle=439
+locked=0
+resize=
+x=361
+y=150
+width=616
+height=104
+func=
+font=Palatino Linotype
+fontsize=16
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Now choose your favorite browser to launch StashApp.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=8
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00061C74]
+type=label
+handle=440
+locked=0
+resize=
+x=283
+y=470
+width=615
+height=49
+func=
+font=Palatino Linotype
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=If you don't have it yet, you can download it here.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=9
+tabpage=0
+iconindex=
+iconlarge=0
+textmode=text
+[0x00051C72]
+type=button
+handle=441
+locked=0
+resize=
+x=910
+y=470
+width=170
+height=41
+func=
+font=MS Sans Serif
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnWebsite
+text=Website
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=0
+iconindex=
+iconlarge=0
+textmode=text
+order=10
+[0x000B1C6E]
+type=radio
+handle=442
+locked=0
+resize=
+x=201
+y=348
+width=157
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chooseChrome
+text=Chrome
+state=$GUI_SHOW+$GUI_ENABLE
+style=$BS_AUTORADIOBUTTON
+exstyle=
+bgcolour=
+code=
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+order=11
+[0x00041C70]
+type=radio
+handle=443
+locked=0
+resize=
+x=201
+y=415
+width=157
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chooseEdge
+text=MS Edge
+state=$GUI_SHOW+$GUI_ENABLE
+style=$BS_AUTORADIOBUTTON
+exstyle=
+bgcolour=
+code=
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+order=12
+[0x003F1C38]
+type=label
+handle=444
+locked=0
+resize=
+x=451
+y=300
+width=656
+height=163
+func=
+font=Palatino Linotype
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$browserDetails
+text=When launch StashApp with Firefox, you will see a robot icon and address bar turns red, indicating the browser is under my program's control.[BREAK]Other than that, it's all fine.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+order=13
+[TABPAGE3]
+page=3
+text=   Launch!   
+textmode=text
+[0x00131B9E]
+type=label
+handle=453
+locked=0
+resize=
+x=331
+y=160
+width=547
+height=109
+func=
+font=Palatino Linotype
+fontsize=16
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Thank you ! Now it's all ready to launch StashApp.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=14
+tabpage=2
+iconindex=
+iconlarge=0
+textmode=text
+[0x000D218C]
+type=label
+handle=454
+locked=0
+resize=
+x=201
+y=290
+width=895
+height=307
+func=
+font=Palatino Linotype
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Note: If this is the first time you run StashApp, it will ask you a question about where to store the config file. Since this is windows, you should choose -> 'In the current working directory.'[BREAK][BREAK]*** After you finish the wizard, you should click on 'Tasks' then 'Scan' to get your files recognized by Stash.[BREAK]No movies? No Studio and Performers? No problem. This program will help you along the way.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=15
+tabpage=2
+iconindex=
+iconlarge=0
+textmode=text
+[0x00281C2E]
+type=label
+handle=455
+locked=0
+resize=
+x=406
+y=270
+width=741
+height=235
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=My Text
+state=$GUI_SHOW+$GUI_ENABLE
+style=$SS_GRAYFRAME
+exstyle=
+bgcolour=-2
+code=
+order=16
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+#ce

@@ -1,0 +1,151 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GuiListView.au3>
+
+If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+
+$Custom = GUICreate("Custom",1059,802,-1,-1,-1,-1)
+GUICtrlCreateLabel("Customize the list of [Movies]. This is like bookmarks or favorites. You paste the text after the '?' from the address bar, then put a title for it, as the examples you see below."&@crlf&"For now I put 10 as the max number of each category, if you want more, send me a message in the GitHub repo.",80,50,882,196,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+$iList = GUICtrlCreatelistview("#|  Title|  Query Text",40,270,972,411,BitOr($LVS_NOSCROLL,$LVS_SINGLESEL),BitOr($LVS_EX_GRIDLINES,$WS_EX_CLIENTEDGE))
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+_GUICtrlListView_SetColumnWidth($iList, 0, 50)
+_GUICtrlListView_SetColumnWidth($iList, 1, 300)
+_GUICtrlListView_SetColumnWidth($iList, 2, 700)
+For $i = 0 to 10
+	_GUICtrlListView_AddItem($iList, $i + 1)
+Next
+GUICtrlCreateButton("Save",370,710,238,47,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Custom
+breite=1059
+hoehe=802
+style=-1
+exstyle=-1
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$Custom
+parent=
+code=
+codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x004C1C38]
+type=label
+handle=432
+locked=0
+resize=
+x=80
+y=50
+width=882
+height=196
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Customize the list of [Movies]. This is like bookmarks or favorites. You paste the text after the '?' from the address bar, then put a title for it, as the examples you see below.[BREAK]For now I put 10 as the max number of each category, if you want more, send me a message in the GitHub repo.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x001B1B9E]
+type=listview
+handle=433
+locked=0
+resize=
+x=40
+y=270
+width=972
+height=411
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$iList
+text=#|  Title|  Query Text
+state=$GUI_SHOW+$GUI_ENABLE
+style=$LVS_NOSCROLL+$LVS_SINGLESEL
+exstyle=$LVS_EX_GRIDLINES+$WS_EX_CLIENTEDGE
+bgcolour=
+code=_GUICtrlListView_SetColumnWidth($iList, 0, 50)[BREAK]_GUICtrlListView_SetColumnWidth($iList, 1, 300)[BREAK]_GUICtrlListView_SetColumnWidth($iList, 2, 700)[BREAK]For $i = 0 to 10[BREAK]	_GUICtrlListView_AddItem($iList, $i + 1)[BREAK]Next
+order=2
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000F1606]
+type=button
+handle=434
+locked=0
+resize=
+x=370
+y=710
+width=238
+height=47
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Save
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=3
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+#ce

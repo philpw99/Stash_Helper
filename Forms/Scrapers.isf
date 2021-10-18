@@ -1,0 +1,203 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GuiListView.au3>
+
+If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+
+$Scrapers = GUICreate("Scrapers Management",1703,1434,-1,-1,$WS_SIZEBOX,-1)
+$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,330,1621,1056,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetResizing(-1,102)
+; Website
+_GUICtrlListView_SetColumnWidth($scraperList, 0, 400)
+; Scraper
+_GUICtrlListView_SetColumnWidth($scraperList, 1, 400)
+; Scene
+_GUICtrlListView_SetColumnWidth($scraperList, 2, 100)
+_GUICtrlListView_JustifyColumn($scraperList, 2, 2)
+; Gallery
+_GUICtrlListView_SetColumnWidth($scraperList, 3, 100)
+_GUICtrlListView_JustifyColumn($scraperList, 3, 2)
+; Movie
+_GUICtrlListView_SetColumnWidth($scraperList, 4, 100)
+_GUICtrlListView_JustifyColumn($scraperList, 4, 2)
+; Performer
+_GUICtrlListView_SetColumnWidth($scraperList, 5, 130)
+_GUICtrlListView_JustifyColumn($scraperList, 5, 2)
+; Installed
+_GUICtrlListView_SetColumnWidth($scraperList, 6, 130)
+_GUICtrlListView_JustifyColumn($scraperList, 6, 2)
+
+GUICtrlCreateListViewItem("1000facials.com|GammaEntertainment.yml|√|x|x|x|No", $scraperList)
+GUICtrlCreateLabel("Scrapers can fetch information about your scenes, studios, performers, tags...etc."&@crlf&"With scrapers, you don't need to type in the information manually any more."&@crlf&" * For performers, you can fetch the info by her/his name."&@crlf&" * For scenes, you put in the URL for that scene, and the scraper can get all the details, including performers, tags, front cover... for that scene."&@crlf&"Therefore, managing scrapers are important for Stash. You don't want too many scrapers, yet you need them to categorize and label your videos quickly."&@crlf&"Here I am trying to give you an easy way to manage the plugins.",240,30,1040,233,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+GUICtrlSetResizing(-1,928)
+GUICtrlCreateButton("Install",1065,252,167,49,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Install the scrapers with check marks.")
+GUICtrlSetResizing(-1,804)
+GUICtrlCreateButton("Remove",1298,252,167,49,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Remove the scrapers with check marks.")
+GUICtrlSetResizing(-1,804)
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Scrapers Management
+breite=1703
+hoehe=1434
+style=$WS_SIZEBOX
+exstyle=-1
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$Scrapers
+parent=
+code=
+codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x0016221A]
+type=listview
+handle=432
+locked=0
+resize=102
+x=40
+y=330
+width=1621
+height=1056
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$scraperList
+text=Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES+$LVS_EX_CHECKBOXES+$LVS_EX_DOUBLEBUFFER+$WS_EX_CLIENTEDGE
+bgcolour=
+code=; Website[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 0, 400)[BREAK]; Scraper[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 1, 400)[BREAK]; Scene[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 2, 100)[BREAK]_GUICtrlListView_JustifyColumn($scraperList, 2, 2)[BREAK]; Gallery[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 3, 100)[BREAK]_GUICtrlListView_JustifyColumn($scraperList, 3, 2)[BREAK]; Movie[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 4, 100)[BREAK]_GUICtrlListView_JustifyColumn($scraperList, 4, 2)[BREAK]; Performer[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 5, 130)[BREAK]_GUICtrlListView_JustifyColumn($scraperList, 5, 2)[BREAK]; Installed[BREAK]_GUICtrlListView_SetColumnWidth($scraperList, 6, 130)[BREAK]_GUICtrlListView_JustifyColumn($scraperList, 6, 2)[BREAK][BREAK]GUICtrlCreateListViewItem("1000facials.com|GammaEntertainment.yml|√|x|x|x|No", $scraperList)
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000E20CA]
+type=label
+handle=433
+locked=0
+resize=928
+x=240
+y=30
+width=1040
+height=233
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Scrapers can fetch information about your scenes, studios, performers, tags...etc.[BREAK]With scrapers, you don't need to type in the information manually any more.[BREAK] * For performers, you can fetch the info by her/his name.[BREAK] * For scenes, you put in the URL for that scene, and the scraper can get all the details, including performers, tags, front cover... for that scene.[BREAK]Therefore, managing scrapers are important for Stash. You don't want too many scrapers, yet you need them to categorize and label your videos quickly.[BREAK]Here I am trying to give you an easy way to manage the plugins.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=2
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x005621FC]
+type=button
+handle=434
+locked=0
+resize=804
+x=1065
+y=252
+width=167
+height=49
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Install the scrapers with check marks.
+bgimage=
+textcolour=0x000000
+id=
+text=Install
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=3
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x003A21D2]
+type=button
+handle=435
+locked=0
+resize=804
+x=1298
+y=252
+width=167
+height=49
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Remove the scrapers with check marks.
+bgimage=
+textcolour=0x000000
+id=
+text=Remove
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+order=4
+iconindex=
+iconlarge=0
+textmode=text
+#ce
