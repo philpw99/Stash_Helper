@@ -91,9 +91,11 @@ EndIf
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
 ; Now create the top level tray menu items.
 If $stashVersion <> "" Then
-	TrayTip("Stash is Active", $stashVersion, 20, $TIP_ICONASTERISK+$TIP_NOSOUND  )
+	TrayTip("Stash is Active", $stashVersion, 10, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
 
+TrayCreateItem("Stash Helper 1.0")
+TrayCreateItem("")
 Global $trayMenuScenes = TrayCreateMenu("Scenes")
 Global $trayMenuImages = TrayCreateMenu("Images")
 Global $trayMenuMovies = TrayCreateMenu("Movies")
@@ -140,13 +142,15 @@ Switch $stashBrowser
 EndSwitch
 
 ; Slow down a bit here, or the web driver is not ready.
-Sleep(2000)
+Sleep(1000)
 
 Global $iConsolePID = _WD_Startup()
 If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+
+Global $sBrowserHandle
 
 #EndRegion Globals
 
@@ -163,10 +167,11 @@ While True
 		Case 0
 			; Nothing should be here.
 		Case $trayAbout
-			MsgBox(64,"Stash Helper","Stash helper written by Philip Wang, at your service." _
+			MsgBox(64,"Stash Helper 1.0","Stash helper 1.0, written by Philip Wang, at your service." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
 				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for the project." _
-				& @CRLF & "Kudos also go to ISN AutoIt Studio's powerful AutoIt IDE, which making this program much easier to write.",20)
+				& @CRLF & "Kudos also go to ISN AutoIt Studio's powerful AutoIt IDE, which making this program much easier to write." _ 
+				& @CRLF & "Also thanks to InstallForge for such an easy-to-build installer!" ,20)
 		Case $trayExit
 			ExitScript()
 		Case $traySettings
@@ -254,19 +259,19 @@ Func CloseSession()
 EndFunc
 
 Func SetupFirefox()
-
-	If Not FileExists(@ScriptDir & "\" & "geckodriver.exe") Then
+	If Not FileExists(@AppDataDir & "\Webdriver\" & "geckodriver.exe") Then
 		Local $b64 = ( @CPUArch = "X64" )
-		Local $bGood = _WD_UPdateDriver ("firefox", Default , $b64, True) ; Force update
+		Local $bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting Firefox Driver", _
 			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
 				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
-			ExitScript()
+			Exit
 		EndIf
 	EndIf
 
-	_WD_Option('Driver', 'geckodriver.exe')
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'geckodriver.exe')
+	_WD_Option('DriverClose', True)
 	_WD_Option('DriverParams', '--log trace')
 	_WD_Option('Port', 4444)
 
@@ -274,39 +279,41 @@ Func SetupFirefox()
 EndFunc   ;==>SetupGecko
 
 Func SetupChrome()
-	If Not FileExists(@ScriptDir & "\" & "chromedriver.exe") Then
-		Local $bGood = _WD_UPdateDriver ("chrome", Default , Default, True) ; Force update
+	If Not FileExists( @AppDataDir & "\Webdriver\" & "chromedriver.exe") Then
+		Local $bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default, True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting Firefox Driver", _
 			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
 				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
-			ExitScript()
+			Exit
 		EndIf
 	EndIf
 
-	_WD_Option('Driver', 'chromedriver.exe')
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'chromedriver.exe')
+	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\chrome.log"')
+	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\chrome.log")
 
 	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
 EndFunc   ;==>SetupChrome
 
 Func SetupEdge()
-	If Not FileExists(@ScriptDir & "\" & "msedgedriver.exe") Then
+	If Not FileExists(@AppDataDir & "\Webdriver\" & "msedgedriver.exe") Then
 		Local $b64 = ( @CPUArch = "X64" )
-		Local $bGood = _WD_UPdateDriver ("msedge", Default , $b64 , True) ; Force update
+		Local $bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting Firefox Driver", _
 			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
 				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
-			ExitScript()
+			Exit
 		EndIf
 	EndIf
 
 
-	_WD_Option('Driver', 'msedgedriver.exe')
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'msedgedriver.exe')
+	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & @ScriptDir & '\msedge.log"')
+	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\msedge.log")
 
 	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
 EndFunc   ;==>SetupEdge
@@ -320,13 +327,16 @@ Func BrowserError($code)
 EndFunc
 
 Func OpenURL($url)
+	$sBrowserHandle = _WD_Window($sSession, "Window")
+	If $sBrowserHandle = "" Then 
+		; The session is invalid.
+		$sSession = _WD_CreateSession($sDesiredCapabilities)
+	EndIf
+
 	_WD_Navigate($sSession, $url)
 
-	$result = _WD_Window($sSession, "Window")
-	c("Window result:" & $result)
 	If @error <> $_WD_ERROR_Success Then
 		; Session is invalid, need to create a new one
-		$sSession = _WD_CreateSession($sDesiredCapabilities)
 		; Get the new handle.
 		_WD_Navigate($sSession, $url)
 	EndIf
