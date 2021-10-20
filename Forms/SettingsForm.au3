@@ -5,86 +5,138 @@
 #include <EditConstants.au3>
 
 Func ShowSettings()
-	If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
-	; Global $stashBrowser, $stashFilePath
+	; Global $stashBrowser, $stashFilePath, $stashURL
 	Local $sBrowser
-	Local $Settings = GUICreate("Settings",801,726,-1,-1,-1,-1)
-	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,574,127,-1,-1)
+	Local $guiSettings = GUICreate("Settings",801,1042,-1,-1,-1,-1)
+	
+	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,574,129,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 	
-	GUICtrlCreateLabel("Stash-win.exe location:",100,235,299,37,-1,-1)
-	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlCreateGroup("Preferred Browser",97,164,442,262,$BS_CENTER,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+	GUICtrlCreateLabel("Drivers",407,207,83,24,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$stashPath = GUICtrlCreateInput($stashFilePath,100,286,473,36,-1,$WS_EX_CLIENTEDGE)
+	$radioChooseFirefox = GUICtrlCreateRadio("Firefox",166,237,147,38,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	
-	$btnBrowse = GUICtrlCreateButton("Browse",600,280,142,42,-1,-1)
-	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-
-	GUICtrlCreateGroup("Preferred Browser",100,357,442,286,$BS_CENTER,-1)
-	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-
-	$chooseFirefox = GUICtrlCreateRadio("Firefox",169,430,147,38,$BS_AUTORADIOBUTTON,-1)
-	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-	
-	$updateFirefox = GUICtrlCreateButton("Update",380,438,112,32,-1,-1)
+	$btnUpdateFirefox = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	$chooseChrome = GUICtrlCreateRadio("Chrome",169,492,147,38,$BS_AUTORADIOBUTTON,-1)
-	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-	
-	$updateChrome = GUICtrlCreateButton("Update",380,498,112,32,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	
-	$chooseEdge = GUICtrlCreateRadio("MS Edge",169,560,147,38,$BS_AUTORADIOBUTTON,-1)
+	$radioChooseChrome = GUICtrlCreateRadio("Chrome",166,299,147,38,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	$updateEdge = GUICtrlCreateButton("Update",380,566,112,32,-1,-1)
+	$btnUpdateChrome = GUICtrlCreateButton("Update",387,305,112,32,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	
+	$radioChooseEdge = GUICtrlCreateRadio("MS Edge",166,367,147,38,$BS_AUTORADIOBUTTON,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+	$btnUpdateEdge = GUICtrlCreateButton("Update",387,373,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	; Set the radio selection.
+	; Set the radio selection from current settings.
 	Switch $stashBrowser
 		Case "Firefox"
-			GUICtrlSetState($chooseFirefox, $GUI_CHECKED)
+			GUICtrlSetState($radioChooseFirefox, $GUI_CHECKED)
 		Case "Chrome"
-			GUICtrlSetState($chooseChrome, $GUI_CHECKED)
+			GUICtrlSetState($radioChooseChrome, $GUI_CHECKED)
 		Case "Edge"
-			GUICtrlSetState($chooseEdge, $GUI_CHECKED)
+			GUICtrlSetState($radioChooseEdge, $GUI_CHECKED)
 	EndSwitch
-			
-	$btnDone = GUICtrlCreateButton("Done",560,580,173,63,-1,-1)
+
+	$chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",169,447,258,34,-1,-1)
+	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
+
+	$chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",169,488,304,34,-1,-1)
+	If $showWDConsole = 1 Then GUICtrlSetState($chkShowWebDriver, $GUI_CHECKED)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
+
+	GUICtrlCreateLabel("Stash-win.exe location:",66,539,299,37,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"-2")
+
+	$inputStashWinLocation = GUICtrlCreateInput($stashFilePath,66,590,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	
-	GUISetState(@SW_SHOW, $Settings)
+	$btnBrowseStash = GUICtrlCreateButton("Browse",566,584,142,42,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+	GUICtrlCreateLabel("Stash URL:",68,634,299,37,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"-2")
+
+	$inputStashURL = GUICtrlCreateInput($stashURL,68,675,473,36,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
+
+	GUICtrlCreateLabel("Alternative player location:",69,753,407,37,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"-2")
+
+	$inputMediaPlayerLocation = GUICtrlCreateInput("",69,804,473,36,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to player the scene file.")
+
+	$btnBrowsePlayer = GUICtrlCreateButton("Browse",566,798,142,42,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
+
+		
+	$btnDone = GUICtrlCreateButton("Done",566,883,173,63,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	
+	GUISetState(@SW_SHOW, $guiSettings)
 	
 	While True
 		Sleep(10)
 		$nMsg = GUIGetMsg()
 		Switch $nMsg
-			Case $btnBrowse
+			Case $btnBrowseStash
 				Local $sFile = FileOpenDialog("Open the Stash-Win.exe:", _ 
 					@DocumentsCommonDir, "(Stash-Win.exe)", $FD_FILEMUSTEXIST )
 				If Not @error Then
-					GUICtrlSetData($stashPath, $sFile)
+					GUICtrlSetData($inputStashWinLocation, $sFile)
+				EndIf
+			Case $btnBrowsePlayer
+				Local $sFile = FileOpenDialog("Open the media player's .exe file:", _ 
+					@ProgramFilesDir, "Executable File(*.exe)", $FD_FILEMUSTEXIST )
+				If Not @error Then
+					GUICtrlSetData($inputMediaPlayerLocation, $sFile)
 				EndIf
 			Case $btnDone
 				Select 
-					Case GUICtrlRead($chooseFirefox) = $GUI_CHECKED
+					Case GUICtrlRead($radioChooseFirefox) = $GUI_CHECKED
 						$sBrowser = "Firefox"
-					Case GUICtrlRead($chooseChrome) = $GUI_CHECKED
+					Case GUICtrlRead($radioChooseChrome) = $GUI_CHECKED
 						$sBrowser = "Chrome"
-					Case GUICtrlRead($chooseEdge) = $GUI_CHECKED
+					Case GUICtrlRead($radioChooseEdge) = $GUI_CHECKED
 						$sBrowser = "Edge"
 				EndSelect
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", _ 
-					GUICtrlRead($stashPath))
+					GUICtrlRead($inputStashWinLocation))
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
+				$iShow = (GUICtrlRead($chkShowStash) = $GUI_CHECKED) ? 1 : 0
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole", "REG_DWORD", $iShow)
+				$iShow = (GUICtrlRead($chkShowWebDriver) = $GUI_CHECKED) ? 1 : 0
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole", "REG_DWORD", $iShow)
+				$sPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
+				If $sPlayerLocation <> "" Then 
+					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation", "REG_SZ", $sPlayerLocation)
+				EndIf
+				$stashURL = GUICtrlRead($inputStashURL)
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+				
 				MsgBox(64,"Setting saved.", _ 
 				  "You need to restart the program for the new settings to take effect, though.",0)
 				ExitLoop
-			Case $updateFirefox
+			Case $btnUpdateFirefox
 				_WD_DeleteSession($sSession)
 				_WD_Shutdown()
 				Local $b64 = ( @CPUArch = "X64" )
@@ -100,7 +152,7 @@ Func ShowSettings()
 				_WD_Startup()
 				$sSession = _WD_CreateSession($sDesiredCapabilities)
 			
-			Case $updateChrome
+			Case $btnUpdateChrome
 				_WD_DeleteSession($sSession)
 				_WD_Shutdown()
 				Local $bGood = _WD_UPdateDriver ("chrome", Default , Default, True) ; Force update
@@ -114,7 +166,7 @@ Func ShowSettings()
 				SetupChrome()
 				_WD_Startup()
 				$sSession = _WD_CreateSession($sDesiredCapabilities)
-			Case $updateEdge
+			Case $btnUpdateEdge
 				_WD_DeleteSession($sSession)
 				_WD_Shutdown()
 				Local $b64 = ( @CPUArch = "X64" )
@@ -134,5 +186,5 @@ Func ShowSettings()
 				ExitLoop
 		EndSwitch
 	Wend
-	GUIDelete($Settings)
+	GUIDelete($guiSettings)
 EndFunc 

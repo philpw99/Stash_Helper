@@ -13,8 +13,6 @@ Global $sScraperPath
 
 Func ScrapersManager()
 
-	If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
-	
 	; Open the config.xml to see the folder.
 	$stashPath = StringLeft( $stashFilePath, StringInStr($stashFilePath, "\", 2, -1) )
 	; $stashPath has "\" in the end.
@@ -82,7 +80,7 @@ Func ScrapersManager()
 	
 	; Create the GUI first, then read the data later.
 	
-	$Scrapers = GUICreate("Scrapers Management",1703,1434,-1,-1,$WS_SIZEBOX,-1)
+	$Scrapers = GUICreate("Scrapers Management",1703,1464,-1,-1,$WS_SIZEBOX,-1)
 	$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,330,1620,1056,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,102)
@@ -172,6 +170,7 @@ Func ScrapersManager()
 			
 			Case $btnInstall ; Install scrapers
 				$iCount = _GUICtrlListView_GetItemCount($scraperList)
+				$iTotalInstalled = 0
 				For $i = 0 To $iCount -1
 					If _GUICtrlListView_GetItemChecked($scraperList, $i) Then 
 						$sScraperFile = _GUICtrlListView_GetItemText($scraperList, $i, 1)
@@ -183,16 +182,20 @@ Func ScrapersManager()
 						; Fetch is good. Now set it uncheck and "installed"
 						_GUICtrlListView_SetItemChecked($scraperList, $i, False)
 						_GUICtrlListView_SetItemText($scraperList, $i, "Yes", 6)
+						$iTotalInstalled += 1
 					EndIf
 				Next
 				
-				OpenURL("http://localhost:9999/settings?tab=scraping")
-				Sleep(1000)
-				Alert("The checked Scrapers are installed. Now you still need to click on 'Reload Scrapers' here to take effect.")
+				If $iTotalInstalled > 0 Then 
+					OpenURL("http://localhost:9999/settings?tab=scraping")
+					Sleep(2000)
+					Alert($iTotalInstalled & " checked Scrapers are installed. Now you still need to click on 'Reload Scrapers' here to take effect.")
+				EndIf 
 
 
 			Case $btnRemove  ; Remove scrapers
 				$iCount = _GUICtrlListView_GetItemCount($scraperList)
+				$iTotalRemoved = 0
 				For $i = 0 To $iCount -1
 					If _GUICtrlListView_GetItemChecked($scraperList, $i) Then 
 						$sScraperFile = _GUICtrlListView_GetItemText($scraperList, $i, 1)
@@ -203,13 +206,14 @@ Func ScrapersManager()
 						EndIf
 						_GUICtrlListView_SetItemChecked($scraperList, $i, False)
 						_GUICtrlListView_SetItemText($scraperList, $i, "No", 6)
+						$iTotalRemoved += 1
 					EndIf
 				Next
-				
-				OpenURL("http://localhost:9999/settings?tab=scraping")
-				Sleep(1000)
-				Alert("The checked Scrapers are removed. Now you still need to click on 'Reload Scrapers' here to take effect.")
-
+				If $iTotalRemoved > 0 Then 
+					OpenURL("http://localhost:9999/settings?tab=scraping")
+					Sleep(2000)
+					Alert($iTotalRemoved & " checked Scrapers are removed. Now you still need to click on 'Reload Scrapers' here to take effect.")
+				EndIf 
 			Case $GUI_EVENT_CLOSE
 				ExitLoop 
 		EndSwitch

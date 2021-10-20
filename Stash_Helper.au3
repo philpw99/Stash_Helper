@@ -14,11 +14,14 @@
 #include <wd_core.au3>
 #include <wd_helper.au3>
 #include <Forms\InitialSettingsForm.au3>
+#include "TrayMenuEx.au3"
+
+If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 Global Const $iMaxSubItems = 11
-TraySetIcon("helper1.ico")
+TraySetIcon("helper2.ico")
 
 #Region Globals Initialization
 Opt("TrayAutoPause", 0)  ; No pause in tray
@@ -32,8 +35,20 @@ EndIf
 
 Global $stashBrowser = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser")
 
+Global $showStashConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole")
+If @error Then $showStashConsole = 0
+Global $showWDConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole")
+if @error Then $showWDConsole = 0
+
 Global $sDesiredCapabilities, $sSession
 Global $stashVersion, $stashURL
+Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
+
+Local $sIconPath = @ScriptDir & "\images\icons\"
+Local $hIcons[12]	; 12 icons for the tray menus
+For $i = 0 to 11
+	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
+Next
 
 #include <Forms\SettingsForm.au3>
 #include <Forms\CustomForm.au3>
@@ -45,45 +60,55 @@ Global $stashVersion, $stashURL
 ; Attach to an existing stash-win first.
 Global $iStashPID = WinGetProcess("stash-win.exe")
 If $iStashPID = -1 Then
+	; Stash not running.
 	Local $sPath = StringLeft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1) )
-	$iStashPID = Run($stashFilePath, $sPath, @SW_HIDE, $STDERR_MERGED)
+	If $showStashConsole Then
+		; Show the stash console.
+		$iStashPID = Run($stashFilePath, $sPath, @SW_SHOW)
+		$stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
+		If @error Then $stashURL = "http://localhost:9999/"  ; Last resort
+	Else
+		; Hide the stash console. First time run, it will always hide it so we can read the stash url.
+		$iStashPID = Run($stashFilePath, $sPath, @SW_HIDE, $STDERR_MERGED)
 
-	$hTimer = TimerInit()
-	While True
-		Local $sLine = StdoutRead($iStashPID)
-		If @error Then
-			; Stash App is closed.
-			Exit
-		EndIf
-		If $sLine <> "" Then
-			c("*" & $sLine)
-		EndIf
-		Select
-			Case StringInStr($sLine, "stash version:", 2)
-				$stashVersion = StringMid($sLine, StringInStr($sLine, "stash version:", 2))
-				$stashVersion = StringStripWS($stashVersion, $STR_STRIPTRAILING)
-			Case StringInStr($sLine, "stash is running at ")
-				$iPos1 = StringInStr($sLine, "http", 2)
-				$iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
-				$stashURL = StringMid($sLine, $iPos1, $iPos2 -$iPos1)
-				$stashURL = StringStripWS($stashURL, $STR_STRIPTRAILING)
-				; Now time to jump to the next phrase.
-				$sURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
-				If $sURL <> $stashURL Then
-					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
-				EndIf
-				ExitLoop
-		EndSelect
-		; 10 seconds max for this loop
-		If TimerDiff($hTimer)> 10000 Then
-			; Something is wrong.
-			MsgBox(48,"Error launching StashApp", _
-				"It takes too long to get StashApp ready. Something is wrong. Exiting.",20)
-			Exit
-		EndIf
-		Sleep(100)
-	Wend
+		$hTimer = TimerInit()
+		While True
+			Local $sLine = StdoutRead($iStashPID)
+			If @error Then
+				; Stash App is closed.
+				Exit
+			EndIf
+			If $sLine <> "" Then
+				c("*" & $sLine)
+			EndIf
+			Select
+				Case StringInStr($sLine, "stash version:", 2)
+					$stashVersion = StringMid($sLine, StringInStr($sLine, "stash version:", 2))
+					$stashVersion = StringStripWS($stashVersion, $STR_STRIPTRAILING)
+				Case StringInStr($sLine, "stash is running at ")
+					$iPos1 = StringInStr($sLine, "http", 2)
+					$iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
+					$stashURL = StringMid($sLine, $iPos1, $iPos2 -$iPos1)
+					$stashURL = StringStripWS($stashURL, $STR_STRIPTRAILING)
+					; Now time to jump to the next phrase.
+					$sURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
+					If $sURL <> $stashURL Then
+						RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+					EndIf
+					ExitLoop
+			EndSelect
+			; 10 seconds max for this loop
+			If TimerDiff($hTimer)> 10000 Then
+				; Something is wrong.
+				MsgBox(48,"Error launching StashApp", _
+					"It takes too long to get StashApp ready. Something is wrong. Exiting.",20)
+				Exit
+			EndIf
+			Sleep(100)
+		Wend
+	EndIf
 Else
+	; Stash already running.
 	$stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
 	If @error Then $stashURL = "http://localhost:9999/"  ; Last resort
 EndIf
@@ -94,22 +119,38 @@ If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 10, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
 
-TrayCreateItem("Stash Helper 1.0")
-TrayCreateItem("")
-Global $trayMenuScenes = TrayCreateMenu("Scenes")
-Global $trayMenuImages = TrayCreateMenu("Images")
-Global $trayMenuMovies = TrayCreateMenu("Movies")
-Global $trayMenuMarkers = TrayCreateMenu("Markers")
-Global $trayMenuGalleries = TrayCreateMenu("Galleries")
-Global $trayMenuPeformers = TrayCreateMenu("Performers")
-Global $trayMenuStudios = TrayCreateMenu("Studios")
-Global $trayMenuTags = TrayCreateMenu("Tags")
-TrayCreateItem("")
-Global $trayScrapers = TrayCreateItem("Scrapers Manager")
-Global $traySettings = TrayCreateItem("Settings")
-TrayCreateItem("")
-Global $trayAbout = TrayCreateItem("About")
-Global $trayExit = TrayCreateItem("Exit")
+TrayCreateItem("Stash Helper 1.1")  					; 0
+TrayCreateItem("")										; 1
+
+Global $trayMenuScenes = TrayCreateMenu("Scenes")		; 2
+_TrayMenuAddImage($hIcons[0], 2)
+Global $trayMenuImages = TrayCreateMenu("Images")		; 3
+_TrayMenuAddImage($hIcons[1], 3)
+Global $trayMenuMovies = TrayCreateMenu("Movies")		; 4
+_TrayMenuAddImage($hIcons[2], 4)
+Global $trayMenuMarkers = TrayCreateMenu("Markers")		; 5
+_TrayMenuAddImage($hIcons[3], 5)
+Global $trayMenuGalleries = TrayCreateMenu("Galleries")	; 6
+_TrayMenuAddImage($hIcons[4], 6)
+Global $trayMenuPeformers = TrayCreateMenu("Performers"); 7
+_TrayMenuAddImage($hIcons[5], 7)
+Global $trayMenuStudios = TrayCreateMenu("Studios")		; 8
+_TrayMenuAddImage($hIcons[6], 8)
+Global $trayMenuTags = TrayCreateMenu("Tags")			; 9
+_TrayMenuAddImage($hIcons[7], 9)
+TrayCreateItem("")										; 10
+Global $trayScrapers = TrayCreateItem("Scrapers Manager");11
+_TrayMenuAddImage($hIcons[8], 11)
+Global $traySettings = TrayCreateItem("Settings")		; 12
+_TrayMenuAddImage($hIcons[9], 12)
+TrayCreateItem("")										; 13
+Global $trayAbout = TrayCreateItem("About")				; 14
+_TrayMenuAddImage($hIcons[10], 14)
+Global $trayExit = TrayCreateItem("Exit")				; 15
+_TrayMenuAddImage($hIcons[11], 15)
+
+; No need for those icons any more
+_IconDestroy($hIcons)
 
 ; Now sub menu items. 0 is the handle, 1 is title, 2 is the link
 Global $traySceneLinks[$iMaxSubItems][3]
@@ -126,8 +167,10 @@ Global $customPerformers, $customStudios, $customTags
 
 ; Now get WebDriver Ready
 
-; Hide the console
-$_WD_DEBUG = $_WD_DEBUG_None
+; Hide the console, OR NOT
+If Not $showWDConsole Then
+	$_WD_DEBUG = $_WD_DEBUG_None
+EndIf
 
 Switch $stashBrowser
 	Case "Firefox"
@@ -170,7 +213,7 @@ While True
 			MsgBox(64,"Stash Helper 1.0","Stash helper 1.0, written by Philip Wang, at your service." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
 				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for the project." _
-				& @CRLF & "Kudos also go to ISN AutoIt Studio's powerful AutoIt IDE, which making this program much easier to write." _ 
+				& @CRLF & "Kudos also go to ISN AutoIt Studio's powerful AutoIt IDE, which making this program much easier to write." _
 				& @CRLF & "Also thanks to InstallForge for such an easy-to-build installer!" ,20)
 		Case $trayExit
 			ExitScript()
@@ -328,25 +371,20 @@ EndFunc
 
 Func OpenURL($url)
 	$sBrowserHandle = _WD_Window($sSession, "Window")
-	If $sBrowserHandle = "" Then 
+	If $sBrowserHandle = "" Then
 		; The session is invalid.
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
 	EndIf
 
 	_WD_Navigate($sSession, $url)
-
-	If @error <> $_WD_ERROR_Success Then
-		; Session is invalid, need to create a new one
-		; Get the new handle.
-		_WD_Navigate($sSession, $url)
-	EndIf
 EndFunc
 
 Func Alert($sMessage)
 	; No quotes in the message.
 	$sMessage = StringReplace($sMessage, "'", "`")
 	$sMessage = StringReplace($sMessage, '"', "`")
-	_WD_ExecuteScript($sSession, "alert('" & $sMessage& "')")
+
+	_WD_ExecuteScript($sSession, "alert('" & $sMessage& "')", Default , True )
 EndFunc
 
 Func CreateSubMenu()

@@ -12,8 +12,7 @@ Func CustomList($sCategory, ByRef $aCategory)
 	; aCategory is the array that contains Item_Handle, Item_Title, Item_Link
 	; Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 	; Global $iMaxSubItems
-	If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
-	
+		
 	$Custom = GUICreate("Customize " & $sCategory,1060,800,-1,-1,-1,-1)
 	
 	GUICtrlCreateLabel("Customize the list of " & $sCategory & _ 

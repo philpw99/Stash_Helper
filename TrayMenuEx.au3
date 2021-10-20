@@ -29,13 +29,14 @@ _GetMenuItemID($hMenu, $itemRelativePos) Returns itemID of a item in menu $hMenu
 #include-once
 
 ; ---------------------------------------------------------------------
-;Global Const $MF_BYCOMMAND = 0x00000000  ; In <GUIConstants.au3>
-;Global Const $MF_BYPOSITION = 0x00000400 ; In <GUIConstants.au3>
-Global Const $IMAGE_BITMAP = 0
-Global Const $IMAGE_ICON = 1
+; Global Const $MF_BYCOMMAND = 0x00000000  ; In <GUIConstants.au3>
+; Global Const $MF_BYPOSITION = 0x00000400 ; In <GUIConstants.au3>
 
-Global Const $LR_LOADMAP3DCOLORS = 0x00001000
-Global Const $LR_LOADFROMFILE = 0x0010
+; Global Const $IMAGE_BITMAP = 0
+; Global Const $IMAGE_ICON = 1
+
+; Global Const $LR_LOADMAP3DCOLORS = 0x00001000
+; Global Const $LR_LOADFROMFILE = 0x0010
 ;
 Global Const $Debug = 1
 Global Const $ModuleName = "TrayMenuEx.au3"

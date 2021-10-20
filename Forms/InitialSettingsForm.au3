@@ -10,8 +10,6 @@ Func InitialSettingsForm()
 	Global $stashFilePath
 	Local $Initial_Settings, $tab, $stashPath, $btnBrowse, $btnOK
 
-	If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
-	
 	; Create the whole initial setting's GUI
 	$Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
 	$tab = GUICtrlCreatetab(41,70,1232,661,-1,-1)

@@ -5,33 +5,63 @@
 #Include <GuiButton.au3>
 #include <EditConstants.au3>
 
-$Settings = GUICreate("Settings",801,726,-1,-1,-1,-1)
-GUICtrlCreateLabel("Boss Coming Key: Ctrl + NumpadEnter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,574,129,-1,-1)
+$Settings = GUICreate("Settings",801,1042,-1,-1,-1,-1)
+GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,574,129,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-GUICtrlCreateLabel("Stash-win.exe location:",100,235,299,37,-1,-1)
+GUICtrlCreateLabel("Stash-win.exe location:",66,539,299,37,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-$stashWinLocation = GUICtrlCreateInput("",100,286,473,36,-1,$WS_EX_CLIENTEDGE)
+$stashWinLocation = GUICtrlCreateInput("",66,590,473,36,-1,$WS_EX_CLIENTEDGE)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlCreateButton("Browse",600,280,142,42,-1,-1)
+$btnBrowseStash = GUICtrlCreateButton("Browse",566,584,142,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseFirefox = GUICtrlCreateRadio("Firefox",169,430,147,38,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetTip(-1,"Browse for the stash-win.exe")
+$chooseFirefox = GUICtrlCreateRadio("Firefox",166,237,147,38,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlCreateGroup("Preferred Browser",100,357,442,286,$BS_CENTER,-1)
+GUICtrlCreateGroup("Preferred Browser",97,164,442,262,$BS_CENTER,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseChrome = GUICtrlCreateRadio("Chrome",169,492,147,38,$BS_AUTORADIOBUTTON,-1)
+$chooseChrome = GUICtrlCreateRadio("Chrome",166,299,147,38,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseEdge = GUICtrlCreateRadio("MS Edge",169,560,147,38,$BS_AUTORADIOBUTTON,-1)
+$chooseEdge = GUICtrlCreateRadio("MS Edge",166,367,147,38,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$btnDone = GUICtrlCreateButton("Done",573,580,173,63,-1,-1)
+$btnDone = GUICtrlCreateButton("Done",566,883,173,63,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$updateFirefox = GUICtrlCreateButton("Update",380,438,112,32,-1,-1)
+GUICtrlSetTip(-1,"Save the settings.")
+$updateFirefox = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$updateChrome = GUICtrlCreateButton("Update",380,498,112,32,-1,-1)
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+$updateChrome = GUICtrlCreateButton("Update",387,305,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$updateEdge = GUICtrlCreateButton("Update",380,566,112,32,-1,-1)
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+$updateEdge = GUICtrlCreateButton("Update",387,373,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+GUICtrlCreateLabel("Drivers",407,207,83,24,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+GUICtrlSetResizing(-1,802)
+$showStash = GUICtrlCreateCheckbox("Show Stash Console",169,447,258,34,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
+$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",169,488,304,34,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
+GUICtrlCreateLabel("Alternative player location:",69,753,407,37,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
+$mediaPlayerLocation = GUICtrlCreateInput("",69,804,473,36,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to player the scene file.")
+$btnBrowsePlayer = GUICtrlCreateButton("Browse",566,798,142,42,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
+$stashURLinput = GUICtrlCreateInput("",68,675,473,36,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
+GUICtrlCreateLabel("Stash URL:",68,634,299,37,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlSetBkColor(-1,"-2")
 
 
 
@@ -41,7 +71,7 @@ Handle_deklaration=default
 Handle_deklaration_const=default
 title=Settings
 breite=801
-hoehe=726
+hoehe=1042
 style=-1
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -72,7 +102,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00151B8A]
+[0x000A20C4]
 type=label
 handle=432
 locked=0
@@ -90,7 +120,7 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=
-text=Boss Coming Key: Ctrl + NumpadEnter[BREAK]Hit this key combination will immediately close the Stash browser.
+text=Boss Coming Key: Ctrl + Enter[BREAK]Hit this key combination will immediately close the Stash browser.
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -101,13 +131,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000F1B8E]
+[0x00032104]
 type=label
 handle=433
 locked=0
 resize=
-x=100
-y=235
+x=66
+y=539
 width=299
 height=37
 func=
@@ -130,13 +160,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000D1A8E]
+[0x0003210A]
 type=input
 handle=434
 locked=0
 resize=
-x=100
-y=286
+x=66
+y=590
 width=473
 height=36
 func=
@@ -159,13 +189,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000D1B92]
+[0x00032108]
 type=button
 handle=435
 locked=0
 resize=
-x=600
-y=280
+x=566
+y=584
 width=142
 height=42
 func=
@@ -173,10 +203,10 @@ font=Tahoma
 fontsize=12
 fontstyle=400
 fontattribute=0
-tooltip=
+tooltip=Browse for the stash-win.exe
 bgimage=
 textcolour=0x000000
-id=
+id=$btnBrowseStash
 text=Browse
 state=$GUI_SHOW+$GUI_ENABLE
 style=
@@ -188,13 +218,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C1BD2]
+[0x000320CC]
 type=radio
 handle=436
 locked=0
 resize=
-x=169
-y=430
+x=166
+y=237
 width=147
 height=38
 func=
@@ -217,15 +247,15 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000B1BD4]
+[0x000420CE]
 type=group
 handle=437
 locked=0
 resize=
-x=100
-y=357
+x=97
+y=164
 width=442
-height=286
+height=262
 func=
 font=Tahoma
 fontsize=12
@@ -246,13 +276,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C1BD6]
+[0x000520D0]
 type=radio
 handle=438
 locked=0
 resize=
-x=169
-y=492
+x=166
+y=299
 width=147
 height=38
 func=
@@ -275,13 +305,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x000C1B98]
+[0x000420D2]
 type=radio
 handle=439
 locked=0
 resize=
-x=169
-y=560
+x=166
+y=367
 width=147
 height=38
 func=
@@ -304,13 +334,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x000F1BF6]
+[0x000320D4]
 type=button
 handle=440
 locked=0
 resize=
-x=573
-y=580
+x=566
+y=883
 width=173
 height=63
 func=
@@ -318,7 +348,7 @@ font=Tahoma
 fontsize=12
 fontstyle=400
 fontattribute=0
-tooltip=
+tooltip=Save the settings.
 bgimage=
 textcolour=0x000000
 id=$btnDone
@@ -333,13 +363,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00390EA8]
+[0x000320D6]
 type=button
-handle=449
+handle=441
 locked=0
 resize=
-x=380
-y=438
+x=387
+y=245
 width=112
 height=32
 func=
@@ -347,7 +377,7 @@ font=Tahoma
 fontsize=10
 fontstyle=400
 fontattribute=0
-tooltip=
+tooltip=If your browser no longer works, then perhaps you need to update the driver.
 bgimage=
 textcolour=0x000000
 id=$updateFirefox
@@ -362,13 +392,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x002D1B3C]
+[0x000320D8]
 type=button
-handle=450
+handle=442
 locked=0
 resize=
-x=380
-y=498
+x=387
+y=305
 width=112
 height=32
 func=
@@ -376,7 +406,7 @@ font=Tahoma
 fontsize=10
 fontstyle=400
 fontattribute=0
-tooltip=
+tooltip=If your browser no longer works, then perhaps you need to update the driver.
 bgimage=
 textcolour=0x000000
 id=$updateChrome
@@ -391,13 +421,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=11
-[0x003318DE]
+[0x000320DA]
 type=button
-handle=451
+handle=443
 locked=0
 resize=
-x=380
-y=566
+x=387
+y=373
 width=112
 height=32
 func=
@@ -405,7 +435,7 @@ font=Tahoma
 fontsize=10
 fontstyle=400
 fontattribute=0
-tooltip=
+tooltip=If your browser no longer works, then perhaps you need to update the driver.
 bgimage=
 textcolour=0x000000
 id=$updateEdge
@@ -420,4 +450,236 @@ iconindex=
 iconlarge=0
 textmode=text
 order=12
+[0x000320DC]
+type=label
+handle=444
+locked=0
+resize=802
+x=407
+y=207
+width=83
+height=24
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Drivers
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=13
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000320DE]
+type=checkbox
+handle=445
+locked=0
+resize=
+x=169
+y=447
+width=258
+height=34
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.
+bgimage=
+textcolour=0x000000
+id=$showStash
+text=Show Stash Console
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=14
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000320E0]
+type=checkbox
+handle=446
+locked=0
+resize=
+x=169
+y=488
+width=304
+height=34
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.
+bgimage=
+textcolour=0x000000
+id=$showWebDriver
+text=Show Web Driver Console
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=15
+[0x000320E2]
+type=label
+handle=447
+locked=0
+resize=
+x=69
+y=753
+width=407
+height=37
+func=
+font=Palatino Linotype
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Alternative player location:
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=16
+[0x000320E4]
+type=input
+handle=448
+locked=0
+resize=
+x=69
+y=804
+width=473
+height=36
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Use an alternative media player like VLC, potplayer...etc to player the scene file.
+bgimage=
+textcolour=0x000000
+id=$mediaPlayerLocation
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=17
+[0x000320E6]
+type=button
+handle=449
+locked=0
+resize=
+x=566
+y=798
+width=142
+height=42
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Browse for the .exe file for the media player.
+bgimage=
+textcolour=0x000000
+id=$btnBrowsePlayer
+text=Browse
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=18
+[0x000320E8]
+type=input
+handle=450
+locked=0
+resize=
+x=68
+y=675
+width=473
+height=36
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Default is 'http://localhost:9999/'
+bgimage=
+textcolour=0x000000
+id=$stashURLinput
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=19
+[0x000320EA]
+type=label
+handle=451
+locked=0
+resize=
+x=68
+y=634
+width=299
+height=37
+func=
+font=Palatino Linotype
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Stash URL:
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=20
 #ce
