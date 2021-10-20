@@ -16,7 +16,9 @@
 #include <Forms\InitialSettingsForm.au3>
 #include "TrayMenuEx.au3"
 
-If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+; If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+
+DllCall("User32.dll","bool","SetProcessDPIAware")
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
