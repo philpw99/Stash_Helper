@@ -47,7 +47,7 @@ You see? Besides you can use your own media player to play your scenes, there is
 Now the most powerful feature is customizing the menu. Click on "Scenes->Customize...", and you will see this:<p>
 <img src="https://user-images.githubusercontent.com/22040708/138214537-3fca6801-4e2d-4200-aad3-eaee459f19aa.png" width=500><p><p>
 This is like the bookmark or favorite list. You can give it an descriptive title, then paste the link copied from Stash, like I've shown above.
-Next time you can get to the same page easily by using my helper:
+Next time you can get to the same page easily by using my helper:<p>
 <img src="https://user-images.githubusercontent.com/22040708/138214850-b83c685c-e3bb-40a1-8caf-8656720a39a0.png" width=500> <p><p>
   
 The next topic is about "Scraper Manager". This is a very important feature in both Stash and my helper.<p>
