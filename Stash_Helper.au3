@@ -20,6 +20,8 @@
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
+Global Const $currentVersion = "v1.2"
+
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 Global Const $iMaxSubItems = 11
@@ -28,6 +30,9 @@ TraySetIcon("helper2.ico")
 #Region Globals Initialization
 Opt("TrayAutoPause", 0)  ; No pause in tray
 ; Opt("TrayOnEventMode", 1) ; Enable tray on event mode. NO,NO, DON'T DO IT!
+
+; Remove the trailing (x86) for 64bit windows
+Global $sProgramFilesDir = ( @OSArch = "X64" ) ? StringReplace(@ProgramFilesDir, " (x86)", "", 1, 2) : @ProgramFilesDir
 
 Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
 If @error Or Not FileExists($stashFilePath) Then
@@ -47,8 +52,8 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[12]	; 12 icons for the tray menus
-For $i = 0 to 11
+Local $hIcons[13]	; 13 (0-12) bmps  for the tray menus
+For $i = 0 to 12
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -121,7 +126,7 @@ If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 10, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
 
-TrayCreateItem("Stash Helper 1.1")  					; 0
+TrayCreateItem("Stash Helper " & $currentVersion )  					; 0
 TrayCreateItem("")										; 1
 
 Global $trayMenuScenes = TrayCreateMenu("Scenes")		; 2
@@ -141,15 +146,19 @@ _TrayMenuAddImage($hIcons[6], 8)
 Global $trayMenuTags = TrayCreateMenu("Tags")			; 9
 _TrayMenuAddImage($hIcons[7], 9)
 TrayCreateItem("")										; 10
-Global $trayScrapers = TrayCreateItem("Scrapers Manager");11
-_TrayMenuAddImage($hIcons[8], 11)
-Global $traySettings = TrayCreateItem("Settings")		; 12
-_TrayMenuAddImage($hIcons[9], 12)
-TrayCreateItem("")										; 13
-Global $trayAbout = TrayCreateItem("About")				; 14
-_TrayMenuAddImage($hIcons[10], 14)
-Global $trayExit = TrayCreateItem("Exit")				; 15
-_TrayMenuAddImage($hIcons[11], 15)
+Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;11
+GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
+_TrayMenuAddImage($hIcons[12], 11)
+Global $trayScrapers = TrayCreateItem("Scrapers Manager");12
+GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
+_TrayMenuAddImage($hIcons[8], 12)
+Global $traySettings = TrayCreateItem("Settings")		; 13
+_TrayMenuAddImage($hIcons[9], 13)
+TrayCreateItem("")										; 14
+Global $trayAbout = TrayCreateItem("About")				; 15
+_TrayMenuAddImage($hIcons[10], 15)
+Global $trayExit = TrayCreateItem("Exit")				; 16
+_TrayMenuAddImage($hIcons[11], 16)
 
 ; No need for those icons any more
 _IconDestroy($hIcons)
@@ -212,11 +221,11 @@ While True
 		Case 0
 			; Nothing should be here.
 		Case $trayAbout
-			MsgBox(64,"Stash Helper 1.0","Stash helper 1.0, written by Philip Wang, at your service." _
+			MsgBox(64,"Stash Helper " & $currentVersion,"Stash helper " & $currentVersion & ", written by Philip Wang, at your service." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
-				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for the project." _
-				& @CRLF & "Kudos also go to ISN AutoIt Studio's powerful AutoIt IDE, which making this program much easier to write." _
-				& @CRLF & "Also thanks to InstallForge for such an easy-to-build installer!" ,20)
+				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for this huge project." _
+				& @CRLF & "Kudos also go to Christian Faderl's ISN AutoIt Studio! It's such a powerful AutoIt IDE, which making this program much easier to write." _
+				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" ,20)
 		Case $trayExit
 			ExitScript()
 		Case $traySettings
@@ -239,6 +248,8 @@ While True
 			CustomList("Studios", $trayStudioLinks)
 		Case $customTags
 			CustomList("Tags", $trayTagLinks)
+		Case $trayPlayScene
+			PlayCurrentScene()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -297,6 +308,73 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func PlayCurrentScene()
+	; Play the current scene with external media player
+	If $sMediaPlayerLocation = "" Then 
+		MsgBox(48,"Media player missing.","You need to set the external media player in the 'Settings' first.",0)
+		Return
+	ElseIf Not FileExists($sMediaPlayerLocation) Then 
+		MsgBox(48,"Media player missing.","The external media player in the 'Settings' is not valid.",0)
+		Return
+	EndIf
+	
+	; First check the current tab is a scene.
+	$sURL = _WD_Action($sSession, "url")
+	If StringRegExp($sURL, "\/scenes\/\d+\?") Then 
+		ClickAndPlay()
+		Return 
+	EndIf 
+	; Not the current tab, get the scenes list
+	Local $aHandles = _WD_WINDOW($sSession, "Handles")
+	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then 
+		MsgBox(48,"Error in browser.","Error retrieving browser handles.",0)
+		Return
+	EndIf
+	Local $iTabCount = UBound($aHandles)
+	Local $bFound = False, $i, $sURL ; With $i we can get the handle.
+	For $i = 0 To $iTabCount-1
+		; Switch to this tab
+		_WD_Window($sSession, "Switch", '{"handle":"' & $aHandles[$i] & '"}' )
+		$sURL = _WD_Action($sSession, "url")
+		If StringRegExp($sURL, "\/scenes\/\d+\?") Then 
+			; Match. This is a scene
+			$bFound = True
+			ExitLoop 
+		EndIf
+	Next
+	If Not $bFound Then 
+		MsgBox(48,"Where is the scene?","Sorry, but I cannot find the browser tab with the scene you want to play.",0)
+		Return 
+	Else 
+		; Found the scene, handle it now.
+		ClickAndPlay()
+	EndIf
+EndFunc
+
+Func ClickAndPlay()
+	; This will click the "File Info" and get the info we need and play the file
+	_WD_LinkClickByText($sSession, "File Info", False)  ; Click the "File Info", not partial search.
+	If @error <> $_WD_ERROR_Success Then 
+		MsgBox(48,"Oops !","Sorry, but I cannot find the 'File Info' link in the web page.",0)
+		Return 
+	EndIf
+	Sleep(1000) ; Let the javascript works
+	$sDivID = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[contains(text(),'file://')]" )
+	If @error <> $_WD_ERROR_Success Then 
+		MsgBox(48,"Oops !","Sorry, but I cannot find the file element in the web page.",0)
+		Return 
+	EndIf
+	Local $sFileURL = _WD_ElementAction($sSession, $sDivID, "Text")
+	If @error <> $_WD_ERROR_Success Then 
+		MsgBox(48,"Oops !","Sorry, but I cannot get the file location in the web page.",0)
+		Return 
+	EndIf
+	; Now this will be pure file path and name
+	$sFileURL = StringReplace($sFileURL, "file://", "", 1, 2)
+	Local $sFilePath = StringLeft($sFileURL, StringInStr($sFileURL, "\", -1) )
+	ShellExecute($sMediaPlayerLocation, Q($sFileURL), $sFilePath, $SHEX_OPEN)
+EndFunc
 
 Func CloseSession()
 	; Immediately close the web browser
@@ -622,6 +700,10 @@ Func SetMenuItem(ByRef $aItem, $index, $handle, $Title, $Link)
 	$aItem[$index][$ITEM_LINK] = $Link
 EndFunc
 
+Func Q($str)
+	; Double quote the $str
+	Return '"' & $str & '"'
+EndFunc
 
 Func ExitScript()
 	If $iStashPID Then ProcessClose($iStashPID)

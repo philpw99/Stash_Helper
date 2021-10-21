@@ -25,7 +25,7 @@ $chooseChrome = GUICtrlCreateRadio("Chrome",166,299,147,38,$BS_AUTORADIOBUTTON,-
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 $chooseEdge = GUICtrlCreateRadio("MS Edge",166,367,147,38,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$btnDone = GUICtrlCreateButton("Done",566,883,173,63,-1,-1)
+$btnDone = GUICtrlCreateButton("Done",535,930,173,63,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Save the settings.")
 $updateFirefox = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
@@ -62,13 +62,37 @@ GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
 GUICtrlCreateLabel("Stash URL:",68,634,299,37,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
+$btnPlayerPot = GUICtrlCreateButton("PotPlayer",68,906,133,40,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
+GUICtrlCreateLabel("Player Presets:",80,860,162,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+$btnPlayerVLC = GUICtrlCreateButton("VLC",201,906,133,40,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
+$btnPlayerMPC = GUICtrlCreateButton("MPC",334,906,133,40,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Media Player Classic from  mpc-hc.org")
+$btnPlayerGOM = GUICtrlCreateButton("GOM",68,953,133,40,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"GOM Player from player.gomlab.com")
+$btnPlayerKodi = GUICtrlCreateButton("Kodi",201,953,133,40,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
+$btnPlayerKMP = GUICtrlCreateButton("KMP",334,953,133,40,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
+$chk64Bit = GUICtrlCreateCheckbox("64 Bit",282,860,99,38,-1,-1)
+GUICtrlSetState(-1,BitOr($GUI_CHECKED,$GUI_SHOW,$GUI_ENABLE))
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
 
 
 #cs
 [gui]
 Handle_deklaration=default
-Handle_deklaration_const=default
+Handle_deklaration_const=false
 title=Settings
 breite=801
 hoehe=1042
@@ -76,7 +100,7 @@ style=-1
 exstyle=-1
 bgcolour=0xF0F0F0
 bgimage=none
-handle=Settings
+handle=$Settings
 parent=
 code=
 codebeforegui=
@@ -102,7 +126,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x000A20C4]
+[0x00142228]
 type=label
 handle=432
 locked=0
@@ -131,7 +155,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00032104]
+[0x000C2184]
 type=label
 handle=433
 locked=0
@@ -160,7 +184,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0003210A]
+[0x00452004]
 type=input
 handle=434
 locked=0
@@ -189,7 +213,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00032108]
+[0x004D200A]
 type=button
 handle=435
 locked=0
@@ -218,7 +242,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000320CC]
+[0x002916D2]
 type=radio
 handle=436
 locked=0
@@ -247,7 +271,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000420CE]
+[0x00212048]
 type=group
 handle=437
 locked=0
@@ -276,7 +300,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000520D0]
+[0x00171154]
 type=radio
 handle=438
 locked=0
@@ -305,7 +329,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x000420D2]
+[0x001B2038]
 type=radio
 handle=439
 locked=0
@@ -334,13 +358,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x000320D4]
+[0x00681F78]
 type=button
 handle=440
 locked=0
 resize=
-x=566
-y=883
+x=535
+y=930
 width=173
 height=63
 func=
@@ -363,7 +387,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000320D6]
+[0x000C21A0]
 type=button
 handle=441
 locked=0
@@ -392,7 +416,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000320D8]
+[0x000C200C]
 type=button
 handle=442
 locked=0
@@ -421,7 +445,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=11
-[0x000320DA]
+[0x000B2014]
 type=button
 handle=443
 locked=0
@@ -450,7 +474,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=12
-[0x000320DC]
+[0x00172018]
 type=label
 handle=444
 locked=0
@@ -479,7 +503,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000320DE]
+[0x000E2034]
 type=checkbox
 handle=445
 locked=0
@@ -508,7 +532,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000320E0]
+[0x000B2036]
 type=checkbox
 handle=446
 locked=0
@@ -537,7 +561,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=15
-[0x000320E2]
+[0x001C199C]
 type=label
 handle=447
 locked=0
@@ -566,7 +590,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=16
-[0x000320E4]
+[0x00052046]
 type=input
 handle=448
 locked=0
@@ -595,7 +619,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=17
-[0x000320E6]
+[0x000520B0]
 type=button
 handle=449
 locked=0
@@ -624,7 +648,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=18
-[0x000320E8]
+[0x000520B4]
 type=input
 handle=450
 locked=0
@@ -653,7 +677,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=19
-[0x000320EA]
+[0x000520B2]
 type=label
 handle=451
 locked=0
@@ -682,4 +706,236 @@ iconindex=
 iconlarge=0
 textmode=text
 order=20
+[0x00052088]
+type=button
+handle=452
+locked=0
+resize=
+x=68
+y=906
+width=133
+height=40
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=PotPlayer from potplayer.daum.net
+bgimage=
+textcolour=0x000000
+id=$btnPlayerPot
+text=PotPlayer
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=21
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x0005204C]
+type=label
+handle=453
+locked=0
+resize=
+x=80
+y=860
+width=162
+height=30
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Player Presets:
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=22
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x0006204E]
+type=button
+handle=454
+locked=0
+resize=
+x=201
+y=906
+width=133
+height=40
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=VLC Media Player by VideoLAN
+bgimage=
+textcolour=0x000000
+id=$btnPlayerVLC
+text=VLC
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=23
+[0x00072052]
+type=button
+handle=455
+locked=0
+resize=
+x=334
+y=906
+width=133
+height=40
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Media Player Classic from  mpc-hc.org
+bgimage=
+textcolour=0x000000
+id=$btnPlayerMPC
+text=MPC
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=24
+[0x00072054]
+type=button
+handle=456
+locked=0
+resize=
+x=68
+y=953
+width=133
+height=40
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=GOM Player from player.gomlab.com
+bgimage=
+textcolour=0x000000
+id=$btnPlayerGOM
+text=GOM
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=25
+[0x00052056]
+type=button
+handle=457
+locked=0
+resize=
+x=201
+y=953
+width=133
+height=40
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Kodi from XBMC Foundation
+bgimage=
+textcolour=0x000000
+id=$btnPlayerKodi
+text=Kodi
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=26
+[0x00052058]
+type=button
+handle=458
+locked=0
+resize=
+x=334
+y=953
+width=133
+height=40
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=K-Multimedia Player from Pandora TV.
+bgimage=
+textcolour=0x000000
+id=$btnPlayerKMP
+text=KMP
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=27
+[0x00641C80]
+type=checkbox
+handle=459
+locked=0
+resize=
+x=282
+y=860
+width=99
+height=38
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chk64Bit
+text=64 Bit
+state=$GUI_CHECKED+$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=28
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
 #ce

@@ -331,7 +331,7 @@ Func _WD_GetSession($sSession)
 	Local Const $sFuncName = "_WD_GetSession"
 	Local $sResult
 	#forceref $sSession, $sFuncName
-
+	; This function is not good. Don't use.
 	Local $sResponse = __WD_Get($_WD_BASE_URL & ":" & $_WD_PORT & "/session/" & $sSession)
 	Local $iErr = @error, $sResult = ''
 

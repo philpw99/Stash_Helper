@@ -5,7 +5,7 @@
 #include <EditConstants.au3>
 
 Func ShowSettings()
-	; Global $stashBrowser, $stashFilePath, $stashURL
+	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation
 	Local $sBrowser
 	Local $guiSettings = GUICreate("Settings",801,1042,-1,-1,-1,-1)
 	
@@ -80,7 +80,7 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$inputMediaPlayerLocation = GUICtrlCreateInput("",69,804,473,36,-1,$WS_EX_CLIENTEDGE)
+	$inputMediaPlayerLocation = GUICtrlCreateInput($sMediaPlayerLocation,69,804,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to player the scene file.")
 
@@ -88,11 +88,48 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
 
-		
-	$btnDone = GUICtrlCreateButton("Done",566,883,173,63,-1,-1)
+	GUICtrlCreateLabel("Player Presets:",80,860,162,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+
+	$btnPlayerPot = GUICtrlCreateButton("PotPlayer",68,906,133,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
+
+	$btnPlayerVLC = GUICtrlCreateButton("VLC",201,906,133,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
+
+	$btnPlayerMPC = GUICtrlCreateButton("MPC",334,906,133,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Media Player Classic from  mpc-hc.org")
+
+	$btnPlayerGOM = GUICtrlCreateButton("GOM",68,953,133,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"GOM Player from player.gomlab.com")
+
+	$btnPlayerKodi = GUICtrlCreateButton("Kodi",201,953,133,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
+
+	$btnPlayerKMP = GUICtrlCreateButton("KMP",334,953,133,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
+
+	$chk64Bit = GUICtrlCreateCheckbox("64 Bit",282,860,99,38,-1,-1)
+	If @OSArch = "X64" Then
+		GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE, $GUI_CHECKED))
+	Else 
+		GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE))
+	EndIf
+
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+
+	$btnDone = GUICtrlCreateButton("Done",535,930,173,63,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	
 	GUISetState(@SW_SHOW, $guiSettings)
+	
 	
 	While True
 		Sleep(10)
@@ -106,11 +143,22 @@ Func ShowSettings()
 				EndIf
 			Case $btnBrowsePlayer
 				Local $sFile = FileOpenDialog("Open the media player's .exe file:", _ 
-					@ProgramFilesDir, "Executable File(*.exe)", $FD_FILEMUSTEXIST )
+					$sProgramFilesDir, "Executable File(*.exe)", $FD_FILEMUSTEXIST )
 				If Not @error Then
 					GUICtrlSetData($inputMediaPlayerLocation, $sFile)
 				EndIf
 			Case $btnDone
+				$sMediaPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
+				If $sMediaPlayerLocation <> "" Then 
+					; No checking empty string to enable user to clear this setting.
+					If Not FileExists($sMediaPlayerLocation) Then 
+						MsgBox(48,"Media Player not exist.","The media player location is not correct.",0)
+					EndIf
+					ExitLoop 
+				EndIf 
+				; Either write an empty string, or a valid location.
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation", "REG_SZ", $sMediaPlayerLocation)
+				
 				Select 
 					Case GUICtrlRead($radioChooseFirefox) = $GUI_CHECKED
 						$sBrowser = "Firefox"
@@ -126,10 +174,7 @@ Func ShowSettings()
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole", "REG_DWORD", $iShow)
 				$iShow = (GUICtrlRead($chkShowWebDriver) = $GUI_CHECKED) ? 1 : 0
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole", "REG_DWORD", $iShow)
-				$sPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
-				If $sPlayerLocation <> "" Then 
-					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation", "REG_SZ", $sPlayerLocation)
-				EndIf
+				
 				$stashURL = GUICtrlRead($inputStashURL)
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
 				
@@ -139,7 +184,7 @@ Func ShowSettings()
 			Case $btnUpdateFirefox
 				_WD_DeleteSession($sSession)
 				_WD_Shutdown()
-				Local $b64 = ( @CPUArch = "X64" )
+				Local $b64 = ( @OSArch = "X64" )
 				Local $bGood = _WD_UPdateDriver ("firefox", Default , $b64, True) ; Force update
 				If Not $bGood Then 
 					MsgBox(48,"Error Getting Firefox Driver", _ 
@@ -169,7 +214,7 @@ Func ShowSettings()
 			Case $btnUpdateEdge
 				_WD_DeleteSession($sSession)
 				_WD_Shutdown()
-				Local $b64 = ( @CPUArch = "X64" )
+				Local $b64 = ( @OSArch = "X64" )
 				Local $bGood = _WD_UPdateDriver ("msedge", Default , $b64 , True) ; Force update
 				If Not $bGood Then 
 					MsgBox(48,"Error Getting Firefox Driver", _ 
@@ -181,7 +226,49 @@ Func ShowSettings()
 				SetupEdge()
 				_WD_Startup()
 				$sSession = _WD_CreateSession($sDesiredCapabilities)
-			
+				
+			Case $btnPlayerPot
+				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
+					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\DAUM\PotPlayer\PotPlayerMini64.exe")
+				Else 
+					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\DAUM\PotPlayer\PotPlayerMini64.exe")
+				EndIf 
+					
+			Case $btnPlayerVLC
+				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
+					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\VideoLAN\VLC\vlc.exe")
+				Else 
+					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\VideoLAN\VLC\vlc.exe")
+				EndIf 
+
+			Case $btnPlayerMPC
+				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
+					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\MPC-HC\mplayerc.exe")
+				Else 
+					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\MPC-HC\mplayerc.exe")
+				EndIf 
+					
+			Case $btnPlayerGOM
+				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
+					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\GRETECH\GOMPlayer\GOM.exe")
+				Else 
+					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\GRETECH\GOMPlayer\GOM.exe")
+				EndIf 
+					
+			Case $btnPlayerKodi
+				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
+					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\Kodi\Kodi.exe")
+				Else 
+					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\Kodi\Kodi.exe")
+				EndIf 
+
+			Case $btnPlayerKMP
+				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
+					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\the kmplayer\kmplayer.exe")
+				Else 
+					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\the kmplayer\kmplayer.exe")
+				EndIf 
+
 			Case $GUI_EVENT_CLOSE
 				ExitLoop
 		EndSwitch
