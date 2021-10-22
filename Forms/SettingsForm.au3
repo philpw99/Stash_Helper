@@ -163,8 +163,8 @@ Func ShowSettings()
 					; No checking empty string to enable user to clear this setting.
 					If Not FileExists($sMediaPlayerLocation) Then 
 						MsgBox(48,"Media Player not exist.","The media player location is not correct.",0)
+						ExitLoop 
 					EndIf
-					ExitLoop 
 				EndIf 
 				; Either write an empty string, or a valid location.
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation", "REG_SZ", $sMediaPlayerLocation)

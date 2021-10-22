@@ -20,12 +20,12 @@
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.3"
+Global Const $currentVersion = "v1.4"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 Global Const $iMaxSubItems = 11
-
+Global $iMediaPlayerPID = 0
 TraySetIcon("helper2.ico")
 
 #Region Globals Initialization
@@ -53,8 +53,8 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[13]	; 13 (0-12) bmps  for the tray menus
-For $i = 0 to 12
+Local $hIcons[14]	; 14 (0-13) bmps  for the tray menus
+For $i = 0 to 13
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -150,16 +150,19 @@ TrayCreateItem("")										; 10
 Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;11
 GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[12], 11)
-Global $trayScrapers = TrayCreateItem("Scrapers Manager");12
+Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;12
+GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
+_TrayMenuAddImage($hIcons[13], 12)
+Global $trayScrapers = TrayCreateItem("Scrapers Manager");13
 GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
-_TrayMenuAddImage($hIcons[8], 12)
-Global $traySettings = TrayCreateItem("Settings")		; 13
-_TrayMenuAddImage($hIcons[9], 13)
-TrayCreateItem("")										; 14
-Global $trayAbout = TrayCreateItem("About")				; 15
-_TrayMenuAddImage($hIcons[10], 15)
-Global $trayExit = TrayCreateItem("Exit")				; 16
-_TrayMenuAddImage($hIcons[11], 16)
+_TrayMenuAddImage($hIcons[8], 13)
+Global $traySettings = TrayCreateItem("Settings")		; 14
+_TrayMenuAddImage($hIcons[9], 14)
+TrayCreateItem("")										; 15
+Global $trayAbout = TrayCreateItem("About")				; 16
+_TrayMenuAddImage($hIcons[10], 16)
+Global $trayExit = TrayCreateItem("Exit")				; 17
+_TrayMenuAddImage($hIcons[11], 17)
 
 ; No need for those icons any more
 _IconDestroy($hIcons)
@@ -252,7 +255,9 @@ While True
 		Case $customTags
 			CustomList("Tags", $trayTagLinks)
 		Case $trayPlayScene
-			PlayCurrentScene()
+			PlayScene()
+		Case $trayPlayMovie
+			PlayMovie()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -312,25 +317,132 @@ Exit
 
 #Region Functions
 
-Func PlayCurrentScene()
-	; Play the current scene with external media player
-	If $sMediaPlayerLocation = "" Then 
+Func PlayMovie()
+	; Play the current movie with external media player
+	If $sMediaPlayerLocation = "" Then
 		MsgBox(48,"Media player missing.","You need to set the external media player in the 'Settings' first.",0)
 		Return
-	ElseIf Not FileExists($sMediaPlayerLocation) Then 
+	ElseIf Not FileExists($sMediaPlayerLocation) Then
 		MsgBox(48,"Media player missing.","The external media player in the 'Settings' is not valid.",0)
 		Return
 	EndIf
-	
+
+	; First check if the currrent tab is a movie
+	$sURL = _WD_Action($sSession, "url")
+	If StringRegExp($sURL, "\/movies\/\d+") Then
+		$iPos1 = StringInStr($sURL, "/", 2, -1) + 1  ; beginning of the movie number
+		$iPos2 = StringInStr($sURL, "?", 2) ; the ? position
+		If  $iPos2 = 0 Then
+			; with no query mark ?
+			$nMovie =  StringMid($sURL, $iPos1)
+		Else
+			; with query mark ?
+			$nMovie =  StringMid($sURL, $iPos1, $iPos2-$iPos1)
+		EndIf
+		; like "589" in string mode.
+		PlayMovieInCurrentTab($nMovie)
+		Return
+	EndIf
+
+EndFunc
+
+Func PlayMovieInCurrentTab($nMovie)
+	; Use graphql to get the scenes in movies
+	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path}}}"}' )
+	If @error Then Return
+	$oData = Json_Decode($sResult)
+	If Not Json_IsObject($oData) Then
+		MsgBox(0, "Data error.", "The data return from stash has errors.")
+		Return
+	EndIf
+	; Get the scenes array
+	$aScenes = Json_ObjGet($oData, "data.findMovie.scenes")
+	c("aScenes:" & UBound($aScenes))
+	Switch UBound($aScenes)
+		Case 0
+			; Do nothing.
+		Case 1
+			; Just play it.
+			Play( $aScenes[0].Item("path") )
+		Case Else
+			; write a temp m3u file
+			$hFile = FileOpen(@TempDir & "\StashMovie.m3u", $FO_OVERWRITE )
+			If $hFile = -1 Then
+				MsgBox(0, "m3u create error", "failed to create a m3u file for this movie.")
+				Return
+			EndIf
+			; First line
+			FileWriteLine($hFile, "#EXTM3U")
+
+			For $i = 0 to UBound($aScenes) - 1
+				FileWriteLine($hFile, "#EXTINF:-1,")
+				FileWriteLine($hFile, $aScenes[$i].Item("path") )
+			Next
+			FileClose($hFile)
+
+			; Now play the m3u file
+			Play(@TempDir & "\StashMovie.m3u")
+	EndSwitch
+EndFunc
+
+Func Play($sFile)
+	; Use external player to play the file
+	Local $sPath = StringLeft($sFile, StringInStr($sFile, "\", -1) )
+	$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), Q($sPath), $SHEX_OPEN)
+	If $iMediaPlayerPID = -1 Then $iMediaPlayerPID = 0
+EndFunc
+
+
+Func Query($sQuery)
+	; Use Stash's graphql to get results or do something
+	Local $hOpen = _WinHttpOpen()
+	Local $aMatch = StringRegExp( $stashURL, "http:\/\/(.+):(\d+)",1)
+	; c("match[0]:" & $aMatch[0] & " match1:" & $aMatch[1])
+	Local $hConnect = _WinHttpConnect($hOpen, $aMatch[0], Int($aMatch[1]))
+	If $hConnect = 0 Then
+		MsgBox(0, "error connect",  "error connecting to stash server.")
+		; Close handles
+		_WinHttpCloseHandle($hOpen)
+		Return SetError(1)
+	EndIf
+	$result = _WinHttpSimpleRequest($hConnect, "POST", "/graphql", Default, _
+		$sQuery, "Content-Type: application/json" )
+	c("result:" & $result)
+	If @error Then
+		MsgBox(0, "got data error",  "Error getting data from the stash server.")
+		; Close handles
+		_WinHttpCloseHandle($hConnect)
+		_WinHttpCloseHandle($hOpen)
+		Return SetError(1)
+	EndIf
+	; Close handles
+    _WinHttpCloseHandle($hConnect)
+    _WinHttpCloseHandle($hOpen)
+	Return $result
+EndFunc
+
+
+
+
+Func PlayScene()
+	; Play the current scene with external media player
+	If $sMediaPlayerLocation = "" Then
+		MsgBox(48,"Media player missing.","You need to set the external media player in the 'Settings' first.",0)
+		Return
+	ElseIf Not FileExists($sMediaPlayerLocation) Then
+		MsgBox(48,"Media player missing.","The external media player in the 'Settings' is not valid.",0)
+		Return
+	EndIf
+
 	; First check the current tab is a scene.
 	$sURL = _WD_Action($sSession, "url")
-	If StringRegExp($sURL, "\/scenes\/\d+\?") Then 
-		ClickAndPlay()
-		Return 
-	EndIf 
+	If StringRegExp($sURL, "\/scenes\/\d+") Then
+		PlayCurrentScene()
+		Return
+	EndIf
 	; Not the current tab, get the scenes list
 	Local $aHandles = _WD_WINDOW($sSession, "Handles")
-	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then 
+	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then
 		MsgBox(48,"Error in browser.","Error retrieving browser handles.",0)
 		Return
 	EndIf
@@ -340,48 +452,47 @@ Func PlayCurrentScene()
 		; Switch to this tab
 		_WD_Window($sSession, "Switch", '{"handle":"' & $aHandles[$i] & '"}' )
 		$sURL = _WD_Action($sSession, "url")
-		If StringRegExp($sURL, "\/scenes\/\d+\?") Then 
+		If StringRegExp($sURL, "\/scenes\/\d+\?") Then
 			; Match. This is a scene
 			$bFound = True
-			ExitLoop 
+			ExitLoop
 		EndIf
 	Next
-	If Not $bFound Then 
+	If Not $bFound Then
 		MsgBox(48,"Where is the scene?","Sorry, but I cannot find the browser tab with the scene you want to play.",0)
-		Return 
-	Else 
+		Return
+	Else
 		; Found the scene, handle it now.
-		ClickAndPlay()
+		PlayCurrentScene()
 	EndIf
 EndFunc
 
-Func ClickAndPlay()
-	; This will click the "File Info" and get the info we need and play the file
-	_WD_LinkClickByText($sSession, "File Info", False)  ; Click the "File Info", not partial search.
-	If @error <> $_WD_ERROR_Success Then 
-		MsgBox(48,"Oops !","Sorry, but I cannot find the 'File Info' link in the web page.",0)
-		Return 
+Func PlayCurrentScene()
+	$sURL = _WD_Action($sSession, "url")
+	$aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
+	c("scene id:" & $aMatch[0])
+	$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
+	c("scene query:" & $sQuery)
+	; This will query the graphql and get the path info
+	$sResult = Query( $sQuery )
+	If @error Then Return
+	$oData = Json_Decode($sResult)
+	If Not Json_IsObject($oData) Then
+		MsgBox(0, "Data error.", "The data return from stash has errors.")
+		Return
 	EndIf
-	Sleep(1000) ; Let the javascript works
-	$sDivID = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[contains(text(),'file://')]" )
-	If @error <> $_WD_ERROR_Success Then 
-		MsgBox(48,"Oops !","Sorry, but I cannot find the file element in the web page.",0)
-		Return 
-	EndIf
-	Local $sFileURL = _WD_ElementAction($sSession, $sDivID, "Text")
-	If @error <> $_WD_ERROR_Success Then 
-		MsgBox(48,"Oops !","Sorry, but I cannot get the file location in the web page.",0)
-		Return 
-	EndIf
-	; Now this will be pure file path and name
-	$sFileURL = StringReplace($sFileURL, "file://", "", 1, 2)
-	Local $sFilePath = StringLeft($sFileURL, StringInStr($sFileURL, "\", -1) )
-	ShellExecute($sMediaPlayerLocation, Q($sFileURL), $sFilePath, $SHEX_OPEN)
+	; Get the scenes file path and play
+	$sFile = Json_ObjGet($oData, "data.findScene.path")
+	Play( $sFile )
 EndFunc
 
 Func CloseSession()
 	; Immediately close the web browser
 	_WD_DeleteSession($sSession)
+	; Close the player too if available
+	If $iMediaPlayerPID <> 0 Then
+		ProcessClose($iMediaPlayerPID)
+	EndIf
 EndFunc
 
 Func SetupFirefox()
