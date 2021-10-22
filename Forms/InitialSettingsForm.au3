@@ -12,6 +12,8 @@ Func InitialSettingsForm()
 
 	; Create the whole initial setting's GUI
 	$Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
+	GUISetIcon("helper2.ico")
+	
 	$tab = GUICtrlCreatetab(41,70,1232,661,-1,-1)
 	GuiCtrlSetState(-1,2048)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")

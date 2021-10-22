@@ -8,6 +8,9 @@ Func ShowSettings()
 	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation
 	Local $sBrowser
 	Local $guiSettings = GUICreate("Settings",801,1042,-1,-1,-1,-1)
+	GUISetIcon("helper2.ico")
+	; Disable the tray clicks
+	TraySetClick(0)
 	
 	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,574,129,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
@@ -133,7 +136,14 @@ Func ShowSettings()
 	
 	While True
 		Sleep(10)
-		$nMsg = GUIGetMsg()
+		; if click on tray icon, activate the current GUI
+		$nTrayMsg = TrayGetMsg()
+		Switch $nTrayMsg
+			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
+				WinActivate($guiSettings)
+ 		EndSwitch 
+
+ 		$nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case $btnBrowseStash
 				Local $sFile = FileOpenDialog("Open the Stash-Win.exe:", _ 
@@ -274,4 +284,5 @@ Func ShowSettings()
 		EndSwitch
 	Wend
 	GUIDelete($guiSettings)
+	TraySetClick(9)
 EndFunc 

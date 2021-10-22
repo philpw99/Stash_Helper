@@ -12,8 +12,13 @@ Func CustomList($sCategory, ByRef $aCategory)
 	; aCategory is the array that contains Item_Handle, Item_Title, Item_Link
 	; Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 	; Global $iMaxSubItems
+
+
+	; Disable the tray clicks
+	TraySetClick(0)
 		
-	$Custom = GUICreate("Customize " & $sCategory,1060,800,-1,-1,-1,-1)
+	$guiCustom = GUICreate("Customize " & $sCategory,1060,800,-1,-1,-1,-1)
+	GUISetIcon("helper2.ico")
 	
 	GUICtrlCreateLabel("Customize the list of " & $sCategory & _ 
 	  ". This is like bookmarks or favorites for Stash. You paste the link from the address bar, then put a title for it, as the examples you see below." _ 
@@ -57,14 +62,21 @@ Func CustomList($sCategory, ByRef $aCategory)
 		_GUICtrlListView_AddSubItem($customList, $i, $aCategory[$i][$ITEM_LINK], 2)
 	Next
 
-	GUISetState(@SW_SHOW, $Custom)
+	GUISetState(@SW_SHOW, $guiCustom)
 	; Make list view editable
 	$iLV_Index = _GUIListViewEx_Init($customList, $aList, 0, 0, True, 2)
 	_GUIListViewEx_SetEditStatus($iLV_Index, "1;2", 1, Default)
 	_GUIListViewEx_MsgRegister(True, False, False)
 	
 	; Now do the loop
-	While True 
+	While True
+		; if click on tray icon, activate the current GUI
+		$nTrayMsg = TrayGetMsg()
+		Switch $nTrayMsg
+			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
+				WinActivate($guiCustom)
+ 		EndSwitch 
+
 		$nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case 0
@@ -88,7 +100,9 @@ Func CustomList($sCategory, ByRef $aCategory)
 		
 		_GUIListViewEx_EventMonitor()
 	Wend
-	GUIDelete($Custom)
+	GUIDelete($guiCustom)
 	$customList = 0
+	; restore the tray icon functions.
+	TraySetClick(9)
 EndFunc
 

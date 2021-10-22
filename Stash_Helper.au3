@@ -20,11 +20,12 @@
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.2"
+Global Const $currentVersion = "v1.3"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 Global Const $iMaxSubItems = 11
+
 TraySetIcon("helper2.ico")
 
 #Region Globals Initialization
@@ -123,7 +124,7 @@ EndIf
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
 ; Now create the top level tray menu items.
 If $stashVersion <> "" Then
-	TrayTip("Stash is Active", $stashVersion, 10, $TIP_ICONASTERISK+$TIP_NOSOUND  )
+	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
 
 TrayCreateItem("Stash Helper " & $currentVersion )  					; 0
@@ -209,7 +210,9 @@ Global $sBrowserHandle
 #EndRegion Globals
 
 #Region Tray Menu Handling
+
 CreateSubMenu()
+
 TraySetState($TRAY_ICONSTATE_SHOW)
 ; Launch the web page
 OpenURL($stashURL)
@@ -219,7 +222,7 @@ While True
 	$nMsg = TrayGetMsg()
 	Switch $nMsg
 		Case 0
-			; Nothing should be here.
+			; Nothing should be here, but Case 0 here is very necessary.
 		Case $trayAbout
 			MsgBox(64,"Stash Helper " & $currentVersion,"Stash helper " & $currentVersion & ", written by Philip Wang, at your service." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
