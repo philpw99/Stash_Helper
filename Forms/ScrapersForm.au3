@@ -104,6 +104,7 @@ Func ScrapersManager()
 		
 		; Main control loop
 		$nMsg = GUIGetMsg()
+		If $nMsg = 0 Then ContinueLoop 
 		Switch $nMsg
 			Case $inputFind, $btnFind
 				$sText = GUICtrlRead($inputFind)
@@ -261,6 +262,7 @@ EndFunc
 
 Func UpdateScrapers()
 	; Get list of installed scrapers
+	Local $iTotalUpdated = 0
 	Local $aScraperFiles = _FileListToArray($sScraperPath, "*.yml", $FLTA_FILES)
 	; c("scraperPath:" & $sScraperPath)
 	; check their contents online.
@@ -306,6 +308,7 @@ Func UpdateScrapers()
 				ContinueLoop 
 			EndIf
 			FileClose($hFile)
+			$iTotalUpdated += 1
 			; Handle the .py scrapers
 			If StringInStr($sContent, "- python", 2) <>0 And StringInStr($sContent, "action: script") <> 0  Then
 				; Python script. Need to download the py file
@@ -315,6 +318,9 @@ Func UpdateScrapers()
 			EndIf
 		EndIf 
 	Next
+	
+	MsgBox(64,"Scraper Update Done!","Totally scanned " & UBound($aScraperFiles ) & " files and updated " _ 
+		& $iTotalUpdated & " of them.",0)
 EndFunc
 	
 Func GetScraperPath()
