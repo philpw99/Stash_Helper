@@ -10,6 +10,7 @@
 #include <Array.au3>
 
 Global $sScraperPath, $aScraperArray[0], $aScraperFiles[0]
+Local $sScraperBaseURL = "https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/scrapers/"
 
 Func ScrapersManager()
 	$sScraperPath = GetScraperPath()
@@ -78,6 +79,11 @@ Func ScrapersManager()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,804)
 	
+	$btnUpdate = GUICtrlCreateButton("Update",1494,212,167,49,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Update the installed scrapers.")
+	GUICtrlSetResizing(-1,804)
+	
 	; Now all the items in the list, [0] is handle [1] is check/uncheck
 	ReDim $aItemID[UBound($aScraperArray)][2]
 	For $i = 0 to UBound($aScraperArray) -1
@@ -113,6 +119,7 @@ Func ScrapersManager()
 					_GUICtrlListView_SetItemSelected($scraperList, $iFound)
 					GUICtrlSetState($scraperList, $GUI_FOCUS)
 				EndIf
+				
 			Case $btnInstall ; Install scrapers
 				$iCount = _GUICtrlListView_GetItemCount($scraperList)
 				$iTotalInstalled = 0
@@ -153,7 +160,7 @@ Func ScrapersManager()
 
 					OpenURL("http://localhost:9999/settings?tab=scraping")
 					$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
-					Sleep(1000)
+					Sleep(2000)
 					If @error =  $_WD_ERROR_Success Then 
 						_WD_ElementAction($sSession, $sButtonID, "Click")
 					EndIf
@@ -161,7 +168,7 @@ Func ScrapersManager()
 					; Set cursor back.
 					GUISetCursor($old_cursor, 1, $guiScrapers)
 
-					MsgBox(64,$iTotalInstalled & " Scrapers Installed",$iTotalInstalled & " Scrapers are now installed and working.",20)
+					MsgBox(64,$iTotalInstalled & " Scrapers Installed",$iTotalInstalled & " Scrapers are now installed and working. If not, please go to Settings->Scraping->Reload scrapers.",20)
 				EndIf 
 
 			Case $btnRemove  ; Remove scrapers
@@ -202,7 +209,7 @@ Func ScrapersManager()
 					
 					OpenURL("http://localhost:9999/settings?tab=scraping")
 					$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
-					Sleep(1000)
+					Sleep(2000)
 					If @error =  $_WD_ERROR_Success Then 
 						_WD_ElementAction($sSession, $sButtonID, "Click")
 					EndIf
@@ -213,6 +220,8 @@ Func ScrapersManager()
 					
 					MsgBox(64,$iTotalRemoved & " Scrapers removed",$iTotalRemoved & " Scrapers are now removed.",20)
 				EndIf 
+			Case $btnUpdate
+				UpdateScrapers()
 			Case $GUI_EVENT_CLOSE
 				ExitLoop 
 		EndSwitch
@@ -250,7 +259,63 @@ Func ScrapersManager()
 	TraySetClick(9)
 EndFunc
 
-
+Func UpdateScrapers()
+	; Get list of installed scrapers
+	Local $aScraperFiles = _FileListToArray($sScraperPath, "*.yml", $FLTA_FILES)
+	; c("scraperPath:" & $sScraperPath)
+	; check their contents online.
+	For $i = 1 to UBound($aScraperFiles)-1
+		Local $sLocalFile = FileRead($sScraperPath & $aScraperFiles[$i])
+		; get last line
+		Local $sLastLine = StringMid( $sLocalFile, StringInStr($sLocalFile, "# Last Updated", 2, -1) )
+		$sLastLine = StringStripWS($sLastLine, 3)
+		$sContentBinary = InetRead($sScraperBaseURL & $aScraperFiles[$i])
+		$sContent = BinaryToString($sContentBinary)
+		If $sContent = "" Then 
+			$reply = MsgBox(276,"Error getting scraper file","Error in downloading " & $aScraperFiles[$i] & " from the repo. Maybe it's no longer] in use. Do you want to delete the local scraper file too?",0)
+			If $reply = $IDYES Then 
+				FileDelete($sScraperPath & $aScraperFiles[$i])
+			EndIf
+			ContinueLoop 
+		EndIf
+		;  get the last line from content
+		$sLastLine2 = StringMid( $sContent, StringInStr($sContent, "# Last Updated", 2 ,-1 ) )
+		$sLastLine2 = StringStripWS($sLastLine2, 3)
+		; c("Last line 2:" & $sLastLine2)
+		; MsgBox(0, "result", "Line 1:" & $sLastLine & @CRLF & "Line2:" & $sLastLine2)
+		$sLocalDate = stringstripws( stringmid($sLastLine, 15), 3 )
+		$iLocalDate = Int( _Date_Time_Convert($sLocalDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
+		$sRemoteDate =StringStripWS( stringmid($sLastLine2, 15), 3)
+		$iRemoteDate =Int( _Date_Time_Convert($sRemoteDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
+		; c("local:" & $iLocalDate & "remote:" & $iRemoteDate)
+		If $iRemoteDate > $iLocalDate Then
+			
+			$reply = MsgBox(3, "Update this scraper?", "The current scraper: " & $aScraperFiles[$i] & _ 
+				" was updated on " & $sLocalDate & ", and the new one is " & $sRemoteDate & ". Do you want to update this one?", 0)
+			If $reply = $IDNO Then
+				ContinueLoop  ; said no, so next file
+			ElseIf $reply = $IDCANCEL Then ; Cancel the whole thing.
+				ExitLoop
+			EndIf
+			; Yes
+			$hFile = FileOpen($sScraperPath & $aScraperFiles[$i], $FO_OVERWRITE)
+			$result = FileWrite($hFile, $sContent)
+			If $result = 0 Then 
+				MsgBox(0, "Error writing files", "Error in writing the scraper file:" & $aScraperFiles[$i])
+				FileClose($hFile)
+				ContinueLoop 
+			EndIf
+			FileClose($hFile)
+			; Handle the .py scrapers
+			If StringInStr($sContent, "- python", 2) <>0 And StringInStr($sContent, "action: script") <> 0  Then
+				; Python script. Need to download the py file
+				$sPyFile = Stringleft($aScraperFiles[$i], stringinstr($aScraperFiles[$i], ".", 2, -1) -1) & ".py"
+				; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
+				InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
+			EndIf
+		EndIf 
+	Next
+EndFunc
 	
 Func GetScraperPath()
 	; Open the config.xml to see the folder.
@@ -278,7 +343,7 @@ Func GetScraperPath()
 		If StringLeft($sLine, 14) = "scrapers_path:" Then ExitLoop 
 	Wend
 	FileClose($hFile)
-	
+
 	; Get scraper path, create the path if it doesn't exist
 	Local $sPath = $stashPath & StringMid($sLine, 16 ) & "\"
 	If Not FileExists($sPath) Then 
@@ -290,33 +355,21 @@ EndFunc
 Func FetchScraper($sFile)
 	; Global $stashFilePath, $sScraperPath
 	; Download it from GitHub
-	Const $sBase = "https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/scrapers/"
-	$result = InetGet( $sBase & $sFile, $sScraperPath & $sFile)
+	$result = InetGet( $sScraperBaseURL & $sFile, $sScraperPath & $sFile)
 	If $result = 0 Then 
 		Return SetError(1)
 	EndIf
 	; Success, now open it and see it.
-	$hFile = FileOpen($sScraperPath & $sFile)
-	While True
-		$sLine = FileReadLine($hFile)
-		If @error Then
-			; ConsoleWrite("error return." & @CRLF)
-			Return  ; End of file?
-		EndIf
-		If StringInStr($sLine, "- python") Then
-			; Python script. Need to download the py file
-			$sPyFile = Stringleft($sFile, stringinstr($sFile, ".", 2, -1) -1) & ".py"
-			; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
-			InetGet( $sBase & $sPyFile, $sScraperPath & $sPyFile)
-			Return 
-		EndIf
-		If stringinstr($sLine, "scrapeXPath") Then
-			; It's a scrape by xpath, no need to download
-			; ConsoleWrite("found xpath." & @CRLF)
-			Return 
-		EndIf
-	WEnd 
+	$sFile = FileRead($sScraperPath & $sFile)
+	If StringInStr($sFile, "- python", 2) <>0 And StringInStr($sFile, "action: script") <> 0  Then
+		; Python script. Need to download the py file
+		$sPyFile = Stringleft($sFile, stringinstr($sFile, ".", 2, -1) -1) & ".py"
+		; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
+		InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
+		Return 
+	EndIf
 EndFunc
+
 Func SetScraperArray()
 	; Set the global $aScraperArray
 	$iCount = 0

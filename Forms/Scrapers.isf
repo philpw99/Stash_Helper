@@ -51,6 +51,10 @@ GUICtrlSetResizing(-1,550)
 $btnFilter = GUICtrlCreateButton("Find",640,220,148,33,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetResizing(-1,804)
+GUICtrlCreateButton("Update",1494,212,167,49,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Update the installed scrapers.")
+GUICtrlSetResizing(-1,804)
 
 
 
@@ -91,7 +95,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x002B20DA]
+[0x002C2002]
 type=listview
 handle=432
 locked=0
@@ -120,7 +124,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00232366]
+[0x003F14EC]
 type=label
 handle=433
 locked=0
@@ -149,7 +153,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00722260]
+[0x00852260]
 type=button
 handle=434
 locked=0
@@ -178,7 +182,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x001C1838]
+[0x002E142E]
 type=button
 handle=435
 locked=0
@@ -207,7 +211,7 @@ order=4
 iconindex=
 iconlarge=0
 textmode=text
-[0x001F242E]
+[0x004D16AA]
 type=input
 handle=436
 locked=0
@@ -236,7 +240,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x002F233A]
+[0x001E187C]
 type=button
 handle=437
 locked=0
@@ -265,4 +269,33 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
+[0x00271386]
+type=button
+handle=438
+locked=0
+resize=804
+x=1494
+y=212
+width=167
+height=49
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Update the installed scrapers.
+bgimage=
+textcolour=0x000000
+id=
+text=Update
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=7
 #ce

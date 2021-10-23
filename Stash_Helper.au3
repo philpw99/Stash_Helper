@@ -15,12 +15,13 @@
 #include <wd_helper.au3>
 #include <Forms\InitialSettingsForm.au3>
 #include "TrayMenuEx.au3"
+#include "DTC.au3"
 
 ; If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.4"
+Global Const $currentVersion = "v1.5"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -53,8 +54,8 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[14]	; 14 (0-13) bmps  for the tray menus
-For $i = 0 to 13
+Local $hIcons[15]	; 14 (0-13) bmps  for the tray menus
+For $i = 0 to 14
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -66,8 +67,8 @@ Next
 ; First run the Stash-Win program $sStashPath
 
 ; Attach to an existing stash-win first.
-Global $iStashPID = WinGetProcess("stash-win.exe")
-If $iStashPID = -1 Then
+Global $iStashPID = ProcessExists("stash-win.exe")
+If $iStashPID = 0 Then
 	; Stash not running.
 	Local $sPath = StringLeft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1) )
 	If $showStashConsole Then
@@ -156,13 +157,16 @@ _TrayMenuAddImage($hIcons[13], 12)
 Global $trayScrapers = TrayCreateItem("Scrapers Manager");13
 GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
 _TrayMenuAddImage($hIcons[8], 13)
-Global $traySettings = TrayCreateItem("Settings")		; 14
-_TrayMenuAddImage($hIcons[9], 14)
-TrayCreateItem("")										; 15
-Global $trayAbout = TrayCreateItem("About")				; 16
-_TrayMenuAddImage($hIcons[10], 16)
-Global $trayExit = TrayCreateItem("Exit")				; 17
-_TrayMenuAddImage($hIcons[11], 17)
+Global $trayScan = TrayCreateItem("Scan New Files");14
+GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
+_TrayMenuAddImage($hIcons[14], 14)
+Global $traySettings = TrayCreateItem("Settings")		; 15
+_TrayMenuAddImage($hIcons[9], 15)
+TrayCreateItem("")										; 16
+Global $trayAbout = TrayCreateItem("About")				; 17
+_TrayMenuAddImage($hIcons[10], 17)
+Global $trayExit = TrayCreateItem("Exit")				; 18
+_TrayMenuAddImage($hIcons[11], 18)
 
 ; No need for those icons any more
 _IconDestroy($hIcons)
@@ -258,6 +262,8 @@ While True
 			PlayScene()
 		Case $trayPlayMovie
 			PlayMovie()
+		Case $trayScan
+			ScanFiles()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -316,6 +322,13 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func ScanFiles()
+	; Scan new files in Stash
+	Query('{"query": "mutation { metadataScan ( input: { useFileMetadata: true } ) } "}')
+	OpenURL("http://localhost:9999/settings?tab=tasks")
+	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.")
+EndFunc
 
 Func PlayMovie()
 	; Play the current movie with external media player
