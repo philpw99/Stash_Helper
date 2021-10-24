@@ -39,8 +39,8 @@ Because those screens are not "Work Place Safe". So I won't show them here. Just
 And where is my program fit in? It's hiding in the corner! Look here:<p>
 <img src="https://user-images.githubusercontent.com/22040708/138213174-2e4a4500-847d-4304-b55f-5f77272709d0.png"><p>
 It's ready to help. Click on it and you will see:<p>
-<img src="https://user-images.githubusercontent.com/22040708/138213370-85e18ad5-6da4-424b-8142-226f51c8c4e8.png"><p><p>
-
+<img src="https://user-images.githubusercontent.com/22040708/138546140-dacd4476-6e53-4f55-b640-1d10c4b3585d.png"><p><p>
+  
 So what's so special about it? Well, go to the settings, please.<p>
 <img src="https://user-images.githubusercontent.com/22040708/138213609-85376330-1d3f-4a7e-a45c-121d54e424d3.png" width=500><p>
 You see? Besides you can use your own media player to play your scenes, there is a "Boss Coming Key" for you, in case your boss is really coming toward you at the worst moment. :D <p>
@@ -48,10 +48,10 @@ Now the most powerful feature is customizing the menu. Click on "Scenes->Customi
 <img src="https://user-images.githubusercontent.com/22040708/138214537-3fca6801-4e2d-4200-aad3-eaee459f19aa.png" width=500><p><p>
 This is like the bookmark or favorite list. You can give it an descriptive title, then paste the link copied from Stash, like I've shown above.
 Next time you can get to the same page easily by using my helper:<p>
-<img src="https://user-images.githubusercontent.com/22040708/138214850-b83c685c-e3bb-40a1-8caf-8656720a39a0.png" width=500> <p><p>
+<img src="https://user-images.githubusercontent.com/22040708/138546205-ddcb4db2-67ba-4106-aa3d-32d9340015c9.png" width=500> <p><p>
   
 The next topic is about "Scraper Manager". This is a very important feature in both Stash and my helper.<p>
-<img src="https://user-images.githubusercontent.com/22040708/138215264-a1f85586-1ae3-4235-8443-29ef5da78ded.png" width=500><p><p>
+<img src="https://user-images.githubusercontent.com/22040708/138546176-7976dbe3-372b-48b3-a5b6-cd9f7d9056e8.png" width=500><p><p>
 If you know the website where your downloaded your video, a scraper will help you to retrieve the video information by "scraping" that video's URL.<br>
 A scraper will save you tons of time. You don't need to manually type in things like performers, studio, production date, description, video duration...etc. A scraper get those information for you, but you need to know **which** scraper to get. Some scrapers get you great accurate info, some don't. So you need to do the experiments for them. Since I provide you an easy way to install/remove scrapers, it should be a piece of cake.<p>
 To use an installed scraper, you choose a scene, click on "Edit" and fill in the "URL" blanket. If that URL fits the scraper's website, an white scraper icon will come up next to URL. Click on that and the scraper will start its work.<p>
