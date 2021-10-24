@@ -104,8 +104,10 @@ Func ScrapersManager()
 		
 		; Main control loop
 		$nMsg = GUIGetMsg()
-		If $nMsg = 0 Then ContinueLoop 
+		
 		Switch $nMsg
+			Case 0
+				; Nothing should be her, but case 0 must be here.
 			Case $inputFind, $btnFind
 				$sText = GUICtrlRead($inputFind)
 				$iFound = _GUICtrlListView_FindInText($scraperList, $sText, $iCurrentSearchIndex, False )
@@ -225,34 +227,35 @@ Func ScrapersManager()
 				UpdateScrapers()
 			Case $GUI_EVENT_CLOSE
 				ExitLoop 
-		EndSwitch
-		; Match the Items
-		For $i = 0 to UBound($aItemID)-1
-			If $nMsg = $aItemID[$i][0] Then
-				; Item ID matched. 
-				; if search, search from here.
-				$iCurrentSearchIndex = $i
-				
-				$bItemChecked = _GUICtrlListView_GetItemChecked($scraperList, $i)
-				If $bItemChecked <> $aItemID[$i][1] Then
-					; Check status changed.
-					$aItemID[$i][1] = $bItemChecked
-					; Now set all the item with same yml file to the same check status
-					$sYMLfile = StringStripWS( _GUICtrlListView_GetItemText($scraperList, $i, 1), 3)
-					; Find the item with same file
-					For $j = 0 To UBound($aScraperArray) -1
-						Local $aStr = StringSplit($aScraperArray[$j], "|")
-						If StringStripWS($aStr[2], 3) = $sYMLfile Then 
-							; This item matches
-							_GUICtrlListView_SetItemChecked($scraperList, $j, $bItemChecked)
-							$aItemID[$j][1] = $bItemChecked
+			Case Else
+				; Match the Items in the list
+				For $i = 0 to UBound($aItemID)-1
+					If $nMsg = $aItemID[$i][0] Then
+						; Item ID matched. 
+						; if search, search from here.
+						$iCurrentSearchIndex = $i
+						
+						$bItemChecked = _GUICtrlListView_GetItemChecked($scraperList, $i)
+						If $bItemChecked <> $aItemID[$i][1] Then
+							; Check status changed.
+							$aItemID[$i][1] = $bItemChecked
+							; Now set all the item with same yml file to the same check status
+							$sYMLfile = StringStripWS( _GUICtrlListView_GetItemText($scraperList, $i, 1), 3)
+							; Find the item with same file
+							For $j = 0 To UBound($aScraperArray) -1
+								Local $aStr = StringSplit($aScraperArray[$j], "|")
+								If StringStripWS($aStr[2], 3) = $sYMLfile Then 
+									; This item matches
+									_GUICtrlListView_SetItemChecked($scraperList, $j, $bItemChecked)
+									$aItemID[$j][1] = $bItemChecked
+								EndIf
+							Next
 						EndIf
-					Next
-				EndIf
-				; Click on only 1 item, so once a match is found, it's good.
-				ExitLoop
-			EndIf
-		Next
+						; Click on only 1 item, so once a match is found, it's good.
+						ExitLoop
+					EndIf
+				Next
+		EndSwitch
 	Wend
 
 	GUIDelete($guiScrapers)

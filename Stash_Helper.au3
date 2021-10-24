@@ -15,13 +15,14 @@
 #include <wd_helper.au3>
 #include <Forms\InitialSettingsForm.au3>
 #include "TrayMenuEx.au3"
+#include <Array.au3>
 #include "DTC.au3"
 
 ; If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.5"
+Global Const $currentVersion = "v1.6"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -54,15 +55,18 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[15]	; 14 (0-13) bmps  for the tray menus
-For $i = 0 to 14
+Local $hIcons[16]	; 14 (0-13) bmps  for the tray menus
+For $i = 0 to 15
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
+Global $minfo = ObjCreate("Scripting.Dictionary")
+
+; All forms.
 #include <Forms\SettingsForm.au3>
 #include <Forms\CustomForm.au3>
 #include <Forms\ScrapersForm.au3>
-
+#include <Forms\SceneToMovieForm.au3>
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
 
@@ -128,7 +132,7 @@ If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
 
-TrayCreateItem("Stash Helper " & $currentVersion )  					; 0
+TrayCreateItem("Stash Helper " & $currentVersion ) ; 0
 TrayCreateItem("")										; 1
 
 Global $trayMenuScenes = TrayCreateMenu("Scenes")		; 2
@@ -148,25 +152,32 @@ _TrayMenuAddImage($hIcons[6], 8)
 Global $trayMenuTags = TrayCreateMenu("Tags")			; 9
 _TrayMenuAddImage($hIcons[7], 9)
 TrayCreateItem("")										; 10
+
 Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;11
 GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[12], 11)
 Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;12
 GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[13], 12)
-Global $trayScrapers = TrayCreateItem("Scrapers Manager");13
+Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 13
 GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
 _TrayMenuAddImage($hIcons[8], 13)
-Global $trayScan = TrayCreateItem("Scan New Files");14
-GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
+Global $trayScan = TrayCreateItem("Scan New Files") 	; 14
 _TrayMenuAddImage($hIcons[14], 14)
-Global $traySettings = TrayCreateItem("Settings")		; 15
-_TrayMenuAddImage($hIcons[9], 15)
+GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
+Global $trayMovie2Scene = TrayCreateItem("Create movie from scene.") ; 15
+_TrayMenuAddImage($hIcons[15], 15)
+GUICtrlSetTip(-1,"Create a movie from current scene.")
 TrayCreateItem("")										; 16
-Global $trayAbout = TrayCreateItem("About")				; 17
-_TrayMenuAddImage($hIcons[10], 17)
+
+Global $traySettings = TrayCreateItem("Settings")		; 17
+_TrayMenuAddImage($hIcons[9], 17)
+Global $trayAbout = TrayCreateItem("About")				; 18
+_TrayMenuAddImage($hIcons[10], 18)
 Global $trayExit = TrayCreateItem("Exit")				; 18
-_TrayMenuAddImage($hIcons[11], 18)
+_TrayMenuAddImage($hIcons[11], 19)
+
+; Sub menu items for tools
 
 ; No need for those icons any more
 _IconDestroy($hIcons)
@@ -264,6 +275,8 @@ While True
 			PlayMovie()
 		Case $trayScan
 			ScanFiles()
+		Case $trayMovie2Scene
+			Scene2Movie()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -322,6 +335,33 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+; Converts seconds to HH:MM:SS
+Func TimeConvert($i)
+	Local $iHour =  Floor($i / 3600) 
+	Local $iMin = Floor( ($i - 3600 * $iHour) / 60)
+	Local $iSec = Mod($i, 60)
+	Return StringFormat('%01d:%02d:%02d', $iHour, $iMin, $iSec)
+EndFunc
+
+; Convert the HH:MM:SS back to seconds
+Func TimeConvertBack($str)
+	If StringInStr($str, ":", 2) = 0 Then Return 0
+	Local $aTime = StringSplit($str, ":")
+	Return Int($aTime[1]) * 3600 + Int($aTime[2]) * 60 + Int($aTime[3])
+EndFunc
+
+Func GetNumber($sURL, $sCategory)
+	$iPos1 = StringInStr($sURL, "/" & $sCategory & "/", 2) + StringLen($sCategory) +2  ; beginning of the movie number
+	$iPos2 = StringInStr($sURL, "?", 2) ; the ? position
+	If  $iPos2 = 0 Then
+		; with no query mark ?
+		return  StringMid($sURL, $iPos1)
+	Else
+		; with query mark ?
+		return  StringMid($sURL, $iPos1, $iPos2-$iPos1)
+	EndIf
+	; like "589" in string mode.
+EndFunc
 
 Func ScanFiles()
 	; Scan new files in Stash
@@ -332,31 +372,59 @@ EndFunc
 
 Func PlayMovie()
 	; Play the current movie with external media player
+	CheckMediaPlayer()
+	If @error Then Return SetError(1)
+	
+	SwitchToTab("movies")
+	If @error then return SetError(1)
+	
+	; Movie tab found and set current
+	$sURL = _WD_Action($sSession, "url")
+	$nMovie = GetNumber($sURL, "movies")
+	PlayMovieInCurrentTab($nMovie)
+EndFunc
+
+Func CheckMediaPlayer()
 	If $sMediaPlayerLocation = "" Then
 		MsgBox(48,"Media player missing.","You need to set the external media player in the 'Settings' first.",0)
-		Return
+		Return SetError(1)
 	ElseIf Not FileExists($sMediaPlayerLocation) Then
 		MsgBox(48,"Media player missing.","The external media player in the 'Settings' is not valid.",0)
-		Return
+		Return SetError(1)
 	EndIf
+EndFunc
 
-	; First check if the currrent tab is a movie
+Func SwitchToTab($sCategory)
+	; It will switch to the tab that contains the category, then return the no.
+	; First check if the currrent tab is the right one
 	$sURL = _WD_Action($sSession, "url")
-	If StringRegExp($sURL, "\/movies\/\d+") Then
-		$iPos1 = StringInStr($sURL, "/", 2, -1) + 1  ; beginning of the movie number
-		$iPos2 = StringInStr($sURL, "?", 2) ; the ? position
-		If  $iPos2 = 0 Then
-			; with no query mark ?
-			$nMovie =  StringMid($sURL, $iPos1)
-		Else
-			; with query mark ?
-			$nMovie =  StringMid($sURL, $iPos1, $iPos2-$iPos1)
-		EndIf
-		; like "589" in string mode.
-		PlayMovieInCurrentTab($nMovie)
-		Return
+	$sSearchRegEx = "\/" & $sCategory & "\/\d+"
+	If StringRegExp($sURL, $sSearchRegEx) Then
+		Return 
 	EndIf
-
+	; Not the current tab, get the scenes list
+	Local $aHandles = _WD_WINDOW($sSession, "Handles")
+	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then
+		MsgBox(48,"Error in browser.","Error retrieving browser handles.",0)
+		Return SetError(1)
+	EndIf
+	Local $iTabCount = UBound($aHandles)
+	Local $bFound = False, $i, $sURL ; With $i we can get the handle.
+	For $i = 0 To $iTabCount-1
+		; Switch to this tab
+		_WD_Window($sSession, "Switch", '{"handle":"' & $aHandles[$i] & '"}' )
+		$sURL = _WD_Action($sSession, "url")
+		If StringRegExp($sURL, $sSearchRegEx) Then
+			; Match. This is a scene
+			$bFound = True
+			ExitLoop
+		EndIf
+	Next
+	If Not $bFound Then
+		$sItem = StringLeft($sCategory, stringlen($sCategory)-1)
+		MsgBox(48,"Cannot find the " & $sItem,"Sorry, but I cannot find the browser tab with the " & $sItem & " you want.",0)
+		Return SetError(1)
+	EndIf
 EndFunc
 
 Func PlayMovieInCurrentTab($nMovie)
@@ -405,6 +473,10 @@ Func Play($sFile)
 	If $iMediaPlayerPID = -1 Then $iMediaPlayerPID = 0
 EndFunc
 
+Func QueryResultError($sResult)
+	; the result itself says errors.
+	Return StringLeft($sResult,10) = '{"errors":'
+EndFunc
 
 Func Query($sQuery)
 	; Use Stash's graphql to get results or do something
@@ -439,45 +511,13 @@ EndFunc
 
 Func PlayScene()
 	; Play the current scene with external media player
-	If $sMediaPlayerLocation = "" Then
-		MsgBox(48,"Media player missing.","You need to set the external media player in the 'Settings' first.",0)
-		Return
-	ElseIf Not FileExists($sMediaPlayerLocation) Then
-		MsgBox(48,"Media player missing.","The external media player in the 'Settings' is not valid.",0)
-		Return
-	EndIf
-
-	; First check the current tab is a scene.
-	$sURL = _WD_Action($sSession, "url")
-	If StringRegExp($sURL, "\/scenes\/\d+") Then
-		PlayCurrentScene()
-		Return
-	EndIf
-	; Not the current tab, get the scenes list
-	Local $aHandles = _WD_WINDOW($sSession, "Handles")
-	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then
-		MsgBox(48,"Error in browser.","Error retrieving browser handles.",0)
-		Return
-	EndIf
-	Local $iTabCount = UBound($aHandles)
-	Local $bFound = False, $i, $sURL ; With $i we can get the handle.
-	For $i = 0 To $iTabCount-1
-		; Switch to this tab
-		_WD_Window($sSession, "Switch", '{"handle":"' & $aHandles[$i] & '"}' )
-		$sURL = _WD_Action($sSession, "url")
-		If StringRegExp($sURL, "\/scenes\/\d+\?") Then
-			; Match. This is a scene
-			$bFound = True
-			ExitLoop
-		EndIf
-	Next
-	If Not $bFound Then
-		MsgBox(48,"Where is the scene?","Sorry, but I cannot find the browser tab with the scene you want to play.",0)
-		Return
-	Else
-		; Found the scene, handle it now.
-		PlayCurrentScene()
-	EndIf
+	CheckMediaPlayer()
+	If @error Then Return SetError(1)
+	
+	SwitchToTab("scenes")
+	If @error Then Return SetError(1)
+	
+	PlayCurrentScene()
 EndFunc
 
 Func PlayCurrentScene()
