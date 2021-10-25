@@ -22,12 +22,16 @@
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.6"
+Global Const $currentVersion = "v1.7"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 Global Const $iMaxSubItems = 11
 Global $iMediaPlayerPID = 0
+; For Play list
+Global Enum $LIST_TITLE, $LIST_DURATION, $LIST_FILE
+Global $aPlayList[0][3]
+
 TraySetIcon("helper2.ico")
 
 #Region Globals Initialization
@@ -55,8 +59,8 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[16]	; 14 (0-13) bmps  for the tray menus
-For $i = 0 to 15
+Local $hIcons[17]	; 17 (0-16) bmps  for the tray menus
+For $i = 0 to 16
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -67,6 +71,7 @@ Global $minfo = ObjCreate("Scripting.Dictionary")
 #include <Forms\CustomForm.au3>
 #include <Forms\ScrapersForm.au3>
 #include <Forms\SceneToMovieForm.au3>
+#include <Forms\ManagePlayListForm.au3>
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
 
@@ -168,14 +173,20 @@ GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
 Global $trayMovie2Scene = TrayCreateItem("Create movie from scene.") ; 15
 _TrayMenuAddImage($hIcons[15], 15)
 GUICtrlSetTip(-1,"Create a movie from current scene.")
-TrayCreateItem("")										; 16
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 16
+_TrayMenuAddImage($hIcons[16], 16)
+Global $trayAddSceneToList = TrayCreateItem("Add Current Scene to Play List", $trayMenuPlayList)
+Global $trayAddMovieToList = TrayCreateItem("Add Current Movie to Play List", $trayMenuPlayList)
+Global $trayManageList = TrayCreateItem("Manage Current Play List", $trayMenuPlayList)
+Global $trayListPlay = TrayCreateItem("Send the Current Play List to Media Player", $trayMenuPlayList)
 
-Global $traySettings = TrayCreateItem("Settings")		; 17
-_TrayMenuAddImage($hIcons[9], 17)
-Global $trayAbout = TrayCreateItem("About")				; 18
-_TrayMenuAddImage($hIcons[10], 18)
-Global $trayExit = TrayCreateItem("Exit")				; 18
-_TrayMenuAddImage($hIcons[11], 19)
+TrayCreateItem("")										; 17
+Global $traySettings = TrayCreateItem("Settings")		; 18
+_TrayMenuAddImage($hIcons[9], 18)
+Global $trayAbout = TrayCreateItem("About")				; 19
+_TrayMenuAddImage($hIcons[10], 19)
+Global $trayExit = TrayCreateItem("Exit")				; 20
+_TrayMenuAddImage($hIcons[11], 20)
 
 ; Sub menu items for tools
 
@@ -229,12 +240,14 @@ Global $sBrowserHandle
 
 #Region Tray Menu Handling
 
+; Create all the sub menu for scenes, movies, studio...etc
 CreateSubMenu()
 
 TraySetState($TRAY_ICONSTATE_SHOW)
 ; Launch the web page
 OpenURL($stashURL)
 HotKeySet("^{ENTER}", "CloseSession")
+
 ; Looping to get message
 While True
 	$nMsg = TrayGetMsg()
@@ -277,6 +290,14 @@ While True
 			ScanFiles()
 		Case $trayMovie2Scene
 			Scene2Movie()
+		Case $trayAddSceneToList
+			AddSceneToList()
+		Case $trayAddMovieToList
+			AddMovieToList()
+		Case $trayManageList
+			ManagePlayList()
+		Case $trayListPlay
+			SendPlayerList()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -330,11 +351,122 @@ While True
 			Next
 	EndSwitch
 Wend
+
+
 Exit
 
 #EndRegion Tray menu
 
 #Region Functions
+
+Func SendPlayerList()
+	; Send the media player a temporary list and let it play.
+	CheckMediaPlayer()
+	If @error Then Return SetError(1)
+	
+	$sFileName = @TempDir & "\StashPlayList.m3u"
+
+	Local $hFile = FileOpen($sFileName, $FO_OVERWRITE)
+	If $hFile = -1 Then 
+		MsgBox($MB_SYSTEMMODAL, "", "An error occurred when creating the file.")
+		Return SetError(1)
+	EndIf
+	
+	; Write the required first line.
+	FileWriteLine($hFile, "#EXTM3U")
+	; Now write the file/path list
+	Local $iCount = UBound($aPlayList)
+	Local $sTitle, $sFile
+	For $i = 0 to $iCount-1
+		$sTitle = $aPlayList[$i][$LIST_TITLE]
+		$iDuration = $aPlayList[$i][$LIST_DURATION]
+		$sFile = $aPlayList[$i][$LIST_FILE]
+		Local $line = "#EXTINF:" & $iDuration & "," & $sTitle
+		FileWriteLine($hFile, $line ) ; $aData[2] is the name of the file.
+		; Write the real file/path on second line.
+		FileWriteLine($hFile, $sFile)
+	Next
+	FileClose($hFile)
+	; Now play it.
+	Play(@TempDir & "\StashPlayList.m3u")
+EndFunc
+
+Func AddMovieToList()
+	SwitchToTab("movies")
+	If @error Then Return SetError(1)
+
+	$sURL = _WD_Action($sSession, "url")
+	$nMovieID = GetNumber($sURL, "movies")
+	
+	; Now get the movie info
+	$sQuery = '{ "query": "{findMovie(id: ' & $nMovieID & '){name,scene_count,scenes{id}}}" }'
+	$sResult = Query($sQuery)
+	If @error Or QueryResultError($sResult) Then
+		MsgBox(0, "oops.", "Error querying the movie. Result:" & $sResult)
+		Return SetError(1)
+	EndIf
+	$oResult = Json_Decode($sResult)
+	$oMovieData = Json_ObjGet($oResult, "data.findMovie")
+	; name, scene_count, scenes->id
+	$iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
+	If $iCount = 0 Then 
+		MsgBox(0, "No scene", "There is no scene in this movie.")
+		Return SetError(1)
+	EndIf
+	For $i = 0 to $iCount-1
+		$nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
+		; Now add this scene to the  play list
+		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration} }}"}'
+		$sResult = Query($sQuery)
+		If @error Or QueryResultError($sResult) Then
+			MsgBox(0, "oops.", "Error querying the scene. Result:" & $sResult)
+			Return SetError(1)
+		EndIf
+		$oResult = Json_Decode($sResult)
+		$oSceneData = Json_ObjGet($oResult, "data.findScene")
+		; path
+		$j = UBound($aPlayList)
+		ReDim $aPlayList[$j+1][3]
+		$aPlayList[$j][$LIST_TITLE] = "Movie: " & $oMovieData.Item("name") & " - Scene " & ($i+1)
+		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )
+		$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("path")
+
+	Next
+	MsgBox(0, "Done", "Movie: " & $oMovieData.Item("name") _
+		& @CRLF & "was added to the current play list." & @CRLF & "Total entities in play list:  " & UBound($aPlayList))
+
+EndFunc
+
+
+Func AddSceneToList()
+	SwitchToTab("scenes")
+	If @error Then Return SetError(1)
+	
+	$sURL = _WD_Action($sSession, "url")
+	$nSceneID = GetNumber($sURL, "scenes")
+	
+	; Now get the info about this scene
+	$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){title,path,file{duration}}}"}'
+	$sResult = Query($sQuery)
+	If @error Or QueryResultError($sResult) Then
+		MsgBox(0, "oops.", "Error querying the scene. Result:" & $sResult)
+		Return SetError(1)
+	EndIf
+	$oResult = Json_Decode($sResult)
+	$oData = Json_ObjGet($oResult, "data.findScene")
+	; $oData.Item("title") $oData.Item("path")
+	$i = UBound($aPlayList)
+	ReDim $aPlayList[$i+1][3]
+	$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("title")
+	$aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("file").Item("duration") )
+	$aPlayList[$i][$LIST_FILE] = $oData.Item("path")
+	MsgBox(0, "Done", "Scene:  " & $aPlayList[$i][$LIST_TITLE] _
+		& @CRLF & "was added to the current play list." & @CRLF & "Total entities in play list:  " & UBound($aPlayList))
+	
+EndFunc
+
+
+
 ; Converts seconds to HH:MM:SS
 Func TimeConvert($i)
 	Local $iHour =  Floor($i / 3600) 
@@ -526,9 +658,13 @@ Func PlayCurrentScene()
 	c("scene id:" & $aMatch[0])
 	$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
 	c("scene query:" & $sQuery)
+
 	; This will query the graphql and get the path info
 	$sResult = Query( $sQuery )
-	If @error Then Return
+	If @error Or QueryResultError($sResult) Then
+		MsgBox(0, "Oops!", "Error getting the scene info. Result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	$oData = Json_Decode($sResult)
 	If Not Json_IsObject($oData) Then
 		MsgBox(0, "Data error.", "The data return from stash has errors.")
@@ -873,7 +1009,7 @@ Func Q($str)
 EndFunc
 
 Func ExitScript()
-	If $iStashPID Then ProcessClose($iStashPID)
+	If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
 	if $sSession Then
 		_WD_DeleteSession($sSession)
 		_WD_Shutdown()

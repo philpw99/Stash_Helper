@@ -1,0 +1,228 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GuiListView.au3>
+
+If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+#include <ColorConstants.au3>
+
+$ManagePlayList = GUICreate("Manage Play List",1034,1037,-1,-1,$WS_SIZEBOX,-1)
+$lvPlayList = GUICtrlCreatelistview("#|Title|Duration|File/Path",30,60,959,864,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$WS_EX_CLIENTEDGE))
+GUICtrlSetResizing(-1,102)
+_GUICtrlListView_SetColumnWidth($lvPlayList, 0, 40)  ; #
+_GUICtrlListView_SetColumnWidth($lvPlayList, 1, 300) ; Title
+_GUICtrlListView_SetColumnWidth($lvPlayList, 2, 100) ; Duration
+_GUICtrlListView_SetColumnWidth($lvPlayList, 3, 500) ; File
+_GUICtrlListView_JustifyColumn($lvPlayList, 0, 2)
+_GUICtrlListView_JustifyColumn($lvPlayList, 2, 2)
+GUICtrlCreateListViewItem("1|test title|10:00|testfile", $lvPlayList)
+GUICtrlCreateListViewItem("2|test title|12:00|testfile", $lvPlayList)
+GUICtrlCreateListViewItem("3|test title|13:00|testfile", $lvPlayList)
+GUICtrlCreateListViewItem("4|test title|14:00|testfile", $lvPlayList)
+
+; _GUICtrlListView_SetBkColor($lvPlayList, $CLR_MONEYGREEN)
+_GUICtrlListView_SetTextBkColor($lvPlayList, $CLR_CREAM )
+$btnDelete = GUICtrlCreateButton("Delete",30,936,161,42,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Delete the current selected item from the list.")
+GUICtrlSetResizing(-1,834)
+$btnLoad = GUICtrlCreateButton("Load",621,937,161,42,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Load a play list file (.m3u) from a folder.")
+GUICtrlSetResizing(-1,836)
+$btnSave = GUICtrlCreateButton("Save",830,937,161,42,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Save the current list to a M3U file.")
+GUICtrlSetResizing(-1,836)
+GUICtrlCreateButton("Play",236,937,161,42,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Play this list in external media player.")
+GUICtrlSetResizing(-1,834)
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Manage Play List
+breite=1034
+hoehe=1037
+style=$WS_SIZEBOX
+exstyle=-1
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$ManagePlayList
+parent=
+code=
+codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")[BREAK]#include <ColorConstants.au3>[BREAK]
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x004D141E]
+type=listview
+handle=432
+locked=0
+resize=102
+x=30
+y=60
+width=959
+height=864
+func=
+font=MS Sans Serif
+fontsize=8
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$lvPlayList
+text=#|Title|Duration|File/Path
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES+$WS_EX_CLIENTEDGE
+bgcolour=
+code=_GUICtrlListView_SetColumnWidth($lvPlayList, 0, 40)  ; #[BREAK]_GUICtrlListView_SetColumnWidth($lvPlayList, 1, 300) ; Title[BREAK]_GUICtrlListView_SetColumnWidth($lvPlayList, 2, 100) ; Duration[BREAK]_GUICtrlListView_SetColumnWidth($lvPlayList, 3, 500) ; File[BREAK]_GUICtrlListView_JustifyColumn($lvPlayList, 0, 2)[BREAK]_GUICtrlListView_JustifyColumn($lvPlayList, 2, 2)[BREAK]GUICtrlCreateListViewItem("1|test title|10:00|testfile", $lvPlayList)[BREAK]GUICtrlCreateListViewItem("2|test title|12:00|testfile", $lvPlayList)[BREAK]GUICtrlCreateListViewItem("3|test title|13:00|testfile", $lvPlayList)[BREAK]GUICtrlCreateListViewItem("4|test title|14:00|testfile", $lvPlayList)[BREAK][BREAK]; _GUICtrlListView_SetBkColor($lvPlayList, $CLR_MONEYGREEN)[BREAK]_GUICtrlListView_SetTextBkColor($lvPlayList, $CLR_CREAM )
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x001E0FA4]
+type=button
+handle=433
+locked=0
+resize=834
+x=30
+y=936
+width=161
+height=42
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Delete the current selected item from the list.
+bgimage=
+textcolour=0x000000
+id=$btnDelete
+text=Delete
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=2
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00301584]
+type=button
+handle=434
+locked=0
+resize=836
+x=621
+y=937
+width=161
+height=42
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Load a play list file (.m3u) from a folder.
+bgimage=
+textcolour=0x000000
+id=$btnLoad
+text=Load
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=3
+[0x003C134C]
+type=button
+handle=435
+locked=0
+resize=836
+x=830
+y=937
+width=161
+height=42
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Save the current list to a M3U file.
+bgimage=
+textcolour=0x000000
+id=$btnSave
+text=Save
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=4
+[0x003A122E]
+type=button
+handle=436
+locked=0
+resize=834
+x=236
+y=937
+width=161
+height=42
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Play this list in external media player.
+bgimage=
+textcolour=0x000000
+id=
+text=Play
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=5
+#ce

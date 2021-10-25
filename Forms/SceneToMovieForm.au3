@@ -57,28 +57,36 @@ Func Scene2Movie()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,802)
 	
-	
+	; Disable the tray clicks
+	TraySetClick(0)
+
 	GUISetState(@SW_SHOW, $guiScene2Movie)
 	While True 
+		; if click on tray icon, activate the current GUI
+		$nTrayMsg = TrayGetMsg()
+		Switch $nTrayMsg
+			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
+				WinActivate($guiScene2Movie)
+ 		EndSwitch 
+
 		Local $nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case $btnOK
 				CreateSingleMovie($lvValues, $chkCover)
-				GUIDelete($guiScene2Movie)
-				Return 
+				ExitLoop
 			Case $btnBatchCreate
 				; Need code here
 				BatchCreate($lvValues, $chkCover)
-				GUIDelete($guiScene2Movie)
-				Return 
+				ExitLoop
 			Case $GUI_EVENT_RESIZED
 				GUICtrlSetImage($imgCover, $sTempPicFile)
 			Case $GUI_EVENT_CLOSE, $btnCancel
-				; For now, no processing
-				GUIDelete($guiScene2Movie)
-				Return 
+				ExitLoop 
 		EndSwitch
 	Wend
+	GUIDelete($guiScene2Movie)
+	; restore the tray icon functions.
+	TraySetClick(9)
 EndFunc
 
 Func BatchCreate($lvValues, $chkCover)
