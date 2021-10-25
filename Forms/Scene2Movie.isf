@@ -7,7 +7,7 @@
 
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
-$Scene2Movie = GUICreate("Copy Scene Info To Movie",766,910,-1,-1,$WS_SIZEBOX,-1)
+$Scene2Movie = GUICreate("Copy Scene Info To Movie",766,968,-1,-1,$WS_SIZEBOX,-1)
 GUICtrlCreateLabel("Please choose the information you like to transfer to the movie.",32,23,698,80,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
@@ -32,7 +32,11 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetResizing(-1,804)
 $imgCover = GUICtrlCreatePic("",29,448,455,314,-1,$WS_EX_STATICEDGE)
 GUICtrlSetResizing(-1,102)
-GUICtrlCreateButton("Create movies for all other scenes",241,789,489,51,-1,-1)
+$btnBatchCreateStudio = GUICtrlCreateButton("Create movies for scenes in same Studio",100,780,555,51,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Create movies for all other scenes in the same studio that don't link to a movie yet.")
+GUICtrlSetResizing(-1,836)
+$btnBatchCreate = GUICtrlCreateButton("Create movies for all other scenes",100,846,555,51,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Create movies for all other scenes that don't link to a movie yet.")
 GUICtrlSetResizing(-1,836)
@@ -48,7 +52,7 @@ Handle_deklaration=default
 Handle_deklaration_const=false
 title=Copy Scene Info To Movie
 breite=766
-hoehe=910
+hoehe=968
 style=$WS_SIZEBOX
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -79,7 +83,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00451122]
+[0x0069119A]
 type=listview
 handle=432
 locked=0
@@ -108,7 +112,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00621F76]
+[0x004F23A4]
 type=label
 handle=433
 locked=0
@@ -137,7 +141,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00381252]
+[0x005C1276]
 type=button
 handle=434
 locked=0
@@ -166,7 +170,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00951FDA]
+[0x007A1A3E]
 type=button
 handle=435
 locked=0
@@ -195,9 +199,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
-[0x005D1266]
+[0x00711798]
 type=checkbox
-handle=437
+handle=436
 locked=0
 resize=802
 x=39
@@ -224,9 +228,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00260F7E]
+[0x001E1AC8]
 type=image
-handle=438
+handle=437
 locked=0
 resize=102
 x=29
@@ -253,14 +257,14 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x003D125E]
+[0x00800800]
 type=button
-handle=446
+handle=438
 locked=0
 resize=836
-x=241
-y=789
-width=489
+x=100
+y=846
+width=555
 height=51
 func=
 font=Tahoma
@@ -270,7 +274,7 @@ fontattribute=0
 tooltip=Create movies for all other scenes that don't link to a movie yet.
 bgimage=
 textcolour=0x000000
-id=
+id=$btnBatchCreate
 text=Create movies for all other scenes
 state=$GUI_SHOW+$GUI_ENABLE
 style=
@@ -282,4 +286,33 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
+[0x0049182A]
+type=button
+handle=439
+locked=0
+resize=836
+x=100
+y=780
+width=555
+height=51
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Create movies for all other scenes in the same studio that don't link to a movie yet.
+bgimage=
+textcolour=0x000000
+id=$btnBatchCreateStudio
+text=Create movies for scenes in same Studio
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=8
 #ce

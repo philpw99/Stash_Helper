@@ -11,7 +11,7 @@ Func Scene2Movie()
 	If @error Then Return SetError(1)
 
 	; Now show a GUI and ask which info to copy over.
-	Global $guiScene2Movie = GUICreate("Copy Scene Info To Movie",766,910,-1,-1,$WS_SIZEBOX,-1)
+	Global $guiScene2Movie = GUICreate("Copy Scene Info To Movie",766,968,-1,-1,$WS_SIZEBOX,-1)
 	GUICtrlCreateLabel("Please choose the information you like to transfer to the movie.",80,19,698,80,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
@@ -40,7 +40,13 @@ Func Scene2Movie()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,804)
 	
-	$btnBatchCreate = GUICtrlCreateButton("Create movies for all other scenes",241,789,489,51,-1,-1)
+	$btnBatchCreateStudio = GUICtrlCreateButton("Create movies for scenes in same Studio",100,780,555,51,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Create movies for all other scenes in the same studio that don't link to a movie yet.")
+	GUICtrlSetResizing(-1,836)
+
+	
+	$btnBatchCreate = GUICtrlCreateButton("Create movies for all other scenes",100,846,555,51,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Create movies for all other scenes which have no movies yet. Following the checked items here.")
 	GUICtrlSetResizing(-1,836)
@@ -75,9 +81,15 @@ Func Scene2Movie()
 				CreateSingleMovie($lvValues, $chkCover)
 				ExitLoop
 			Case $btnBatchCreate
-				; Need code here
 				BatchCreate($lvValues, $chkCover)
 				ExitLoop
+			Case $btnBatchCreateStudio
+				If $mInfo.Item("StudioID") = Null Then 
+					MsgBox(0, "No Studio", "This scene doesn't have a studio.")
+					ContinueLoop 
+				EndIf
+				; Add aditional filter.
+				BatchCreate($lvValues, $chkCover, ",studios:{value:"& $mInfo.Item("StudioID") & ", modifier:INCLUDES}")
 			Case $GUI_EVENT_RESIZED
 				GUICtrlSetImage($imgCover, $sTempPicFile)
 			Case $GUI_EVENT_CLOSE, $btnCancel
@@ -89,7 +101,7 @@ Func Scene2Movie()
 	TraySetClick(9)
 EndFunc
 
-Func BatchCreate($lvValues, $chkCover)
+Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 	Global $mInfo
 	
 	$reply = MsgBox(262449,"Warning.","This function will create one movie for every scene that's not linked to a movie yet." _ 
@@ -113,7 +125,8 @@ Func BatchCreate($lvValues, $chkCover)
 	EndIf
 	
 	; Now get the list of all scenes without a movie
-	$sQuery = '{ "query": "{findScenes(scene_filter:{is_missing: \"movie\"}filter:{per_page:-1}){count,scenes{id}}}" }'
+	$sQuery = '{ "query": "{findScenes(scene_filter:{is_missing: \"movie\"' _ 
+		& $sFilter & '}filter:{per_page:-1}){count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
 	If @error or QueryResultError($sResult) Then 
 		MsgBox(0, "Oops!", "The query to ask scenes without movie failed. Result:" & $sResult)
@@ -155,14 +168,14 @@ Func BatchCreate($lvValues, $chkCover)
 		If Not $bGetDate Then $mInfo.Item("Date") = Null 
 		If Not $bGetDuration Then $mInfo.Item("Duration") = Null 
 		If Not $bGetDetails Then $mInfo.Item("Details") = Null 
-		If Not $bGetStudio Then $mInfo.Item("Studio") = Null 
+		If Not $bGetStudio Then $mInfo.Item("StudioID") = Null 
 		If Not $bGetCover Then $mInfo.Item("ScreenShot") = Null
 		; Now the info is ready.
 		$sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & $mInfo.Item("Title") & '\",' & _
 			($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date") & '\",' ) & _
 			($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& $mInfo.Item("Details") & '\",' ) & _
 			($mInfo.Item("URL") = Null ? "" : 'url: \"' & $mInfo.Item("URL") & '\",' ) & _
-			($mInfo.Item("StudioName") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
+			($mInfo.Item("StudioID") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
 			($mInfo.Item("ScreenShot") = Null ? "" : 'front_image:\"' & $mInfo.Item("ScreenShot") & '\",' )& _
 			($mInfo.Item("Duration") = 0 ? "" : 'duration: ' & $mInfo.Item("Duration") ) & _
 			'}){id} }"}'
@@ -212,7 +225,7 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	$bGetStudio = _GUICtrlListView_GetItemChecked($lvValues, 5)
 	ConsoleWrite("check state:" & GUICtrlGetState($chkCover))
 	$bGetCover = ( GUICtrlRead($chkCover) = $GUI_CHECKED )
-	c("get cover?" & $bGetCover)
+	; c("get cover?" & $bGetCover)
 	Local $input = ""
 
 	If Not $bGetTitle Then 
@@ -227,21 +240,21 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	If Not $bGetDate Then $mInfo.Item("Date") = Null 
 	If Not $bGetDuration Then $mInfo.Item("Duration") = Null 
 	If Not $bGetDetails Then $mInfo.Item("Details") = Null 
-	If Not $bGetStudio Then $mInfo.Item("Studio") = Null 
+	If Not $bGetStudio Then $mInfo.Item("StudioID") = Null 
 	If Not $bGetCover Then $mInfo.Item("ScreenShot") = Null 
-	c ("ScreenShot:" & $mInfo.Item("ScreenShot") )
+	; c ("ScreenShot:" & $mInfo.Item("ScreenShot") )
 
 	; Now the info is ready.
 	$sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & $mInfo.Item("Title") & '\",' & _
 		($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date") & '\",' ) & _
 		($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& $mInfo.Item("Details") & '\",' ) & _
 		($mInfo.Item("URL") = Null ? "" : 'url: \"' & $mInfo.Item("URL") & '\",' ) & _
-		($mInfo.Item("StudioName") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
+		($mInfo.Item("StudioID") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
 		($mInfo.Item("ScreenShot") = Null ? "" : 'front_image:\"' & $mInfo.Item("ScreenShot") & '\",' )& _
 		($mInfo.Item("Duration") = 0 ? "" : 'duration: ' & $mInfo.Item("Duration") ) & _
 		'}){id} }"}'
 	
-	c( "create movie query:" & $sQuery)
+	; c( "create movie query:" & $sQuery)
 	; OK, now create a new movie base on the above.
 	$sResult = Query($sQuery)
 	If @error or QueryResultError($sResult) Then 
@@ -275,7 +288,7 @@ Func GetSceneInfo($nSceneNo)
 	; clear out the dictionary object
 	$mInfo.RemoveAll
 	
-	$sQuery = '{"query": "{findScene(id:' & $nSceneNo & '){title,details,url,date,paths{screenshot},file{duration},studio{name}}}" }'
+	$sQuery = '{"query": "{findScene(id:' & $nSceneNo & '){title,details,url,date,paths{screenshot},file{duration},studio{id,name}}}" }'
 	$sResult = Query($sQuery)
 	If @error Or QueryResultError($sResult) Then
 		MsgBox(0, "Scene query error.", "Couldn't query the scene for some reason. here is the result: " & $sResult)
@@ -292,37 +305,14 @@ Func GetSceneInfo($nSceneNo)
 	$mInfo.Add("URL", $oData.Item("url") )
 	$mInfo.Add("Date", $oData.Item("date") )
 	$mInfo.Add("Duration", Floor( $oData.Item("file").Item("duration") ) ) ; duration in seconds.
-	$mInfo.Add("StudioName", $oData.Item("studio").Item("name") )
+	; Special handling with studio
+	If $oData.Item("studio") = Null Then
+		$mInfo.Add("StudioID", Null)
+		$mInfo.Add("StudioName", Null)
+	Else 	
+		$mInfo.Add("StudioID", $oData.Item("studio").Item("id") )
+		$mInfo.Add("StudioName", $oData.Item("studio").Item("name") )
+	EndIf
 	$mInfo.Add("ScreenShot", $oData.Item("paths").Item("screenshot") )
 
-	If @error Then
-		c("Add studioname error.")
-		Return SetError(1)
-	EndIf
-		
-
-	c("studio name:" & $mInfo.Item("StudioName") & " is null?" & ($mInfo.Item("StudioName") = Null) )
-
-	$mInfo.Add("StudioID", "" )
-	If $mInfo.Item("StudioName") <> Null Then 
-		; Search the studio id by name
-		$sQuery = '{"query": "{findStudios(studio_filter:{name: {value: \"' & $mInfo.Item("StudioName") & '\",modifier: EQUALS}}){count,studios{id}}}" }'
-		$sResult = Query($sQuery)
-		If @error Or QueryResultError($sResult) Then
-			MsgBox(0, "Studio inquery error.", "Couldn't find the studio for some reason. here is the result: " & $sResult)
-			Return SetError(1)
-		EndIf
-		$oResult = Json_Decode($sResult)
-		$iCount = json_ObjGet($oResult, "data.findStudios.count")
-		c("Found studio:" & $iCount)
-		If  $iCount <> 0 Then
-			$aStudios = Json_ObjGet($oResult, "data.findStudios.studios")
-			$mInfo.Item("StudioID") = $aStudios[0].Item("id")
-		Else 
-			; Set the name to empty, to avoid error later.
-			$mInfo.Item("StudioName") = Null 
-		EndIf
-	Else 
-		$mInfo.Item("StudioID") = Null
-	EndIf
 EndFunc
