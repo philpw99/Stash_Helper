@@ -7,20 +7,28 @@
 
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
-$Custom = GUICreate("Custom",1059,802,-1,-1,-1,-1)
-GUICtrlCreateLabel("Customize the list of [Movies]. This is like bookmarks or favorites. You paste the text after the '?' from the address bar, then put a title for it, as the examples you see below."&@crlf&"For now I put 10 as the max number of each category, if you want more, send me a message in the GitHub repo.",80,50,882,196,-1,-1)
+$Custom = GUICreate("Custom",1059,1126,-1,-1,-1,-1)
+GUICtrlCreateLabel("Customize the list of [Movies]. This is like bookmarks or favorites. You paste the text after the '?' from the address bar, then put a title for it, as the examples you see below."&@crlf&"For now I put 20 as the max number of each category, if you want more, send me a message in the GitHub repo.",80,50,882,196,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
-$iList = GUICtrlCreatelistview("#|  Title|  Query Text",40,270,972,411,BitOr($LVS_NOSCROLL,$LVS_SINGLESEL),BitOr($LVS_EX_GRIDLINES,$WS_EX_CLIENTEDGE))
+GUICtrlSetResizing(-1,38)
+$iList = GUICtrlCreatelistview("#|  Title|  Query Text",40,270,971,696,BitOr($LVS_NOSCROLL,$LVS_SINGLESEL),BitOr($LVS_EX_GRIDLINES,$WS_EX_CLIENTEDGE))
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetResizing(-1,102)
 _GUICtrlListView_SetColumnWidth($iList, 0, 50)
 _GUICtrlListView_SetColumnWidth($iList, 1, 300)
 _GUICtrlListView_SetColumnWidth($iList, 2, 700)
-For $i = 0 to 10
+For $i = 0 to 19
 	_GUICtrlListView_AddItem($iList, $i + 1)
 Next
-GUICtrlCreateButton("Save",370,710,238,47,-1,-1)
+$btnSave = GUICtrlCreateButton("Save",773,993,238,47,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Save the list and apply the changes.")
+GUICtrlSetResizing(-1,836)
+$btnDelete = GUICtrlCreateButton("Delete",47,993,238,47,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Delete the highlighted row.")
+GUICtrlSetResizing(-1,834)
 
 
 
@@ -30,7 +38,7 @@ Handle_deklaration=default
 Handle_deklaration_const=false
 title=Custom
 breite=1059
-hoehe=802
+hoehe=1126
 style=-1
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -61,11 +69,11 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x004C1C38]
+[0x000B1D06]
 type=label
 handle=432
 locked=0
-resize=
+resize=38
 x=80
 y=50
 width=882
@@ -79,7 +87,7 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=
-text=Customize the list of [Movies]. This is like bookmarks or favorites. You paste the text after the '?' from the address bar, then put a title for it, as the examples you see below.[BREAK]For now I put 10 as the max number of each category, if you want more, send me a message in the GitHub repo.
+text=Customize the list of [Movies]. This is like bookmarks or favorites. You paste the text after the '?' from the address bar, then put a title for it, as the examples you see below.[BREAK]For now I put 20 as the max number of each category, if you want more, send me a message in the GitHub repo.
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -90,15 +98,15 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x001B1B9E]
+[0x00041D68]
 type=listview
 handle=433
 locked=0
-resize=
+resize=102
 x=40
 y=270
-width=972
-height=411
+width=971
+height=696
 func=
 font=Tahoma
 fontsize=10
@@ -113,19 +121,19 @@ state=$GUI_SHOW+$GUI_ENABLE
 style=$LVS_NOSCROLL+$LVS_SINGLESEL
 exstyle=$LVS_EX_GRIDLINES+$WS_EX_CLIENTEDGE
 bgcolour=
-code=_GUICtrlListView_SetColumnWidth($iList, 0, 50)[BREAK]_GUICtrlListView_SetColumnWidth($iList, 1, 300)[BREAK]_GUICtrlListView_SetColumnWidth($iList, 2, 700)[BREAK]For $i = 0 to 10[BREAK]	_GUICtrlListView_AddItem($iList, $i + 1)[BREAK]Next
+code=_GUICtrlListView_SetColumnWidth($iList, 0, 50)[BREAK]_GUICtrlListView_SetColumnWidth($iList, 1, 300)[BREAK]_GUICtrlListView_SetColumnWidth($iList, 2, 700)[BREAK]For $i = 0 to 19[BREAK]	_GUICtrlListView_AddItem($iList, $i + 1)[BREAK]Next
 order=2
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000F1606]
+[0x00101A70]
 type=button
 handle=434
 locked=0
-resize=
-x=370
-y=710
+resize=836
+x=773
+y=993
 width=238
 height=47
 func=
@@ -133,10 +141,10 @@ font=Tahoma
 fontsize=12
 fontstyle=400
 fontattribute=0
-tooltip=
+tooltip=Save the list and apply the changes.
 bgimage=
 textcolour=0x000000
-id=
+id=$btnSave
 text=Save
 state=$GUI_SHOW+$GUI_ENABLE
 style=
@@ -148,4 +156,33 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
+[0x00051E3A]
+type=button
+handle=435
+locked=0
+resize=834
+x=47
+y=993
+width=238
+height=47
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Delete the highlighted row.
+bgimage=
+textcolour=0x000000
+id=$btnDelete
+text=Delete
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=4
 #ce

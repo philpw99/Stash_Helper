@@ -26,7 +26,7 @@ Global Const $currentVersion = "v1.7"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
-Global Const $iMaxSubItems = 11
+Global Const $iMaxSubItems = 20
 Global $iMediaPlayerPID = 0
 ; For Play list
 Global Enum $LIST_TITLE, $LIST_DURATION, $LIST_FILE
@@ -59,8 +59,8 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[17]	; 17 (0-16) bmps  for the tray menus
-For $i = 0 to 16
+Local $hIcons[18]	; 17 (0-16) bmps  for the tray menus
+For $i = 0 to 17
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -156,37 +156,39 @@ Global $trayMenuStudios = TrayCreateMenu("Studios")		; 8
 _TrayMenuAddImage($hIcons[6], 8)
 Global $trayMenuTags = TrayCreateMenu("Tags")			; 9
 _TrayMenuAddImage($hIcons[7], 9)
-TrayCreateItem("")										; 10
+Global $trayMenuBookmark = TrayCreateItem("Bookmark    Ctrl-Alt-B") ; 10
+_TrayMenuAddImage($hIcons[17], 10)
+TrayCreateItem("")										; 11
 
-Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;11
-GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
-_TrayMenuAddImage($hIcons[12], 11)
-Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;12
-GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
-_TrayMenuAddImage($hIcons[13], 12)
-Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 13
-GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
-_TrayMenuAddImage($hIcons[8], 13)
-Global $trayScan = TrayCreateItem("Scan New Files") 	; 14
-_TrayMenuAddImage($hIcons[14], 14)
-GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
-Global $trayMovie2Scene = TrayCreateItem("Create movie from scene.") ; 15
-_TrayMenuAddImage($hIcons[15], 15)
-GUICtrlSetTip(-1,"Create a movie from current scene.")
-Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 16
-_TrayMenuAddImage($hIcons[16], 16)
-Global $trayAddSceneToList = TrayCreateItem("Add Current Scene to Play List", $trayMenuPlayList)
-Global $trayAddMovieToList = TrayCreateItem("Add Current Movie to Play List", $trayMenuPlayList)
-Global $trayManageList = TrayCreateItem("Manage Current Play List", $trayMenuPlayList)
-Global $trayListPlay = TrayCreateItem("Send the Current Play List to Media Player", $trayMenuPlayList)
+Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;12
+; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
+_TrayMenuAddImage($hIcons[12], 12)
+Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;13
+; GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
+_TrayMenuAddImage($hIcons[13], 13)
+Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 14
+; GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
+_TrayMenuAddImage($hIcons[8], 14)
+Global $trayScan = TrayCreateItem("Scan New Files") 	; 15
+_TrayMenuAddImage($hIcons[14], 15)
+; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
+Global $trayMovie2Scene = TrayCreateItem("Create movie from scene.") ; 16
+_TrayMenuAddImage($hIcons[15], 16)
+; GUICtrlSetTip(-1,"Create a movie from current scene.")
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 17
+_TrayMenuAddImage($hIcons[16], 17)
+Global $trayAddSceneOrMovieToList = TrayCreateItem("Add Current Scene/Movie to Play List         Ctrl-Alt-A", $trayMenuPlayList)
+Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
+Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
+Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
-TrayCreateItem("")										; 17
-Global $traySettings = TrayCreateItem("Settings")		; 18
-_TrayMenuAddImage($hIcons[9], 18)
-Global $trayAbout = TrayCreateItem("About")				; 19
-_TrayMenuAddImage($hIcons[10], 19)
-Global $trayExit = TrayCreateItem("Exit")				; 20
-_TrayMenuAddImage($hIcons[11], 20)
+TrayCreateItem("")										; 18
+Global $traySettings = TrayCreateItem("Settings")		; 19
+_TrayMenuAddImage($hIcons[9], 19)
+Global $trayAbout = TrayCreateItem("About")				; 20
+_TrayMenuAddImage($hIcons[10], 20)
+Global $trayExit = TrayCreateItem("Exit")				; 21
+_TrayMenuAddImage($hIcons[11], 21)
 
 ; Sub menu items for tools
 
@@ -246,7 +248,19 @@ CreateSubMenu()
 TraySetState($TRAY_ICONSTATE_SHOW)
 ; Launch the web page
 OpenURL($stashURL)
+; Ctrl + Enter to close all web sessions and media player
 HotKeySet("^{ENTER}", "CloseSession")
+; Ctrl+Alt+A to add scene/movie to the playlist.
+HotKeySet("^!a", "AddSceneOrMovieToList")
+; Ctrl+Alt+C to clear the playlist.
+HotKeySet("^!c", "ClearPlayList")
+; Ctrl+Alt+M to manage the playlist.
+HotKeySet("^!m", "ManagePlayList")
+; Ctrl+Alt+P to play the playlist.
+HotKeySet("^!p", "SendPlayerList")
+; Ctrl+Alt+B to bookmark the current browser tab.
+HotKeySet("^!b", "BookmarkCurrentTab")
+
 
 ; Looping to get message
 While True
@@ -290,14 +304,16 @@ While True
 			ScanFiles()
 		Case $trayMovie2Scene
 			Scene2Movie()
-		Case $trayAddSceneToList
-			AddSceneToList()
-		Case $trayAddMovieToList
-			AddMovieToList()
+		Case $trayAddSceneOrMovieToList
+			AddSceneOrMovieToList()
+		Case $trayClearList
+			ClearPlayList()
 		Case $trayManageList
 			ManagePlayList()
 		Case $trayListPlay
 			SendPlayerList()
+		Case $trayMenuBookmark
+			BookmarkCurrentTab()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -359,19 +375,157 @@ Exit
 
 #Region Functions
 
+Func GetURL()
+	Local $sURL = _WD_Action($sSession, "url")
+	If $sURL = "" Then 
+		MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
+		Return SetError(1)
+	EndIf
+	Return $sURL
+EndFunc
+
+Func BookmarkCurrentTab()
+	Local $sURL = GetURL()
+	If @error then Return SetError(1)
+	; Get the text after http://localhost:9999/
+	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
+	If $sStr = "" Then 
+		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
+		Return 
+	EndIf
+	If StringLeft($sStr, 1) = "/" Then 
+		; remove the leading / , just in case
+		$sStr = StringTrimLeft($sStr, 1)
+	EndIf
+	; split either by 
+	$aStr = StringSplit($sStr, "/?=" )
+	If $aStr[0] = 0 Then 
+		MsgBox(0, "Error processing page", "The current browser is unknown.")
+		Return 
+	EndIf
+	$sCategory = $aStr[1]
+	local $sThing = "thing"
+	If $aStr[0] >= 2 Then
+		If IsNumber($aStr[2]) Then 
+			; Single scene
+			$sThing = "scene"
+		ElseIf $aStr[2] = "c" Then 
+			$sThing = StringTrimRight($sCategory, 1) & " collection"
+		EndIf
+	EndIf
+	c("aStr[0]:" & $aStr[0] & " aStr[1]:" & $aStr[1])
+	; Now we have the thing.
+	$sDescription = InputBox("Title required", "Please enter a brief description/title for this " & $sThing & ".")
+	If $sDescription = "" Then Return
+	$sDescription = StringLeft($sDescription, 50)
+	
+	Switch $sCategory
+		Case "scenes"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $traySceneLinks )
+			TrayItemDelete($customScenes)
+			$traySceneLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuScenes )
+			$customScenes = TrayCreateItem("Customize...", $trayMenuScenes)
+			
+		Case "images"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayImageLinks )
+			TrayItemDelete($customImages)
+			$trayImageLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuImages )
+			$customImages = TrayCreateItem("Customize...", $trayMenuImages)
+			
+		Case "movies"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMovieLinks )
+			TrayItemDelete($customMovies)
+			$trayMovieLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMovies )
+			$customMovies = TrayCreateItem("Customize...", $trayMenuMovies)
+			
+		Case "markers"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMarkerLinks )
+			TrayItemDelete($customMarkers)
+			$trayMarkerLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMarkers )
+			$customMarkers = TrayCreateItem("Customize...", $trayMenuMarkers)
+			
+		Case "galleries"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayGalleryLinks )
+			TrayItemDelete($customGalleries)
+			$trayGalleryLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuGalleries )
+			$customGalleries = TrayCreateItem("Customize...", $trayMenuGalleries)
+			
+		Case "performers"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayPerformerLinks )
+			TrayItemDelete($customPerformers)
+			$trayPerformerLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuPeformers )
+			$customPerformers = TrayCreateItem("Customize...", $trayMenuPeformers)
+			
+		Case "Studios"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayStudioLinks )
+			TrayItemDelete($customStudios)
+			$trayStudioLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuStudios )
+			$customStudios = TrayCreateItem("Customize...", $trayMenuStudios)
+			
+		Case "tags"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayTagLinks )
+			TrayItemDelete($customTags)
+			$trayTagLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuTags )
+			$customTags = TrayCreateItem("Customize...", $trayMenuTags)
+
+	EndSwitch
+	MsgBox(0, "Bookmark added.", "Successfully added '" & $sDescription & "' to the " & $sCategory & " category.")
+EndFunc
+
+Func AddBookmarkToArray($sTitle, $sLink, ByRef $aArray )
+	For $i = 0 to $iMaxSubItems -1
+		If $aArray[$i][$ITEM_TITLE] = "" Then ExitLoop 
+	Next
+	; if all 20 is used, then $i will be the last one
+	If $i = 19 Then 
+	; Special handling of the 20th
+		If $aArray[19][$ITEM_HANDLE] <> Null Then 
+			TrayItemDelete($aArray[19][$ITEM_HANDLE])
+		EndIf
+	EndIf
+	
+	$aArray[$i][$ITEM_TITLE] = $sTitle
+	$aArray[$i][$ITEM_LINK] = $sLink
+	Return $i
+	; return the $row that's added.
+EndFunc 
+
+Func ClearPlayList()
+	ReDim $aPlayList[0][3]
+EndFunc
+
+Func AddSceneOrMovieToList()
+	
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
+	
+	If StringRegExp($sURL, "\/scenes\/\d+") Then
+		; A Scene
+		AddSceneToList()
+	ElseIf StringRegExp($sURL, "\/movies\/\d+") Then
+		; A Movie
+		AddMovieToList()
+	Else 
+		MsgBox(0, "Not a movie or scene", "Sorry, the current browser is neither a movie or a scene.")
+	EndIf
+EndFunc 
+
 Func SendPlayerList()
 	; Send the media player a temporary list and let it play.
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
-	
+	If UBound($aPlayList, $UBOUND_ROWS ) = 0 Then 
+		MsgBox(48,"Play list is empty","There is nothing in the play list. Cannot play it.",0)
+		Return SetError(1)
+	EndIf
 	$sFileName = @TempDir & "\StashPlayList.m3u"
 
 	Local $hFile = FileOpen($sFileName, $FO_OVERWRITE)
-	If $hFile = -1 Then 
+	If $hFile = -1 Then
 		MsgBox($MB_SYSTEMMODAL, "", "An error occurred when creating the file.")
 		Return SetError(1)
 	EndIf
-	
+
 	; Write the required first line.
 	FileWriteLine($hFile, "#EXTM3U")
 	; Now write the file/path list
@@ -392,12 +546,14 @@ Func SendPlayerList()
 EndFunc
 
 Func AddMovieToList()
-	SwitchToTab("movies")
-	If @error Then Return SetError(1)
+	; SwitchToTab("movies")
+	; If @error Then Return SetError(1)
 
-	$sURL = _WD_Action($sSession, "url")
-	$nMovieID = GetNumber($sURL, "movies")
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
 	
+	$nMovieID = GetNumber($sURL, "movies")
+
 	; Now get the movie info
 	$sQuery = '{ "query": "{findMovie(id: ' & $nMovieID & '){name,scene_count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
@@ -409,7 +565,7 @@ Func AddMovieToList()
 	$oMovieData = Json_ObjGet($oResult, "data.findMovie")
 	; name, scene_count, scenes->id
 	$iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
-	If $iCount = 0 Then 
+	If $iCount = 0 Then
 		MsgBox(0, "No scene", "There is no scene in this movie.")
 		Return SetError(1)
 	EndIf
@@ -441,10 +597,12 @@ EndFunc
 Func AddSceneToList()
 	SwitchToTab("scenes")
 	If @error Then Return SetError(1)
+
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
 	
-	$sURL = _WD_Action($sSession, "url")
 	$nSceneID = GetNumber($sURL, "scenes")
-	
+
 	; Now get the info about this scene
 	$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){title,path,file{duration}}}"}'
 	$sResult = Query($sQuery)
@@ -462,14 +620,14 @@ Func AddSceneToList()
 	$aPlayList[$i][$LIST_FILE] = $oData.Item("path")
 	MsgBox(0, "Done", "Scene:  " & $aPlayList[$i][$LIST_TITLE] _
 		& @CRLF & "was added to the current play list." & @CRLF & "Total entities in play list:  " & UBound($aPlayList))
-	
+
 EndFunc
 
 
 
 ; Converts seconds to HH:MM:SS
 Func TimeConvert($i)
-	Local $iHour =  Floor($i / 3600) 
+	Local $iHour =  Floor($i / 3600)
 	Local $iMin = Floor( ($i - 3600 * $iHour) / 60)
 	Local $iSec = Mod($i, 60)
 	Return StringFormat('%01d:%02d:%02d', $iHour, $iMin, $iSec)
@@ -506,12 +664,14 @@ Func PlayMovie()
 	; Play the current movie with external media player
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
-	
+
 	SwitchToTab("movies")
 	If @error then return SetError(1)
-	
+
 	; Movie tab found and set current
-	$sURL = _WD_Action($sSession, "url")
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
+	
 	$nMovie = GetNumber($sURL, "movies")
 	PlayMovieInCurrentTab($nMovie)
 EndFunc
@@ -529,10 +689,13 @@ EndFunc
 Func SwitchToTab($sCategory)
 	; It will switch to the tab that contains the category, then return the no.
 	; First check if the currrent tab is the right one
-	$sURL = _WD_Action($sSession, "url")
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
+	
 	$sSearchRegEx = "\/" & $sCategory & "\/\d+"
 	If StringRegExp($sURL, $sSearchRegEx) Then
-		Return 
+		; Current tab matches. It's a scene or movie.
+		Return
 	EndIf
 	; Not the current tab, get the scenes list
 	Local $aHandles = _WD_WINDOW($sSession, "Handles")
@@ -645,15 +808,17 @@ Func PlayScene()
 	; Play the current scene with external media player
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
-	
+
 	SwitchToTab("scenes")
 	If @error Then Return SetError(1)
-	
+
 	PlayCurrentScene()
 EndFunc
 
 Func PlayCurrentScene()
-	$sURL = _WD_Action($sSession, "url")
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
+	
 	$aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
 	c("scene id:" & $aMatch[0])
 	$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
@@ -767,7 +932,7 @@ Func Alert($sMessage)
 	$sMessage = StringReplace($sMessage, "'", "`")
 	$sMessage = StringReplace($sMessage, '"', "`")
 
-	_WD_ExecuteScript($sSession, "alert('" & $sMessage& "')", Default , True )
+	_WD_ExecuteScript($sSession, "prompt('" & $sMessage& "')", Default , True )
 EndFunc
 
 Func CreateSubMenu()

@@ -17,7 +17,7 @@ Func CustomList($sCategory, ByRef $aCategory)
 	; Disable the tray clicks
 	TraySetClick(0)
 		
-	$guiCustom = GUICreate("Customize " & $sCategory,1060,800,-1,-1,-1,-1)
+	$guiCustom = GUICreate("Customize " & $sCategory,1060,1126,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	
 	GUICtrlCreateLabel("Customize the list of " & $sCategory & _ 
@@ -26,8 +26,8 @@ Func CustomList($sCategory, ByRef $aCategory)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 	
-	$customList = GUICtrlCreatelistview("#|  Title|  Query Link",40,270,972,410, _ 
-		$LVS_NOSCROLL, _ 
+	$customList = GUICtrlCreatelistview("#|  Title|  Query Link",40,270,972,696, _ 
+		BitOR($LVS_NOSCROLL, $LVS_SINGLESEL), _ 
 		BitOR($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES, $LVS_EX_DOUBLEBUFFER))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	; #
@@ -39,9 +39,13 @@ Func CustomList($sCategory, ByRef $aCategory)
 	_GUICtrlListView_SetColumnWidth($customList, 2, 700)
 	; _GUICtrlListView_JustifyColumn($customList, 2, 2)
 	
-	$btnSave = GUICtrlCreateButton("Save",370,710,238,47,-1,-1)
+	$btnSave = GUICtrlCreateButton("Save",773,993,238,47,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-
+	GUICtrlSetTip(-1,"Save the list and apply the changes.")
+	$btnDelete = GUICtrlCreateButton("Delete",47,993,238,47,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Delete the highlighted row.")
+	
 	Local $aList[$iMaxSubItems]
 	For $i = 0 to $iMaxSubItems -1
 		; Popular all numbers anyway
@@ -51,12 +55,12 @@ Func CustomList($sCategory, ByRef $aCategory)
 		$aList[$i] &= "|" & $aCategory[$i][$ITEM_TITLE] & "|" & $aCategory[$i][$ITEM_LINK]
 	Next
 	
-	For $i = 0 to 10
+	For $i = 0 to $iMaxSubItems -1
 		_GUICtrlListView_AddItem($customList, $i + 1)
 	Next
 	
 	; Populate the list view
-	Local $aListHandles[11][2]
+	; Local $aListHandles[$iMaxSubItems][2]
 	For $i = 0 to UBound($aCategory) -1
 		_GUICtrlListView_AddSubItem($customList, $i, $aCategory[$i][$ITEM_TITLE], 1)
 		_GUICtrlListView_AddSubItem($customList, $i, $aCategory[$i][$ITEM_LINK], 2)
@@ -87,19 +91,41 @@ Func CustomList($sCategory, ByRef $aCategory)
 				$aRead =  _GUIListViewEx_ReturnArray($iLV_Index)
 				; _ArrayDisplay($aRead)
 				Local $str = $aRead[0]
-				For $i = 1 to 10
+				For $i = 1 to $iMaxSubItems-1
 					$str &= "@@@" & $aRead[$i]
 				Next
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", $sCategory & "List", "REG_SZ", $str)
 				; Need to load the Items here.
 				ReloadMenu()
-				ExitLoop 
+				ExitLoop
+			Case $btnDelete
+				If _GUICtrlListView_GetSelectedCount($customList) = 0 Then 
+					MsgBox(0, "No item is selected", "Please select a row first.")
+					ContinueLoop 
+				EndIf
+				
+				; Now $iRow is the one needs to be deleted.
+				_GUIListViewEx_SetActive($iLV_Index)
+				; Delete the selected one.
+				_GUIListViewEx_Delete()
+				; Insert an empty row at the end
+				_GUIListViewEx_InsertSpec($iLV_Index, -1, "")
+				; Unselect it.
+				_GUICtrlListView_SetItemSelected ($customList, $iMaxSubItems-1, False )
+				; Repopulate the leading numbers.
+				; Local $aList[$iMaxSubItems]
+				For $i = 0 to $iMaxSubItems -1
+					; Set the # 1,2,3,4...
+					_GUICtrlListView_SetItemText($customList, $i, $i + 1)
+				Next
+				
 			Case $GUI_EVENT_CLOSE
 				ExitLoop 
 		EndSwitch
 		
 		_GUIListViewEx_EventMonitor()
 	Wend
+	_GUIListViewEx_Close($iLV_Index)
 	GUIDelete($guiCustom)
 	$customList = 0
 	; restore the tray icon functions.

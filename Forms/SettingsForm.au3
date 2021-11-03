@@ -212,8 +212,8 @@ Func ShowSettings()
 				_WD_Shutdown()
 				Local $bGood = _WD_UPdateDriver ("chrome", Default , Default, True) ; Force update
 				If Not $bGood Then 
-					MsgBox(48,"Error Getting Firefox Driver", _ 
-					"There is an error getting the driver for Firefox. Maybe your Internet is down?" _ 
+					MsgBox(48,"Error Getting Chrome Driver", _ 
+					"There is an error getting the driver for Chrome. Maybe your Internet is down?" _ 
 						& @CRLF & "The program will try to get the driver again next time you launch it.",0)
 				Else
 					MsgBox(64,"Chrome Updated","Chrome webdriver just updated to the latest version.",0)
@@ -227,8 +227,8 @@ Func ShowSettings()
 				Local $b64 = ( @OSArch = "X64" )
 				Local $bGood = _WD_UPdateDriver ("msedge", Default , $b64 , True) ; Force update
 				If Not $bGood Then 
-					MsgBox(48,"Error Getting Firefox Driver", _ 
-					"There is an error getting the driver for Firefox. Maybe your Internet is down?" _ 
+					MsgBox(48,"Error Getting ms edge Driver", _ 
+					"There is an error getting the driver for MS Edge. Maybe your Internet is down?" _ 
 						& @CRLF & "The program will try to get the driver again next time you launch it.",0)
 				Else 
 					MsgBox(64,"MS Edge Updated","MS Edge webdriver just updated to the latest version.",0)

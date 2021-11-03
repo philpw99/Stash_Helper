@@ -40,6 +40,10 @@ GUICtrlCreateButton("Play",236,937,161,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Play this list in external media player.")
 GUICtrlSetResizing(-1,834)
+$btnClear = GUICtrlCreateButton("Clear",422,937,161,42,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Clear the play list.")
+GUICtrlSetResizing(-1,960)
 
 
 
@@ -80,7 +84,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x004D141E]
+[0x00081E26]
 type=listview
 handle=432
 locked=0
@@ -109,7 +113,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x001E0FA4]
+[0x00021E2C]
 type=button
 handle=433
 locked=0
@@ -138,7 +142,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00301584]
+[0x00011E2E]
 type=button
 handle=434
 locked=0
@@ -167,7 +171,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=3
-[0x003C134C]
+[0x00011E30]
 type=button
 handle=435
 locked=0
@@ -196,7 +200,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x003A122E]
+[0x00011E32]
 type=button
 handle=436
 locked=0
@@ -225,4 +229,33 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
+[0x00031E42]
+type=button
+handle=437
+locked=0
+resize=960
+x=422
+y=937
+width=161
+height=42
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Clear the play list.
+bgimage=
+textcolour=0x000000
+id=$btnClear
+text=Clear
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=6
 #ce

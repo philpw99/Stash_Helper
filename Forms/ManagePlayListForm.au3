@@ -27,6 +27,10 @@ Func ManagePlayList()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Play this list in external media player.")
 	GUICtrlSetResizing(-1,834)
+	$btnClear = GUICtrlCreateButton("Clear",422,937,161,42,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Clear the play list.")
+	GUICtrlSetResizing(-1,960)
 
 	; load the $aPlayList array to the list
 	For $i = 0 To UBound($aPlayList)-1
@@ -61,6 +65,9 @@ Func ManagePlayList()
 				SaveList($lvPlayList)
 			Case $btnPlay	
 				SendPlayerList()
+			Case $btnClear
+				ClearPlayList()
+				_GUICtrlListView_DeleteAllItems($lvPlayList)
 
 			Case $GUI_EVENT_CLOSE
 				ExitLoop
