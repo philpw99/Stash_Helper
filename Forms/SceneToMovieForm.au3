@@ -128,10 +128,8 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 	$sQuery = '{ "query": "{findScenes(scene_filter:{is_missing: \"movie\"' _ 
 		& $sFilter & '}filter:{per_page:-1}){count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
-	If @error or QueryResultError($sResult) Then 
-		MsgBox(0, "Oops!", "The query to ask scenes without movie failed. Result:" & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error Then Return SetError(1)
+
 	$oResult = Json_Decode($sResult)
 	$oData = Json_ObjGet($oResult, "data.findScenes")
 	$iCount = $oData.Item("count")
@@ -182,12 +180,7 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 		
 		; OK, now create a new movie base on the above.
 		$sResult = Query($sQuery)
-		If @error or QueryResultError($sResult) Then 
-			; c( "query result:" & $sResult)
-			MsgBox(0, "Create movie error.", "Couldn't create the movie:" & $mInfo.Item("Title") _ 
-				& " for some reason. here is the result: " & $sResult)
-			ExitLoop 
-		EndIf
+		If @error Then ExitLoop 
 		
 		$oResult = Json_Decode($sResult)
 		$mInfo.Item("MovieID") = Json_ObjGet($oResult, "data.movieCreate.id")
@@ -197,12 +190,8 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 		$sQuery = '{"query":"mutation{sceneUpdate(input:{id:' & $mInfo.Item("SceneID") & ',movies:{movie_id:' _ 
 			& $mInfo.Item("MovieID") & '}}){id}}"}'
 		$sResult = Query($sQuery)
-		If @error or QueryResultError($sResult) Then 
-			; c( "query result:" & $sResult)
-			MsgBox(0, "Set movie error.", "Couldn't set the movie:" & $mInfo.Item("Title") _ 
-				& " for that scene. here is the result: " & $sResult)
-			ExitLoop 
-		EndIf
+		If @error Then ExitLoop 
+
 		$iMovieCreated += 1
 	Next
 	
@@ -257,11 +246,8 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	; c( "create movie query:" & $sQuery)
 	; OK, now create a new movie base on the above.
 	$sResult = Query($sQuery)
-	If @error or QueryResultError($sResult) Then 
-		; c( "query result:" & $sResult)
-		MsgBox(0, "Create movie error.", "Couldn't create the movie for some reason. here is the result: " & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error Then Return SetError(1)
+
 	$oResult = Json_Decode($sResult)
 	$mInfo.Item("MovieID") = Json_ObjGet($oResult, "data.movieCreate.id")
 	; c ( "ID:" & $sMovieID)
@@ -269,11 +255,8 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	; Now update the scene
 	$sQuery = '{"query":"mutation{sceneUpdate(input:{id:' & $mInfo.Item("SceneID") & ',movies:{movie_id:' & $mInfo.Item("MovieID") & '}}){id}}"}'
 	$sResult = Query($sQuery)
-	If @error or QueryResultError($sResult) Then 
-		; c( "query result:" & $sResult)
-		MsgBox(0, "Set movie error.", "Couldn't set the movie for that scene. here is the result: " & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error Then Return SetError(1)
+
 	_WD_Action($sSession, 'refresh')
 	Sleep(1000)
 	OpenURL($stashURL & "movies/" & $mInfo.Item("MovieID") )
@@ -290,10 +273,8 @@ Func GetSceneInfo($nSceneNo)
 	
 	$sQuery = '{"query": "{findScene(id:' & $nSceneNo & '){title,details,url,date,paths{screenshot},file{duration},studio{id,name}}}" }'
 	$sResult = Query($sQuery)
-	If @error Or QueryResultError($sResult) Then
-		MsgBox(0, "Scene query error.", "Couldn't query the scene for some reason. here is the result: " & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error Then Return SetError(1)
+
 	; Got the result
 	$oResult = Json_Decode($sResult)
 	If not IsObj($oResult) Then Return SetError(1)

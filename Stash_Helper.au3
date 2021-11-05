@@ -17,12 +17,13 @@
 #include "TrayMenuEx.au3"
 #include <Array.au3>
 #include "DTC.au3"
+; #include "MiniWebServer.au3"
 
 ; If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.8"
+Global Const $currentVersion = "v1.8.2"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -42,6 +43,8 @@ Opt("TrayAutoPause", 0)  ; No pause in tray
 Global $sProgramFilesDir = ( @OSArch = "X64" ) ? StringReplace(@ProgramFilesDir, " (x86)", "", 1, 2) : @ProgramFilesDir
 
 Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
+Global $stashPath = stringleft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1))
+
 If @error Or Not FileExists($stashFilePath) Then
 	; First time run this program. Need to set the settings.
 	InitialSettingsForm()
@@ -58,8 +61,10 @@ Global $sDesiredCapabilities, $sSession
 Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
+
+
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[18]	; 17 (0-16) bmps  for the tray menus
+Local $hIcons[18]	; 18 (0-17) bmps  for the tray menus
 For $i = 0 to 17
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
@@ -68,67 +73,86 @@ Global $minfo = ObjCreate("Scripting.Dictionary")
 
 ; All forms.
 #include <Forms\SettingsForm.au3>
-#include <Forms\CustomForm.au3>
+#include <Forms\CustomizeForm.au3>
 #include <Forms\ScrapersForm.au3>
 #include <Forms\SceneToMovieForm.au3>
 #include <Forms\ManagePlayListForm.au3>
+; #include <Forms\ScrapeSpecialForm.au3>
+
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
+Global $iStashPID
+$stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
 
-; Attach to an existing stash-win first.
-Global $iStashPID = ProcessExists("stash-win.exe")
-If $iStashPID = 0 Then
-	; Stash not running.
-	Local $sPath = StringLeft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1) )
-	If $showStashConsole Then
-		; Show the stash console.
-		$iStashPID = Run($stashFilePath, $sPath, @SW_SHOW)
-		$stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
-		If @error Then $stashURL = "http://localhost:9999/"  ; Last resort
-	Else
-		; Hide the stash console. First time run, it will always hide it so we can read the stash url.
-		$iStashPID = Run($stashFilePath, $sPath, @SW_HIDE, $STDERR_MERGED)
-
-		$hTimer = TimerInit()
-		While True
-			Local $sLine = StdoutRead($iStashPID)
-			If @error Then
-				; Stash App is closed.
-				Exit
-			EndIf
-			If $sLine <> "" Then
-				c("*" & $sLine)
-			EndIf
-			Select
-				Case StringInStr($sLine, "stash version:", 2)
-					$stashVersion = StringMid($sLine, StringInStr($sLine, "stash version:", 2))
-					$stashVersion = StringStripWS($stashVersion, $STR_STRIPTRAILING)
-				Case StringInStr($sLine, "stash is running at ")
-					$iPos1 = StringInStr($sLine, "http", 2)
-					$iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
-					$stashURL = StringMid($sLine, $iPos1, $iPos2 -$iPos1)
-					$stashURL = StringStripWS($stashURL, $STR_STRIPTRAILING)
-					; Now time to jump to the next phrase.
-					$sURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
-					If $sURL <> $stashURL Then
-						RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
-					EndIf
-					ExitLoop
-			EndSelect
-			; 10 seconds max for this loop
-			If TimerDiff($hTimer)> 10000 Then
-				; Something is wrong.
-				MsgBox(48,"Error launching StashApp", _
-					"It takes too long to get StashApp ready. Something is wrong. Exiting.",20)
-				Exit
-			EndIf
-			Sleep(100)
-		Wend
-	EndIf
+If $stashURL = "" Then
+	; Never have $stashURL before. Run it for the first time.
+	$iStashPID = ProcessExists("stash-win.exe")
+	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
+	; Run it for the first time. Merged.
+	$iStashPID = Run($stashFilePath, $stashPath, @SW_HIDE, $STDERR_MERGED)
+	$hTimer = TimerInit()
+	While True
+		Local $sLine = StdoutRead($iStashPID)
+		If @error Then
+			; Stash App is closed.
+			Exit
+		EndIf
+		If $sLine <> "" Then
+			c("*" & $sLine)
+		EndIf
+		Select
+			Case StringInStr($sLine, "stash version:", 2)
+				$stashVersion = StringMid($sLine, StringInStr($sLine, "stash version:", 2))
+				$stashVersion = StringStripWS($stashVersion, $STR_STRIPTRAILING)
+			Case StringInStr($sLine, "stash is running at ")
+				$iPos1 = StringInStr($sLine, "http", 2)
+				$iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
+				$stashURL = StringMid($sLine, $iPos1, $iPos2 -$iPos1)
+				$stashURL = StringStripWS($stashURL, $STR_STRIPTRAILING)
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+				ExitLoop
+		EndSelect
+		; 10 seconds max for this loop
+		If TimerDiff($hTimer)> 10000 Then
+			; Something is wrong.
+			MsgBox(48,"Error launching StashApp", _
+				"It takes too long to get StashApp ready. Something is wrong. Exiting.",20)
+			Exit
+		EndIf
+		Sleep(100)
+	Wend		
 Else
-	; Stash already running.
-	$stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
-	If @error Then $stashURL = "http://localhost:9999/"  ; Last resort
+	; StashURL already saved.
+	Local $aStr = StringRegExp($stashURL, "\:\/\/(.*)\:(\d+)", $STR_REGEXPARRAYMATCH )
+	$sHost = $aStr[0]
+	$sPort = $aStr[1]
+	If $sHost = "localhost" Then 
+		$iStashPID = ProcessExists("stash-win.exe")
+		If $iStashPID = 0 Then
+			; Not running.
+			If $showStashConsole Then 
+				$iStashPID = Run($stashFilePath, $stashPath, @SW_HIDE)
+			Else 
+				$iStashPID = Run($stashFilePath, $stashPath, @SW_SHOW)
+			EndIf 
+		Else
+			; Already running. Get the PID which is listening to that port
+			$iPid = Run(@ComSpec & ' /C netstat -ano|find "0.0.0.0:' & $sPort & '"',"",@SW_HIDE, $STDOUT_CHILD )
+			ProcessWaitClose($iPid)
+			$sReadOut = StdoutRead($iPid)
+			; Get the PID
+			$aStr = StringRegExp($sReadOut, "LISTENING\s+(\d+)", $STR_REGEXPARRAYMATCH)
+			If @error Then
+				; bad or no match
+				$iStashPID = 0
+			Else 
+				; Good match
+				$iStashPID = Int( $aStr[0] )
+			EndIf
+		EndIf
+	Else 
+		$iStashPID = 0 ; No closing in the end.
+	EndIf 
 EndIf
 
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
@@ -172,7 +196,7 @@ _TrayMenuAddImage($hIcons[8], 14)
 Global $trayScan = TrayCreateItem("Scan New Files") 	; 15
 _TrayMenuAddImage($hIcons[14], 15)
 ; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
-Global $trayMovie2Scene = TrayCreateItem("Create movie from scene.") ; 16
+Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 16
 _TrayMenuAddImage($hIcons[15], 16)
 ; GUICtrlSetTip(-1,"Create a movie from current scene.")
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 17
@@ -273,14 +297,17 @@ While True
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
 				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for this huge project." _
 				& @CRLF & "Kudos also go to Christian Faderl's ISN AutoIt Studio! It's such a powerful AutoIt IDE, which making this program much easier to write." _
-				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" ,20)
+				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" _ 
+				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice!"	,20)
 		Case $trayExit
 			ExitScript()
 		Case $traySettings
 			ShowSettings()
 		Case $trayScrapers
 			ScrapersManager()
-		Case $customScenes
+;~ 		Case $trayScrapeSpecial
+;~ 			ScrapeSpecial()
+ 		Case $customScenes
 			CustomList("Scenes", $traySceneLinks)
 		Case $customImages
 			CustomList("Images", $trayImageLinks)
@@ -375,6 +402,57 @@ Exit
 
 #Region Functions
 
+Func ReloadScrapers()
+	; Get the current handle.
+	$sHandle = _WD_Window($sSession, "Window")
+	If $sHandle = "" Then
+		; invalid session. create a new one.
+		$sSession = _WD_CreateSession($sDesiredCapabilities)
+		$sHandle = _WD_NewTab($sSession, Default, Default, "http://localhost:9999/" , Default)
+	EndIf
+	$sHandle = '{"handle":"' & $sHandle & '"}'
+	; New tab for scraper reload.
+	_WD_NewTab($sSession, Default, Default, "http://localhost:9999/settings?tab=scraping" , Default)
+	; OpenURL("http://localhost:9999/settings?tab=scraping")
+	$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
+	Sleep(2000)  ; Just to be safe.
+	If @error =  $_WD_ERROR_Success Then 
+		_WD_ElementAction($sSession, $sButtonID, "Click")
+	EndIf
+	Sleep(2000)
+	; Close the tab
+	_WD_Window($sSession, "Close")
+	; Switch back to the previous tab
+	_WD_Window($sSession, "switch", $sHandle)
+EndFunc
+
+Func GetCurrentTabCategoryAndNumber()
+	Local $sURL = GetURL()
+	If @error then Return SetError(1)
+	; Get the text after http://localhost:9999/
+	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
+	If $sStr = "" Then 
+		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
+		Return SetError(1)
+	EndIf
+	If StringLeft($sStr, 1) = "/" Then 
+		; remove the leading / , just in case
+		$sStr = StringTrimLeft($sStr, 1)
+	EndIf
+	; split either by 
+	$aStr = StringSplit($sStr, "/?=" )
+	If $aStr[0] = 0 Then 
+		MsgBox(0, "Error processing page", "The current browser is unknown.")
+		Return SetError(1)
+	EndIf
+	If $aStr[0] >= 2 Then
+		Return $aStr[1] & "-" & $aStr[2]
+	Else 
+		Return $aStr[1]
+	EndIf
+	
+EndFunc 
+
 Func GetURL()
 	Local $sURL = _WD_Action($sSession, "url")
 	If $sURL = "" Then 
@@ -385,35 +463,24 @@ Func GetURL()
 EndFunc
 
 Func BookmarkCurrentTab()
-	Local $sURL = GetURL()
-	If @error then Return SetError(1)
-	; Get the text after http://localhost:9999/
-	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
-	If $sStr = "" Then 
-		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
-		Return 
-	EndIf
-	If StringLeft($sStr, 1) = "/" Then 
-		; remove the leading / , just in case
-		$sStr = StringTrimLeft($sStr, 1)
-	EndIf
-	; split either by 
-	$aStr = StringSplit($sStr, "/?=" )
-	If $aStr[0] = 0 Then 
-		MsgBox(0, "Error processing page", "The current browser is unknown.")
-		Return 
-	EndIf
-	$sCategory = $aStr[1]
+	$sResult = GetCurrentTabCategoryAndNumber()
+	If @error Then Return SetError(1)
+	$sURL = GetURL()
+	If @error Then Return SetError(1)
+	
 	local $sThing = "thing"
-	If $aStr[0] >= 2 Then
-		If IsNumber($aStr[2]) Then 
-			; Single scene
-			$sThing = "scene"
+	$aStr = StringSplit($sResult, "-")
+	$sCategory = $aStr[1]
+
+	If $aStr[0] = 2 Then
+		If StringIsDigit($aStr[2]) Then 
+			; Single scene/movie
+			$sThing = StringTrimRight($sCategory, 1)
 		ElseIf $aStr[2] = "c" Then 
 			$sThing = StringTrimRight($sCategory, 1) & " collection"
 		EndIf
 	EndIf
-	c("aStr[0]:" & $aStr[0] & " aStr[1]:" & $aStr[1])
+	; c("aStr[0]:" & $aStr[0] & " aStr[1]:" & $aStr[1])
 	; Now we have the thing.
 	$sDescription = InputBox("Title required", "Please enter a brief description/title for this " & $sThing & ".")
 	If $sDescription = "" Then Return
@@ -425,51 +492,68 @@ Func BookmarkCurrentTab()
 			TrayItemDelete($customScenes)
 			$traySceneLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuScenes )
 			$customScenes = TrayCreateItem("Customize...", $trayMenuScenes)
+			SaveMenuItems($sCategory, $traySceneLinks)
 			
 		Case "images"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayImageLinks )
 			TrayItemDelete($customImages)
 			$trayImageLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuImages )
 			$customImages = TrayCreateItem("Customize...", $trayMenuImages)
+			SaveMenuItems($sCategory, $trayImageLinks)
 			
 		Case "movies"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMovieLinks )
 			TrayItemDelete($customMovies)
 			$trayMovieLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMovies )
 			$customMovies = TrayCreateItem("Customize...", $trayMenuMovies)
+			SaveMenuItems($sCategory, $trayMovieLinks)
 			
 		Case "markers"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMarkerLinks )
 			TrayItemDelete($customMarkers)
 			$trayMarkerLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMarkers )
 			$customMarkers = TrayCreateItem("Customize...", $trayMenuMarkers)
+			SaveMenuItems($sCategory, $trayMarkerLinks)
 			
 		Case "galleries"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayGalleryLinks )
 			TrayItemDelete($customGalleries)
 			$trayGalleryLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuGalleries )
 			$customGalleries = TrayCreateItem("Customize...", $trayMenuGalleries)
+			SaveMenuItems($sCategory, $trayGalleryLinks)
 			
 		Case "performers"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayPerformerLinks )
 			TrayItemDelete($customPerformers)
 			$trayPerformerLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuPeformers )
 			$customPerformers = TrayCreateItem("Customize...", $trayMenuPeformers)
+			SaveMenuItems($sCategory, $trayPerformerLinks)
 			
 		Case "Studios"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayStudioLinks )
 			TrayItemDelete($customStudios)
 			$trayStudioLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuStudios )
 			$customStudios = TrayCreateItem("Customize...", $trayMenuStudios)
+			SaveMenuItems($sCategory, $trayStudioLinks)
 			
 		Case "tags"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayTagLinks )
 			TrayItemDelete($customTags)
 			$trayTagLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuTags )
 			$customTags = TrayCreateItem("Customize...", $trayMenuTags)
-
+			SaveMenuItems($sCategory, $trayTagLinks)
+			
 	EndSwitch
 	MsgBox(0, "Bookmark added.", "Successfully added '" & $sDescription & "' to the " & $sCategory & " category.")
+EndFunc
+
+Func SaveMenuItems($sCategory, ByRef $aArray)
+	; Save the menu items to the registry
+	$str = "1|" & $aArray[0][$ITEM_TITLE] & "|" & $aArray[0][$ITEM_LINK]
+	For $i = 1 to $iMaxSubItems-1
+		$str &= "@@@" & String($i+1) & "|" & $aArray[$i][$ITEM_TITLE] & "|" & $aArray[$i][$ITEM_LINK]
+	Next
+	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", $sCategory & "List", "REG_SZ", $str)
 EndFunc
 
 Func AddBookmarkToArray($sTitle, $sLink, ByRef $aArray )
@@ -492,6 +576,7 @@ EndFunc
 
 Func ClearPlayList()
 	ReDim $aPlayList[0][3]
+	MsgBox(0, "Playlist cleared", "OK, now the play list is empty.", 10)
 EndFunc
 
 Func AddSceneOrMovieToList()
@@ -515,14 +600,14 @@ Func SendPlayerList()
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
 	If UBound($aPlayList, $UBOUND_ROWS ) = 0 Then 
-		MsgBox(48,"Play list is empty","There is nothing in the play list. Cannot play it.",0)
+		MsgBox(48,"Play list is empty","There is nothing in the play list. Cannot play it.",10)
 		Return SetError(1)
 	EndIf
 	$sFileName = @TempDir & "\StashPlayList.m3u"
 
 	Local $hFile = FileOpen($sFileName, $FO_OVERWRITE)
 	If $hFile = -1 Then
-		MsgBox($MB_SYSTEMMODAL, "", "An error occurred when creating the file.")
+		MsgBox($MB_SYSTEMMODAL, "", "An error occurred when creating the file.", 10)
 		Return SetError(1)
 	EndIf
 
@@ -557,10 +642,8 @@ Func AddMovieToList()
 	; Now get the movie info
 	$sQuery = '{ "query": "{findMovie(id: ' & $nMovieID & '){name,scene_count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
-	If @error Or QueryResultError($sResult) Then
-		MsgBox(0, "oops.", "Error querying the movie. Result:" & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error Then Return SetError(1)
+	
 	$oResult = Json_Decode($sResult)
 	$oMovieData = Json_ObjGet($oResult, "data.findMovie")
 	; name, scene_count, scenes->id
@@ -574,10 +657,8 @@ Func AddMovieToList()
 		; Now add this scene to the  play list
 		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration} }}"}'
 		$sResult = Query($sQuery)
-		If @error Or QueryResultError($sResult) Then
-			MsgBox(0, "oops.", "Error querying the scene. Result:" & $sResult)
-			Return SetError(1)
-		EndIf
+		If @error Then Return SetError(1)
+
 		$oResult = Json_Decode($sResult)
 		$oSceneData = Json_ObjGet($oResult, "data.findScene")
 		; path
@@ -606,10 +687,8 @@ Func AddSceneToList()
 	; Now get the info about this scene
 	$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){title,path,file{duration}}}"}'
 	$sResult = Query($sQuery)
-	If @error Or QueryResultError($sResult) Then
-		MsgBox(0, "oops.", "Error querying the scene. Result:" & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error Then Return SetError(1)
+
 	$oResult = Json_Decode($sResult)
 	$oData = Json_ObjGet($oResult, "data.findScene")
 	; $oData.Item("title") $oData.Item("path")
@@ -657,7 +736,7 @@ Func ScanFiles()
 	; Scan new files in Stash
 	Query('{"query": "mutation { metadataScan ( input: { useFileMetadata: true } ) } "}')
 	OpenURL("http://localhost:9999/settings?tab=tasks")
-	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.")
+	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.", 10)
 EndFunc
 
 Func PlayMovie()
@@ -794,14 +873,16 @@ Func Query($sQuery)
 		_WinHttpCloseHandle($hConnect)
 		_WinHttpCloseHandle($hOpen)
 		Return SetError(1)
+	ElseIf QueryResultError($result) Then 
+		_WinHttpCloseHandle($hConnect)
+		_WinHttpCloseHandle($hOpen)
+		MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
 	EndIf
 	; Close handles
     _WinHttpCloseHandle($hConnect)
     _WinHttpCloseHandle($hOpen)
 	Return $result
 EndFunc
-
-
 
 
 Func PlayScene()
@@ -826,10 +907,8 @@ Func PlayCurrentScene()
 
 	; This will query the graphql and get the path info
 	$sResult = Query( $sQuery )
-	If @error Or QueryResultError($sResult) Then
-		MsgBox(0, "Oops!", "Error getting the scene info. Result:" & $sResult)
-		Return SetError(1)
-	EndIf
+	If @error  Then Return SetError(1)
+
 	$oData = Json_Decode($sResult)
 	If Not Json_IsObject($oData) Then
 		MsgBox(0, "Data error.", "The data return from stash has errors.")
@@ -1174,7 +1253,9 @@ Func Q($str)
 EndFunc
 
 Func ExitScript()
-	If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
+	If $iStashPID <> 0 Then 
+		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
+	EndIf 
 	if $sSession Then
 		_WD_DeleteSession($sSession)
 		_WD_Shutdown()

@@ -25,8 +25,17 @@ Global Const $E404 = '<html><head><meta http-equiv="Content-Type" content="text/
 					'</head><body bgcolor="#FFFFFF"><h2>Error 404: File not found</h2>'& _
 					'<p>The server which you are requesting the file cannot find the file.</p></body></html>'
 
+;~ If $CmdLine[0] = 0 Then
+;~ 	ConsoleWrite("Error, No parameter." & @CRLF)
+;~ 	Exit
+;~ EndIf
 
-Func MiniWebServer($sBaseDir, $timeout) ; Time out is in milliseconds.
+; Parameter 1 is the base path.
+; MiniWebServer($CmdLine[1])
+
+MiniWebServer(@TempDir)
+
+Func MiniWebServer($sBaseDir, $timeout = 50000000000)
 	Local $listen, $sock, $recv
 
 	Local Const $IP = "127.0.0.1"
@@ -34,7 +43,7 @@ Func MiniWebServer($sBaseDir, $timeout) ; Time out is in milliseconds.
 
 	TCPStartup()
 
-	$listen = TCPListen($IP, $PORT, 1)
+	$listen = TCPListen($IP, $PORT)
 	If $listen = -1 Then
 		$err = @error
 		ConsoleWrite("Error, Unable to connect." & @CRLF & @CRLF & "dec: " & $err & @CRLF & "hex: 0x" & Hex($err, 8))
@@ -71,6 +80,7 @@ Func MiniWebServer($sBaseDir, $timeout) ; Time out is in milliseconds.
 			_SockSend($sock, $Content) ;; Send it seperately so no string conversion.
 		EndIf
 		TCPCloseSocket($sock)		; Close the tcp socket to allow listening afterwards
+		; $listen = TCPListen($IP, $PORT, 1)
 	WEnd
 	TCPShutdown()
 EndFunc
