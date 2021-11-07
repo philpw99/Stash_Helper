@@ -23,7 +23,7 @@
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.8.2"
+Global Const $currentVersion = "v1.8.3"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -120,21 +120,21 @@ If $stashURL = "" Then
 			Exit
 		EndIf
 		Sleep(100)
-	Wend		
+	Wend
 Else
 	; StashURL already saved.
 	Local $aStr = StringRegExp($stashURL, "\:\/\/(.*)\:(\d+)", $STR_REGEXPARRAYMATCH )
 	$sHost = $aStr[0]
 	$sPort = $aStr[1]
-	If $sHost = "localhost" Then 
+	If $sHost = "localhost" Then
 		$iStashPID = ProcessExists("stash-win.exe")
 		If $iStashPID = 0 Then
 			; Not running.
-			If $showStashConsole Then 
-				$iStashPID = Run($stashFilePath, $stashPath, @SW_HIDE)
-			Else 
+			If $showStashConsole Then
 				$iStashPID = Run($stashFilePath, $stashPath, @SW_SHOW)
-			EndIf 
+			Else
+				$iStashPID = Run($stashFilePath, $stashPath, @SW_HIDE)
+			EndIf
 		Else
 			; Already running. Get the PID which is listening to that port
 			$iPid = Run(@ComSpec & ' /C netstat -ano|find "0.0.0.0:' & $sPort & '"',"",@SW_HIDE, $STDOUT_CHILD )
@@ -145,14 +145,14 @@ Else
 			If @error Then
 				; bad or no match
 				$iStashPID = 0
-			Else 
+			Else
 				; Good match
 				$iStashPID = Int( $aStr[0] )
 			EndIf
 		EndIf
-	Else 
+	Else
 		$iStashPID = 0 ; No closing in the end.
-	EndIf 
+	EndIf
 EndIf
 
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
@@ -297,7 +297,7 @@ While True
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
 				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for this huge project." _
 				& @CRLF & "Kudos also go to Christian Faderl's ISN AutoIt Studio! It's such a powerful AutoIt IDE, which making this program much easier to write." _
-				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" _ 
+				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" _
 				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice!"	,20)
 		Case $trayExit
 			ExitScript()
@@ -416,7 +416,7 @@ Func ReloadScrapers()
 	; OpenURL("http://localhost:9999/settings?tab=scraping")
 	$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
 	Sleep(2000)  ; Just to be safe.
-	If @error =  $_WD_ERROR_Success Then 
+	If @error =  $_WD_ERROR_Success Then
 		_WD_ElementAction($sSession, $sButtonID, "Click")
 	EndIf
 	Sleep(2000)
@@ -431,31 +431,31 @@ Func GetCurrentTabCategoryAndNumber()
 	If @error then Return SetError(1)
 	; Get the text after http://localhost:9999/
 	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
-	If $sStr = "" Then 
+	If $sStr = "" Then
 		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
 		Return SetError(1)
 	EndIf
-	If StringLeft($sStr, 1) = "/" Then 
+	If StringLeft($sStr, 1) = "/" Then
 		; remove the leading / , just in case
 		$sStr = StringTrimLeft($sStr, 1)
 	EndIf
-	; split either by 
+	; split either by
 	$aStr = StringSplit($sStr, "/?=" )
-	If $aStr[0] = 0 Then 
+	If $aStr[0] = 0 Then
 		MsgBox(0, "Error processing page", "The current browser is unknown.")
 		Return SetError(1)
 	EndIf
 	If $aStr[0] >= 2 Then
 		Return $aStr[1] & "-" & $aStr[2]
-	Else 
+	Else
 		Return $aStr[1]
 	EndIf
-	
-EndFunc 
+
+EndFunc
 
 Func GetURL()
 	Local $sURL = _WD_Action($sSession, "url")
-	If $sURL = "" Then 
+	If $sURL = "" Then
 		MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
 		Return SetError(1)
 	EndIf
@@ -467,16 +467,16 @@ Func BookmarkCurrentTab()
 	If @error Then Return SetError(1)
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	local $sThing = "thing"
 	$aStr = StringSplit($sResult, "-")
 	$sCategory = $aStr[1]
 
 	If $aStr[0] = 2 Then
-		If StringIsDigit($aStr[2]) Then 
+		If StringIsDigit($aStr[2]) Then
 			; Single scene/movie
 			$sThing = StringTrimRight($sCategory, 1)
-		ElseIf $aStr[2] = "c" Then 
+		ElseIf $aStr[2] = "c" Then
 			$sThing = StringTrimRight($sCategory, 1) & " collection"
 		EndIf
 	EndIf
@@ -485,7 +485,7 @@ Func BookmarkCurrentTab()
 	$sDescription = InputBox("Title required", "Please enter a brief description/title for this " & $sThing & ".")
 	If $sDescription = "" Then Return
 	$sDescription = StringLeft($sDescription, 50)
-	
+
 	Switch $sCategory
 		Case "scenes"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $traySceneLinks )
@@ -493,86 +493,90 @@ Func BookmarkCurrentTab()
 			$traySceneLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuScenes )
 			$customScenes = TrayCreateItem("Customize...", $trayMenuScenes)
 			SaveMenuItems($sCategory, $traySceneLinks)
-			
+
 		Case "images"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayImageLinks )
 			TrayItemDelete($customImages)
 			$trayImageLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuImages )
 			$customImages = TrayCreateItem("Customize...", $trayMenuImages)
 			SaveMenuItems($sCategory, $trayImageLinks)
-			
+
 		Case "movies"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMovieLinks )
 			TrayItemDelete($customMovies)
 			$trayMovieLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMovies )
 			$customMovies = TrayCreateItem("Customize...", $trayMenuMovies)
 			SaveMenuItems($sCategory, $trayMovieLinks)
-			
+
 		Case "markers"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMarkerLinks )
 			TrayItemDelete($customMarkers)
 			$trayMarkerLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMarkers )
 			$customMarkers = TrayCreateItem("Customize...", $trayMenuMarkers)
 			SaveMenuItems($sCategory, $trayMarkerLinks)
-			
+
 		Case "galleries"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayGalleryLinks )
 			TrayItemDelete($customGalleries)
 			$trayGalleryLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuGalleries )
 			$customGalleries = TrayCreateItem("Customize...", $trayMenuGalleries)
 			SaveMenuItems($sCategory, $trayGalleryLinks)
-			
+
 		Case "performers"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayPerformerLinks )
 			TrayItemDelete($customPerformers)
 			$trayPerformerLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuPeformers )
 			$customPerformers = TrayCreateItem("Customize...", $trayMenuPeformers)
 			SaveMenuItems($sCategory, $trayPerformerLinks)
-			
+
 		Case "Studios"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayStudioLinks )
 			TrayItemDelete($customStudios)
 			$trayStudioLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuStudios )
 			$customStudios = TrayCreateItem("Customize...", $trayMenuStudios)
 			SaveMenuItems($sCategory, $trayStudioLinks)
-			
+
 		Case "tags"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayTagLinks )
 			TrayItemDelete($customTags)
 			$trayTagLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuTags )
 			$customTags = TrayCreateItem("Customize...", $trayMenuTags)
 			SaveMenuItems($sCategory, $trayTagLinks)
-			
+
 	EndSwitch
 	MsgBox(0, "Bookmark added.", "Successfully added '" & $sDescription & "' to the " & $sCategory & " category.")
 EndFunc
 
 Func SaveMenuItems($sCategory, ByRef $aArray)
 	; Save the menu items to the registry
+	; First letter should be capital.
+	$sCat = StringUpper(stringleft($sCategory, 1)) & stringmid($sCategory, 2)
+	; First item
 	$str = "1|" & $aArray[0][$ITEM_TITLE] & "|" & $aArray[0][$ITEM_LINK]
+	; the rest
 	For $i = 1 to $iMaxSubItems-1
 		$str &= "@@@" & String($i+1) & "|" & $aArray[$i][$ITEM_TITLE] & "|" & $aArray[$i][$ITEM_LINK]
 	Next
-	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", $sCategory & "List", "REG_SZ", $str)
+	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", $sCat & "List", "REG_SZ", $str)
 EndFunc
 
 Func AddBookmarkToArray($sTitle, $sLink, ByRef $aArray )
 	For $i = 0 to $iMaxSubItems -1
-		If $aArray[$i][$ITEM_TITLE] = "" Then ExitLoop 
+		If $aArray[$i][$ITEM_TITLE] = "" Then ExitLoop
 	Next
 	; if all 20 is used, then $i will be the last one
-	If $i = 19 Then 
+	If $i = 19 Then
 	; Special handling of the 20th
-		If $aArray[19][$ITEM_HANDLE] <> Null Then 
+		If $aArray[19][$ITEM_HANDLE] <> Null Then
 			TrayItemDelete($aArray[19][$ITEM_HANDLE])
 		EndIf
 	EndIf
-	
+
 	$aArray[$i][$ITEM_TITLE] = $sTitle
 	$aArray[$i][$ITEM_LINK] = $sLink
 	Return $i
 	; return the $row that's added.
-EndFunc 
+EndFunc
 
 Func ClearPlayList()
 	ReDim $aPlayList[0][3]
@@ -580,26 +584,26 @@ Func ClearPlayList()
 EndFunc
 
 Func AddSceneOrMovieToList()
-	
+
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	If StringRegExp($sURL, "\/scenes\/\d+") Then
 		; A Scene
 		AddSceneToList()
 	ElseIf StringRegExp($sURL, "\/movies\/\d+") Then
 		; A Movie
 		AddMovieToList()
-	Else 
+	Else
 		MsgBox(0, "Not a movie or scene", "Sorry, the current browser is neither a movie or a scene.")
 	EndIf
-EndFunc 
+EndFunc
 
 Func SendPlayerList()
 	; Send the media player a temporary list and let it play.
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
-	If UBound($aPlayList, $UBOUND_ROWS ) = 0 Then 
+	If UBound($aPlayList, $UBOUND_ROWS ) = 0 Then
 		MsgBox(48,"Play list is empty","There is nothing in the play list. Cannot play it.",10)
 		Return SetError(1)
 	EndIf
@@ -636,14 +640,14 @@ Func AddMovieToList()
 
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	$nMovieID = GetNumber($sURL, "movies")
 
 	; Now get the movie info
 	$sQuery = '{ "query": "{findMovie(id: ' & $nMovieID & '){name,scene_count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
-	
+
 	$oResult = Json_Decode($sResult)
 	$oMovieData = Json_ObjGet($oResult, "data.findMovie")
 	; name, scene_count, scenes->id
@@ -681,7 +685,7 @@ Func AddSceneToList()
 
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	$nSceneID = GetNumber($sURL, "scenes")
 
 	; Now get the info about this scene
@@ -750,7 +754,7 @@ Func PlayMovie()
 	; Movie tab found and set current
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	$nMovie = GetNumber($sURL, "movies")
 	PlayMovieInCurrentTab($nMovie)
 EndFunc
@@ -770,7 +774,7 @@ Func SwitchToTab($sCategory)
 	; First check if the currrent tab is the right one
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	$sSearchRegEx = "\/" & $sCategory & "\/\d+"
 	If StringRegExp($sURL, $sSearchRegEx) Then
 		; Current tab matches. It's a scene or movie.
@@ -873,7 +877,7 @@ Func Query($sQuery)
 		_WinHttpCloseHandle($hConnect)
 		_WinHttpCloseHandle($hOpen)
 		Return SetError(1)
-	ElseIf QueryResultError($result) Then 
+	ElseIf QueryResultError($result) Then
 		_WinHttpCloseHandle($hConnect)
 		_WinHttpCloseHandle($hOpen)
 		MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
@@ -899,7 +903,7 @@ EndFunc
 Func PlayCurrentScene()
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	$aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
 	c("scene id:" & $aMatch[0])
 	$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
@@ -1154,11 +1158,84 @@ Func CreateSubMenu()
 
 EndFunc
 
-Func ReloadMenu()
+Func ReloadMenu($sCategory)
 	; Delete all sub-menu items
-	DeleteAllSubMenu()
+	; DeleteAllSubMenu()
 	; Recreate all sub-menu items
-	CreateSubMenu()
+	; CreateSubMenu()
+	Switch $sCategory
+		Case "scenes"
+			TrayItemDelete($customScenes)
+			ReloadSubMenu($sCategory, $traySceneLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuScenes)
+
+		Case "images"
+			TrayItemDelete($customImages)
+			ReloadSubMenu($sCategory, $trayImageLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuImages)
+
+		Case "movies"
+			TrayItemDelete($customMovies)
+			ReloadSubMenu($sCategory, $trayMovieLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuMovies)
+
+		Case "markers"
+			TrayItemDelete($customMarkers)
+			ReloadSubMenu($sCategory, $trayMarkerLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuMarkers)
+
+		Case "galleries"
+			TrayItemDelete($customGalleries)
+			ReloadSubMenu($sCategory, $trayGalleryLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuGalleries)
+
+		Case "performers"
+			TrayItemDelete($customPerformers)
+			ReloadSubMenu($sCategory, $trayPerformerLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuPeformers)
+
+		Case "Studios"
+			TrayItemDelete($customStudios)
+			ReloadSubMenu($sCategory, $trayStudioLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuStudios)
+
+		Case "tags"
+			TrayItemDelete($customTags)
+			ReloadSubMenu($sCategory, $trayTagLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuTags)
+
+	EndSwitch
+
+EndFunc
+
+Func ReloadSubMenu($sCategory, ByRef $aArray)
+	; $sCategory is like "movies","scenes"...
+	; Make the first one capital letter.
+	$sCat = StringUpper(stringleft($sCategory, 1)) & StringMid($sCategory, 2)
+	; Delete all the submenu items
+	For $i = 0 To UBound($aArray) -1
+		If $aArray[$i][$ITEM_HANDLE] <> Null Then
+			TrayItemDelete($aArray[$i][$ITEM_HANDLE])
+		EndIf
+	Next
+	; Load data from registry.
+	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", $sCat & "List")
+	If @error Then
+		; No data yet. Set the first item in array
+		SetMenuItem($aArray,0, 0, "All " & $sCat, $stashURL & $sCategory)
+	Else
+		; Setting all the data
+		; Data is like "0|All Movies|http://localhost...@crlf 1|Second Item|http:..."
+		DataToArray($sData, $aArray)
+	EndIf
+	; Now $aArray is like [1][null][Title1][Link1],[2][null][title2][link2]...
+		; Populate the scenes sub menu
+	For $i = 0 To UBound($aArray) -1
+		If $aArray[$i][$ITEM_TITLE] <> "" Then
+			$aArray[$i][$ITEM_HANDLE] = TrayCreateItem($aArray[$i][$ITEM_TITLE], Execute("$trayMenu" & $sCat))
+		EndIf
+	Next
+
 EndFunc
 
 Func DeleteAllSubMenu()
@@ -1253,9 +1330,9 @@ Func Q($str)
 EndFunc
 
 Func ExitScript()
-	If $iStashPID <> 0 Then 
+	If $iStashPID <> 0 Then
 		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
-	EndIf 
+	EndIf
 	if $sSession Then
 		_WD_DeleteSession($sSession)
 		_WD_Shutdown()

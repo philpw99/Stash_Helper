@@ -24,10 +24,10 @@ Func ScrapersManager()
 	; Disable the tray clicks
 	TraySetClick(0)
 	
-	$guiScrapers = GUICreate("Scrapers Management",1703,1438,-1,-1,$WS_SIZEBOX,-1)
+	$guiScrapers = GUICreate("Scrapers Management",1700,1030,-1,-1,$WS_SIZEBOX,-1)
 	GUISetIcon("helper2.ico")
 	
-	$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1621,1056,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+	$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,102)
 	; Website

@@ -96,14 +96,13 @@ Func CustomList($sCategory, ByRef $aCategory)
 				Next
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", $sCategory & "List", "REG_SZ", $str)
 				; Need to load the Items here.
-				ReloadMenu()
+				ReloadMenu($sCategory)
 				ExitLoop
 			Case $btnDelete
 				If _GUICtrlListView_GetSelectedCount($customList) = 0 Then 
 					MsgBox(0, "No item is selected", "Please select a row first.")
 					ContinueLoop 
 				EndIf
-				
 				; Now $iRow is the one needs to be deleted.
 				_GUIListViewEx_SetActive($iLV_Index)
 				; Delete the selected one.

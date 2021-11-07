@@ -8,8 +8,8 @@
 
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
-$Scrapers = GUICreate("Scrapers Management",1703,1438,-1,-1,$WS_SIZEBOX,-1)
-$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1621,1056,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+$Scrapers = GUICreate("Scrapers Management",1703,1031,-1,-1,$WS_SIZEBOX,-1)
+$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetResizing(-1,102)
 ; Website
@@ -64,7 +64,7 @@ Handle_deklaration=default
 Handle_deklaration_const=false
 title=Scrapers Management
 breite=1703
-hoehe=1438
+hoehe=1031
 style=$WS_SIZEBOX
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -95,15 +95,15 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x002C2002]
+[0x00081E6E]
 type=listview
 handle=432
 locked=0
 resize=102
 x=40
 y=290
-width=1621
-height=1056
+width=1620
+height=680
 func=
 font=Tahoma
 fontsize=10
@@ -124,7 +124,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x003F14EC]
+[0x00031E74]
 type=label
 handle=433
 locked=0
@@ -153,7 +153,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00852260]
+[0x00011E76]
 type=button
 handle=434
 locked=0
@@ -182,7 +182,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x002E142E]
+[0x00011E78]
 type=button
 handle=435
 locked=0
@@ -211,7 +211,7 @@ order=4
 iconindex=
 iconlarge=0
 textmode=text
-[0x004D16AA]
+[0x00011E7A]
 type=input
 handle=436
 locked=0
@@ -240,7 +240,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x001E187C]
+[0x00011E7C]
 type=button
 handle=437
 locked=0
@@ -269,7 +269,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00271386]
+[0x00011E7E]
 type=button
 handle=438
 locked=0
