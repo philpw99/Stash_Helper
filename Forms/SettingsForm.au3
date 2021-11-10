@@ -200,7 +200,7 @@ Func ShowSettings()
 					_WD_Shutdown()
 				EndIf 
 				Local $b64 = ( @OSArch = "X64" )
-				Local $bGood = _WD_UPdateDriver ("firefox", Default , $b64, True) ; Force update
+				Local $bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
 				If Not $bGood Then 
 					MsgBox(48,"Error Getting Firefox Driver", _ 
 					"There is an error getting the driver for Firefox. Maybe your Internet is down?" _ 
@@ -220,7 +220,7 @@ Func ShowSettings()
 					_WD_DeleteSession($sSession)
 					_WD_Shutdown()
 				EndIf 
-				Local $bGood = _WD_UPdateDriver ("chrome", Default , Default, True) ; Force update
+				Local $bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default, True) ; Force update
 				If Not $bGood Then 
 					MsgBox(48,"Error Getting Chrome Driver", _ 
 					"There is an error getting the driver for Chrome. Maybe your Internet is down?" _ 
@@ -240,7 +240,7 @@ Func ShowSettings()
 					_WD_Shutdown()
 				EndIf 
 				Local $b64 = ( @OSArch = "X64" )
-				Local $bGood = _WD_UPdateDriver ("msedge", Default , $b64 , True) ; Force update
+				Local $bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
 				If Not $bGood Then 
 					MsgBox(48,"Error Getting ms edge Driver", _ 
 					"There is an error getting the driver for MS Edge. Maybe your Internet is down?" _ 

@@ -61,8 +61,6 @@ Global $sDesiredCapabilities, $sSession
 Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
-
-
 Local $sIconPath = @ScriptDir & "\images\icons\"
 Local $hIcons[18]	; 18 (0-17) bmps  for the tray menus
 For $i = 0 to 17
