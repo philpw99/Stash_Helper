@@ -23,7 +23,7 @@
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.8.3"
+Global Const $currentVersion = "v1.9"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -62,8 +62,8 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[18]	; 18 (0-17) bmps  for the tray menus
-For $i = 0 to 17
+Local $hIcons[19]	; 18 (0-17) bmps  for the tray menus
+For $i = 0 to 18
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -197,19 +197,23 @@ _TrayMenuAddImage($hIcons[14], 15)
 Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 16
 _TrayMenuAddImage($hIcons[15], 16)
 ; GUICtrlSetTip(-1,"Create a movie from current scene.")
-Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 17
-_TrayMenuAddImage($hIcons[16], 17)
+Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 17
+_TrayMenuAddImage($hIcons[18], 17)
+
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 18
+_TrayMenuAddImage($hIcons[16], 18)
 Global $trayAddSceneOrMovieToList = TrayCreateItem("Add Current Scene/Movie to Play List         Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
-TrayCreateItem("")										; 18
-Global $traySettings = TrayCreateItem("Settings")		; 19
+
+TrayCreateItem("")										; 19
+Global $traySettings = TrayCreateItem("Settings")		; 20
 _TrayMenuAddImage($hIcons[9], 19)
-Global $trayAbout = TrayCreateItem("About")				; 20
+Global $trayAbout = TrayCreateItem("About")				; 21
 _TrayMenuAddImage($hIcons[10], 20)
-Global $trayExit = TrayCreateItem("Exit")				; 21
+Global $trayExit = TrayCreateItem("Exit")				; 22
 _TrayMenuAddImage($hIcons[11], 21)
 
 ; Sub menu items for tools
@@ -282,7 +286,7 @@ HotKeySet("^!m", "ManagePlayList")
 HotKeySet("^!p", "SendPlayerList")
 ; Ctrl+Alt+B to bookmark the current browser tab.
 HotKeySet("^!b", "BookmarkCurrentTab")
-
+HotKeySet("^!o", "OpenMediaFolder")
 
 ; Looping to get message
 While True
@@ -339,6 +343,8 @@ While True
 			SendPlayerList()
 		Case $trayMenuBookmark
 			BookmarkCurrentTab()
+		Case $trayOpenFolder
+			OpenMediaFolder()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -400,6 +406,95 @@ Exit
 
 #Region Functions
 
+Func OpenMediaFolder()
+	$sResult = GetCurrentTabCategoryAndNumber()
+	If @error Then Return SetError(1)
+	; Return string is like "scenes-11" or "scenes"
+	If StringInStr($sResult, "-") = 0 Then 
+		; in main category or collection
+		MsgBox(0, "Need specific item", "The current browser is showing a collection, need to show specific scene/movie/image/gallery." )
+		Return 
+	EndIf
+
+	Local $aStr = StringSplit($sResult, "-")
+	Switch $aStr[1]
+		Case "performers"
+			MsgBox(0, "Cannot be a performer", "No folder location for performers.")
+			Return 
+		Case "studios"
+			MsgBox(0, "Cannot be a studio", "No folder location for studios.")
+			Return 
+		Case "markers"
+			MsgBox(0, "Cannot be markers", "Sorry, no support for markers yet.")
+			Return 
+		Case "movies"
+			; Now get the movie info
+			$sQuery = '{ "query": "{findMovie(id: ' & $aStr[2] & '){name,scene_count,scenes{id}}}" }'
+			$sResult = Query($sQuery)
+			If @error Then Return SetError(1)
+
+			$oResult = Json_Decode($sResult)
+			$oMovieData = Json_ObjGet($oResult, "data.findMovie")
+			; name, scene_count, scenes->id
+			$iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
+			If $iCount = 0 Then
+				MsgBox(0, "No scene", "There is no scene in this movie.")
+				Return SetError(1)
+			EndIf
+			; Just need the first scene location
+			$nSceneID = $oMovieData.Item("scenes")[0].Item("id")
+			$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path}}"}'
+			$sResult = Query($sQuery)
+			If @error Then Return SetError(1)
+			; Query and Get the full path\filename
+			$oResult = Json_Decode($sResult)
+			$oSceneData = Json_ObjGet($oResult, "data.findScene")
+			$sFilePath = $oSceneData.Item("path")
+			; Geth the path only
+			$iPos =  StringInStr($sFilePath, "\", 2, -1)
+			$sPath = StringLeft($sFilePath, $iPos)
+			ShellExecute($sPath)
+			
+		Case "scenes"
+			$sQuery = '{"query":"{findScene(id:' & $aStr[2] & '){path}}"}'
+			$sResult = Query($sQuery)
+			If @error Then Return SetError(1)
+			; Query and Get the full path\filename
+			$oResult = Json_Decode($sResult)
+			$oSceneData = Json_ObjGet($oResult, "data.findScene")
+			$sFilePath = $oSceneData.Item("path")
+			; Geth the path only
+			$iPos =  StringInStr($sFilePath, "\", 2, -1)
+			$sPath = StringLeft($sFilePath, $iPos)
+			ShellExecute($sPath)
+		Case "images"
+			$sQuery = '{"query":"{findImage(id:' & $aStr[2] & '){path}}"}'
+			$sResult = Query($sQuery)
+			If @error Then Return SetError(1)
+			; Query and Get the full path\filename
+			$oResult = Json_Decode($sResult)
+			$oSceneData = Json_ObjGet($oResult, "data.findImage")
+			$sFilePath = $oSceneData.Item("path")
+			; Geth the path only
+			$iPos =  StringInStr($sFilePath, "\", 2, -1)
+			$sPath = StringLeft($sFilePath, $iPos)
+			ShellExecute($sPath)
+		Case "galleries"
+			$sQuery = '{"query":"{findGallery(id:' & $aStr[2] & '){path}}"}'
+			$sResult = Query($sQuery)
+			If @error Then Return SetError(1)
+			; Query and Get the full path\filename
+			$oResult = Json_Decode($sResult)
+			$oSceneData = Json_ObjGet($oResult, "data.findGallery")
+			$sFilePath = $oSceneData.Item("path")
+			; Geth the path only
+			$iPos =  StringInStr($sFilePath, "\", 2, -1)
+			$sPath = StringLeft($sFilePath, $iPos)
+			ShellExecute($sPath)
+
+	EndSwitch 	
+EndFunc
+
 Func ReloadScrapers()
 	; Get the current handle.
 	$sHandle = _WD_Window($sSession, "Window")
@@ -443,6 +538,7 @@ Func GetCurrentTabCategoryAndNumber()
 		MsgBox(0, "Error processing page", "The current browser is unknown.")
 		Return SetError(1)
 	EndIf
+	
 	If $aStr[0] >= 2 Then
 		Return $aStr[1] & "-" & $aStr[2]
 	Else
