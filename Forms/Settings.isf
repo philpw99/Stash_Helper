@@ -5,85 +5,85 @@
 #Include <GuiButton.au3>
 #include <EditConstants.au3>
 
-$Settings = GUICreate("Settings",801,1042,-1,-1,-1,-1)
-GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,574,129,-1,-1)
-GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+$Settings = GUICreate("Settings",800,940,-1,-1,-1,-1)
+GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,566,96,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-GUICtrlCreateLabel("Stash-win.exe location:",66,539,299,37,-1,-1)
-GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlCreateLabel("Stash-win.exe location:",67,436,299,37,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-$stashWinLocation = GUICtrlCreateInput("",66,590,473,36,-1,$WS_EX_CLIENTEDGE)
+$stashWinLocation = GUICtrlCreateInput("",67,487,473,36,-1,$WS_EX_CLIENTEDGE)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$btnBrowseStash = GUICtrlCreateButton("Browse",566,584,142,42,-1,-1)
+$btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Browse for the stash-win.exe")
-$chooseFirefox = GUICtrlCreateRadio("Firefox",166,237,147,38,$BS_AUTORADIOBUTTON,-1)
-GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlCreateGroup("Preferred Browser",97,164,442,262,$BS_CENTER,-1)
-GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseChrome = GUICtrlCreateRadio("Chrome",166,299,147,38,$BS_AUTORADIOBUTTON,-1)
-GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseEdge = GUICtrlCreateRadio("MS Edge",166,367,147,38,$BS_AUTORADIOBUTTON,-1)
-GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$btnDone = GUICtrlCreateButton("Done",535,930,173,63,-1,-1)
+$chooseFirefox = GUICtrlCreateRadio("Firefox",166,187,147,38,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateGroup("Preferred Browser",97,136,444,205,$BS_CENTER,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseChrome = GUICtrlCreateRadio("Chrome",166,239,147,38,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseEdge = GUICtrlCreateRadio("MS Edge",166,287,147,38,$BS_AUTORADIOBUTTON,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Save the settings.")
-$updateFirefox = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
+$updateFirefox = GUICtrlCreateButton("Update",387,195,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-$updateChrome = GUICtrlCreateButton("Update",387,305,112,32,-1,-1)
+$updateChrome = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-$updateEdge = GUICtrlCreateButton("Update",387,373,112,32,-1,-1)
+$updateEdge = GUICtrlCreateButton("Update",387,293,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-GUICtrlCreateLabel("Drivers",407,207,83,24,-1,-1)
+GUICtrlCreateLabel("Drivers",407,157,83,24,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
 GUICtrlSetResizing(-1,802)
-$showStash = GUICtrlCreateCheckbox("Show Stash Console",169,447,258,34,-1,-1)
+$showStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
-$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",169,488,304,34,-1,-1)
+$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
-GUICtrlCreateLabel("Alternative player location:",69,753,407,37,-1,-1)
-GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlCreateLabel("Alternative player location:",71,630,407,37,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-$mediaPlayerLocation = GUICtrlCreateInput("",69,804,473,36,-1,$WS_EX_CLIENTEDGE)
+$mediaPlayerLocation = GUICtrlCreateInput("",71,681,473,36,-1,$WS_EX_CLIENTEDGE)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to player the scene file.")
-$btnBrowsePlayer = GUICtrlCreateButton("Browse",566,798,142,42,-1,-1)
+$btnBrowsePlayer = GUICtrlCreateButton("Browse",565,675,142,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
-$stashURLinput = GUICtrlCreateInput("",68,675,473,36,-1,$WS_EX_CLIENTEDGE)
+$stashURLinput = GUICtrlCreateInput("",69,572,473,36,-1,$WS_EX_CLIENTEDGE)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
-GUICtrlCreateLabel("Stash URL:",68,634,299,37,-1,-1)
-GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+GUICtrlCreateLabel("Stash URL:",69,531,299,37,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-$btnPlayerPot = GUICtrlCreateButton("PotPlayer",68,906,133,40,-1,-1)
+$btnPlayerPot = GUICtrlCreateButton("PotPlayer",74,795,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
-GUICtrlCreateLabel("Player Presets:",80,860,162,30,-1,-1)
+GUICtrlCreateLabel("Player Presets:",86,749,162,30,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
-$btnPlayerVLC = GUICtrlCreateButton("VLC",201,906,133,40,-1,-1)
+$btnPlayerVLC = GUICtrlCreateButton("VLC",207,795,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
-$btnPlayerMPC = GUICtrlCreateButton("MPC",334,906,133,40,-1,-1)
+$btnPlayerMPC = GUICtrlCreateButton("MPC",340,795,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Media Player Classic from  mpc-hc.org")
-$btnPlayerGOM = GUICtrlCreateButton("GOM",68,953,133,40,-1,-1)
+$btnPlayerGOM = GUICtrlCreateButton("GOM",74,842,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"GOM Player from player.gomlab.com")
-$btnPlayerKodi = GUICtrlCreateButton("Kodi",201,953,133,40,-1,-1)
+$btnPlayerKodi = GUICtrlCreateButton("Kodi",207,842,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
-$btnPlayerKMP = GUICtrlCreateButton("KMP",334,953,133,40,-1,-1)
+$btnPlayerKMP = GUICtrlCreateButton("KMP",340,842,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
-$chk64Bit = GUICtrlCreateCheckbox("64 Bit",282,860,99,38,-1,-1)
+$chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
 GUICtrlSetState(-1,BitOr($GUI_CHECKED,$GUI_SHOW,$GUI_ENABLE))
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
@@ -94,8 +94,8 @@ GUICtrlSetFont(-1,10,400,0,"Tahoma")
 Handle_deklaration=default
 Handle_deklaration_const=false
 title=Settings
-breite=801
-hoehe=1042
+breite=800
+hoehe=940
 style=-1
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -126,18 +126,18 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00142228]
+[0x000E0E64]
 type=label
 handle=432
 locked=0
 resize=
 x=100
 y=40
-width=574
-height=129
+width=566
+height=96
 func=
 font=Palatino Linotype
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -155,18 +155,18 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C2184]
+[0x00070E66]
 type=label
 handle=433
 locked=0
 resize=
-x=66
-y=539
+x=67
+y=436
 width=299
 height=37
 func=
 font=Palatino Linotype
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -184,13 +184,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00452004]
+[0x00070E68]
 type=input
 handle=434
 locked=0
 resize=
-x=66
-y=590
+x=67
+y=487
 width=473
 height=36
 func=
@@ -213,13 +213,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x004D200A]
+[0x00070E6E]
 type=button
 handle=435
 locked=0
 resize=
 x=566
-y=584
+y=481
 width=142
 height=42
 func=
@@ -242,18 +242,18 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x002916D2]
+[0x00070E6C]
 type=radio
 handle=436
 locked=0
 resize=
 x=166
-y=237
+y=187
 width=147
 height=38
 func=
 font=Tahoma
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -271,18 +271,18 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00212048]
+[0x000E0E6A]
 type=group
 handle=437
 locked=0
 resize=
 x=97
-y=164
-width=442
-height=262
+y=136
+width=444
+height=205
 func=
 font=Tahoma
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -300,18 +300,18 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00171154]
+[0x00090EA4]
 type=radio
 handle=438
 locked=0
 resize=
 x=166
-y=299
+y=239
 width=147
 height=38
 func=
 font=Tahoma
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -329,18 +329,18 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x001B2038]
+[0x000B0E58]
 type=radio
 handle=439
 locked=0
 resize=
 x=166
-y=367
+y=287
 width=147
 height=38
 func=
 font=Tahoma
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -358,13 +358,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x00681F78]
+[0x00080C7E]
 type=button
 handle=440
 locked=0
 resize=
-x=535
-y=930
+x=541
+y=819
 width=173
 height=63
 func=
@@ -387,13 +387,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C21A0]
+[0x000E1A60]
 type=button
 handle=441
 locked=0
 resize=
 x=387
-y=245
+y=195
 width=112
 height=32
 func=
@@ -416,13 +416,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C200C]
+[0x000C1A3E]
 type=button
 handle=442
 locked=0
 resize=
 x=387
-y=305
+y=245
 width=112
 height=32
 func=
@@ -445,13 +445,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=11
-[0x000B2014]
+[0x000C1882]
 type=button
 handle=443
 locked=0
 resize=
 x=387
-y=373
+y=293
 width=112
 height=32
 func=
@@ -474,13 +474,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=12
-[0x00172018]
+[0x000E189A]
 type=label
 handle=444
 locked=0
 resize=802
 x=407
-y=207
+y=157
 width=83
 height=24
 func=
@@ -503,13 +503,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000E2034]
+[0x00091A4A]
 type=checkbox
 handle=445
 locked=0
 resize=
-x=169
-y=447
+x=168
+y=353
 width=258
 height=34
 func=
@@ -532,13 +532,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000B2036]
+[0x000B1788]
 type=checkbox
 handle=446
 locked=0
 resize=
-x=169
-y=488
+x=168
+y=394
 width=304
 height=34
 func=
@@ -561,18 +561,18 @@ iconindex=
 iconlarge=0
 textmode=text
 order=15
-[0x001C199C]
+[0x00091786]
 type=label
 handle=447
 locked=0
 resize=
-x=69
-y=753
+x=71
+y=630
 width=407
 height=37
 func=
 font=Palatino Linotype
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -590,13 +590,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=16
-[0x00052046]
+[0x00071760]
 type=input
 handle=448
 locked=0
 resize=
-x=69
-y=804
+x=71
+y=681
 width=473
 height=36
 func=
@@ -619,13 +619,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=17
-[0x000520B0]
+[0x00061A62]
 type=button
 handle=449
 locked=0
 resize=
-x=566
-y=798
+x=565
+y=675
 width=142
 height=42
 func=
@@ -648,13 +648,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=18
-[0x000520B4]
+[0x00070C88]
 type=input
 handle=450
 locked=0
 resize=
-x=68
-y=675
+x=69
+y=572
 width=473
 height=36
 func=
@@ -677,18 +677,18 @@ iconindex=
 iconlarge=0
 textmode=text
 order=19
-[0x000520B2]
+[0x00061A5C]
 type=label
 handle=451
 locked=0
 resize=
-x=68
-y=634
+x=69
+y=531
 width=299
 height=37
 func=
 font=Palatino Linotype
-fontsize=12
+fontsize=10
 fontstyle=400
 fontattribute=0
 tooltip=
@@ -706,13 +706,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=20
-[0x00052088]
+[0x00061A5E]
 type=button
 handle=452
 locked=0
 resize=
-x=68
-y=906
+x=74
+y=795
 width=133
 height=40
 func=
@@ -735,13 +735,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0005204C]
+[0x0007178E]
 type=label
 handle=453
 locked=0
 resize=
-x=80
-y=860
+x=86
+y=749
 width=162
 height=30
 func=
@@ -764,13 +764,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0006204E]
+[0x00070DBA]
 type=button
 handle=454
 locked=0
 resize=
-x=201
-y=906
+x=207
+y=795
 width=133
 height=40
 func=
@@ -793,13 +793,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=23
-[0x00072052]
+[0x00071038]
 type=button
 handle=455
 locked=0
 resize=
-x=334
-y=906
+x=340
+y=795
 width=133
 height=40
 func=
@@ -822,13 +822,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=24
-[0x00072054]
+[0x00071980]
 type=button
 handle=456
 locked=0
 resize=
-x=68
-y=953
+x=74
+y=842
 width=133
 height=40
 func=
@@ -851,13 +851,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=25
-[0x00052056]
+[0x000703B6]
 type=button
 handle=457
 locked=0
 resize=
-x=201
-y=953
+x=207
+y=842
 width=133
 height=40
 func=
@@ -880,13 +880,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=26
-[0x00052058]
+[0x000819C2]
 type=button
 handle=458
 locked=0
 resize=
-x=334
-y=953
+x=340
+y=842
 width=133
 height=40
 func=
@@ -909,13 +909,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=27
-[0x00641C80]
+[0x0007197E]
 type=checkbox
 handle=459
 locked=0
 resize=
-x=282
-y=860
+x=288
+y=749
 width=99
 height=38
 func=
