@@ -6,15 +6,15 @@
 
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
-$ScrapeConfirm = GUICreate("Scrape The Unscrapable Explained",1049,617,-1,-1,$WS_SIZEBOX,-1)
-GUICtrlCreateLabel("Q: Why we need this special scraper?"&@crlf&"A: Some websites have paywalls/login/scraping blocks, which will effective blocks the uses of any scrapers."&@crlf&"Now this function is using Webdriver to open the webpage and let you bypass all those protections."&@crlf&"To use it:"&@crlf&"  1. Get the URL ready in the clipboard. Paste it in the inputbox coming up next."&@crlf&"  2. Stash_Helper then will open a new webpage with the URL you pasted. Click on login/verification or anything that's required to see the real content."&@crlf&"  3. When the webpage is finally ready for scraping, click on the 'Start Scraping' button in the small window."&@crlf&"Stash_Helper will fetch the webpage to a temp folder, uses a special scraper called 'StashHelper.yml' to scrape the content. And you will see the result.",60,30,942,373,-1,-1)
+$ScrapeConfirm = GUICreate("Scrape The Unscrapable Explained",791,581,-1,-1,$WS_SIZEBOX,-1)
+GUICtrlCreateLabel("Q: Why we need special scrapers?"&@crlf&""&@crlf&"A: Some websites have paywalls/login/anti-scraping blocks, which will effective blocks the uses of any scrapers in Stash."&@crlf&""&@crlf&"This function will use Webdriver to open the webpage and let you bypass all those protections."&@crlf&""&@crlf&"Due to my program limits, image/cover scraping probably will fail.",60,30,687,292,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
 GUICtrlSetResizing(-1,102)
-$chkNotShowExplanation = GUICtrlCreateCheckbox("I got it. Don't show this again.",293,430,413,45,-1,-1)
+$chkNotShowExplanation = GUICtrlCreateCheckbox("I got it. Don't show this again.",162,328,413,45,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetResizing(-1,960)
-$btnOK = GUICtrlCreateButton("OK",370,510,271,53,-1,-1)
+$btnOK = GUICtrlCreateButton("OK",217,398,271,53,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetResizing(-1,960)
 
@@ -25,8 +25,8 @@ GUICtrlSetResizing(-1,960)
 Handle_deklaration=default
 Handle_deklaration_const=false
 title=Scrape The Unscrapable Explained
-breite=1049
-hoehe=617
+breite=791
+hoehe=581
 style=$WS_SIZEBOX
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -57,15 +57,15 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x0008245C]
+[0x00082528]
 type=label
 handle=432
 locked=0
 resize=102
 x=60
 y=30
-width=942
-height=373
+width=687
+height=292
 func=
 font=Tahoma
 fontsize=10
@@ -75,7 +75,7 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=
-text=Q: Why we need this special scraper?[BREAK]A: Some websites have paywalls/login/scraping blocks, which will effective blocks the uses of any scrapers.[BREAK]Now this function is using Webdriver to open the webpage and let you bypass all those protections.[BREAK]To use it:[BREAK]  1. Get the URL ready in the clipboard. Paste it in the inputbox coming up next.[BREAK]  2. Stash_Helper then will open a new webpage with the URL you pasted. Click on login/verification or anything that's required to see the real content.[BREAK]  3. When the webpage is finally ready for scraping, click on the 'Start Scraping' button in the small window.[BREAK]Stash_Helper will fetch the webpage to a temp folder, uses a special scraper called 'StashHelper.yml' to scrape the content. And you will see the result.
+text=Q: Why we need special scrapers?[BREAK][BREAK]A: Some websites have paywalls/login/anti-scraping blocks, which will effective blocks the uses of any scrapers in Stash.[BREAK][BREAK]This function will use Webdriver to open the webpage and let you bypass all those protections.[BREAK][BREAK]Due to my program limits, image/cover scraping probably will fail.
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -86,13 +86,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001245E]
+[0x0001252A]
 type=checkbox
 handle=433
 locked=0
 resize=960
-x=293
-y=430
+x=162
+y=328
 width=413
 height=45
 func=
@@ -115,13 +115,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012460]
+[0x0001252C]
 type=button
 handle=434
 locked=0
 resize=960
-x=370
-y=510
+x=217
+y=398
 width=271
 height=53
 func=

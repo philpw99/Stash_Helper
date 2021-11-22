@@ -158,18 +158,13 @@ Func ScrapersManager()
 					; Reload scrapers
 					
 					; Set mouse cursor to wait.
-					$old_cursor = MouseGetCursor()
-					GUISetCursor(15, 1, $guiScrapers)
+					; $old_cursor = MouseGetCursor()
+					; GUISetCursor(15, 1, $guiScrapers)
 
-					OpenURL("http://localhost:9999/settings?tab=scraping")
-					$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
-					Sleep(2000)
-					If @error =  $_WD_ERROR_Success Then 
-						_WD_ElementAction($sSession, $sButtonID, "Click")
-					EndIf
-
+					ReloadScrapers()
+					
 					; Set cursor back.
-					GUISetCursor($old_cursor, 1, $guiScrapers)
+					; GUISetCursor($old_cursor, 1, $guiScrapers)
 
 					MsgBox(64,$iTotalInstalled & " Scrapers Installed",$iTotalInstalled & " Scrapers are now installed and working. If not, please go to Settings->Scraping->Reload scrapers.",20)
 				EndIf 
@@ -207,19 +202,12 @@ Func ScrapersManager()
 					; Reload scrapers
 					
 					; Set mouse cursor to wait.
-					$old_cursor = MouseGetCursor()
-					GUISetCursor(15, 1, $guiScrapers)
-					
-					OpenURL("http://localhost:9999/settings?tab=scraping")
-					$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
-					Sleep(2000)
-					If @error =  $_WD_ERROR_Success Then 
-						_WD_ElementAction($sSession, $sButtonID, "Click")
-					EndIf
+					; $old_cursor = MouseGetCursor()
+					; GUISetCursor(15, 1, $guiScrapers)
+					ReloadScrapers()
 
-					
 					; Set cursor back.
-					GUISetCursor($old_cursor, 1, $guiScrapers)
+					; GUISetCursor($old_cursor, 1, $guiScrapers)
 					
 					MsgBox(64,$iTotalRemoved & " Scrapers removed",$iTotalRemoved & " Scrapers are now removed.",20)
 				EndIf 
@@ -262,6 +250,7 @@ Func ScrapersManager()
 	; Restore tray icon functions.
 	TraySetClick(9)
 EndFunc
+
 
 Func UpdateScrapers()
 	; Get list of installed scrapers
@@ -322,6 +311,9 @@ Func UpdateScrapers()
 		EndIf 
 	Next
 	
+	ReloadScrapers()
+	If @error Then Return SetError(1)
+		
 	MsgBox(64,"Scraper Update Done!","Totally scanned " & UBound($aScraperFiles ) & " files and updated " _ 
 		& $iTotalUpdated & " of them.",0)
 EndFunc

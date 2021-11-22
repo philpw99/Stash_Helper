@@ -17,13 +17,22 @@
 #include "TrayMenuEx.au3"
 #include <Array.au3>
 #include "DTC.au3"
+#include "URL_Encode.au3"
 ; #include "MiniWebServer.au3"
+
+If AlreadyRunning() Then 
+	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _ 
+		& "You can use the 'task manager' to close it." & @CRLF _ 
+		& "I don't recommend running two Stash Helper at the same time.",0)
+	Exit
+EndIf
+
 
 ; If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v1.9"
+Global Const $currentVersion = "v2.0"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -50,6 +59,17 @@ If @error Or Not FileExists($stashFilePath) Then
 	InitialSettingsForm()
 EndIf
 
+; For v0.11 and above. Disable the browser from autostart
+$sFileConfig = stringleft( $stashFilePath, stringinstr($stashFilePath, "\", 2, -1) ) & "config.yml"
+$sNoBrowser = ""
+If FileExists($sFileConfig) Then 
+	$sConfigContent = FileRead($sFileConfig)
+	; If exist this setting, then it's v0.11 and above
+	If StringInStr($sConfigContent, "autostart_video:", 2) <> 0 Then 
+		$sNoBrowser = " --nobrowser"
+	EndIf
+EndIf
+
 Global $stashBrowser = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser")
 
 Global $showStashConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole")
@@ -61,8 +81,14 @@ Global $sDesiredCapabilities, $sSession
 Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
+Global $iSlideShowSeconds = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds")
+if @error Then 
+	$iSlideShowSeconds = 10
+	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds", "REG_DWORD", 10)
+EndIf
+
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[19]	; 18 (0-17) bmps  for the tray menus
+Local $hIcons[19]	; 20 (0-19) bmps  for the tray menus
 For $i = 0 to 18
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
@@ -75,7 +101,8 @@ Global $minfo = ObjCreate("Scripting.Dictionary")
 #include <Forms\ScrapersForm.au3>
 #include <Forms\SceneToMovieForm.au3>
 #include <Forms\ManagePlayListForm.au3>
-; #include <Forms\ScrapeSpecialForm.au3>
+; Seems special scraper is no longer needed when visible CDP works much better.
+; #include <Forms\ScrapeSpecial2Form.au3>
 
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
@@ -87,7 +114,7 @@ If $stashURL = "" Then
 	$iStashPID = ProcessExists("stash-win.exe")
 	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
 	; Run it for the first time. Merged.
-	$iStashPID = Run($stashFilePath, $stashPath, @SW_HIDE, $STDERR_MERGED)
+	$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE, $STDERR_MERGED)
 	$hTimer = TimerInit()
 	While True
 		Local $sLine = StdoutRead($iStashPID)
@@ -129,9 +156,9 @@ Else
 		If $iStashPID = 0 Then
 			; Not running.
 			If $showStashConsole Then
-				$iStashPID = Run($stashFilePath, $stashPath, @SW_SHOW)
+				$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
 			Else
-				$iStashPID = Run($stashFilePath, $stashPath, @SW_HIDE)
+				$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
 			EndIf
 		Else
 			; Already running. Get the PID which is listening to that port
@@ -153,11 +180,69 @@ Else
 	EndIf
 EndIf
 
+; This must run after $stashURL
+#include "URLtoQuery.au3"
+
+
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
 ; Now create the top level tray menu items.
+
+; Use query to get the version
+$sResult = Query('{"query":"{version{version,hash}}"}')
+If Not @error Then 
+	; Query and Get current version.
+	$oResult = Json_Decode($sResult)
+	$oVersion = Json_ObjGet($oResult, "data.version")
+	$stashVersion = $oVersion.Item("version")
+	$stashVersionHash = $oVersion.Item("hash")
+	
+	; Now get the latest version.
+	$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
+	If Not @error Then 
+		; Successfully get the info about latest version.
+		$oResult = Json_Decode($sResult)
+		$oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
+		$sLatestVersionHash = $oLatestVersion.Item("shorthash")
+		$sLatestVersionURL = $oLatestVersion.Item("url")
+		$sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
+		
+		If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then 
+			; A new version is waiting.
+			Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
+			$sNewVersion = $aMatchStr[0]
+			$hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _ 
+				& " Do you want to update the current stash to the new one?" & @CRLF _ 
+				& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _ 
+				& "If you hit 'No', this new version will be ignored." & @CRLF _ 
+				& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
+			switch $hAskUpgrade
+				case 6 ;YES, update.
+					ProcessClose($iStashPID)
+					InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
+					If Not @error Then 
+						; Download successful.
+						FileDelete($stashFilePath)
+						FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
+						; Run it now.
+						If $showStashConsole Then
+							$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+						Else
+							$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+						EndIf
+					EndIf
+				case 7 ;NO, ignore.
+					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
+				case 2 ;CANCEL
+			endswitch
+		EndIf 
+	EndIf
+EndIf
+
 If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
+
+
 
 TrayCreateItem("Stash Helper " & $currentVersion ) ; 0
 TrayCreateItem("")										; 1
@@ -202,7 +287,7 @@ _TrayMenuAddImage($hIcons[18], 17)
 
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 18
 _TrayMenuAddImage($hIcons[16], 18)
-Global $trayAddSceneOrMovieToList = TrayCreateItem("Add Current Scene/Movie to Play List         Ctrl-Alt-A", $trayMenuPlayList)
+Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List         Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
@@ -210,11 +295,11 @@ Global $trayClearList = 			TrayCreateItem("Clear the Play List                  
 
 TrayCreateItem("")										; 19
 Global $traySettings = TrayCreateItem("Settings")		; 20
-_TrayMenuAddImage($hIcons[9], 19)
+_TrayMenuAddImage($hIcons[9], 20)
 Global $trayAbout = TrayCreateItem("About")				; 21
-_TrayMenuAddImage($hIcons[10], 20)
+_TrayMenuAddImage($hIcons[10], 21)
 Global $trayExit = TrayCreateItem("Exit")				; 22
-_TrayMenuAddImage($hIcons[11], 21)
+_TrayMenuAddImage($hIcons[11], 22)
 
 ; Sub menu items for tools
 
@@ -277,7 +362,7 @@ OpenURL($stashURL)
 ; Ctrl + Enter to close all web sessions and media player
 HotKeySet("^{ENTER}", "CloseSession")
 ; Ctrl+Alt+A to add scene/movie to the playlist.
-HotKeySet("^!a", "AddSceneOrMovieToList")
+HotKeySet("^!a", "AddItemToList")
 ; Ctrl+Alt+C to clear the playlist.
 HotKeySet("^!c", "ClearPlayList")
 ; Ctrl+Alt+M to manage the playlist.
@@ -333,8 +418,8 @@ While True
 			ScanFiles()
 		Case $trayMovie2Scene
 			Scene2Movie()
-		Case $trayAddSceneOrMovieToList
-			AddSceneOrMovieToList()
+		Case $trayAddItemToList
+			AddItemToList()
 		Case $trayClearList
 			ClearPlayList()
 		Case $trayManageList
@@ -345,6 +430,9 @@ While True
 			BookmarkCurrentTab()
 		Case $trayOpenFolder
 			OpenMediaFolder()
+;		Special scraper is no longer used.
+; 		Case $traySpecialScraper
+; 			ScrapeSpecial()
 		Case Else
 			; Auto match the sub menu items.
 			For $i = 0 to UBound($traySceneLinks)-1
@@ -406,6 +494,17 @@ Exit
 
 #Region Functions
 
+Func AlreadyRunning() 
+	Local $aPID = ProcessList("AutoIt3.exe")
+	If @error or $aPID[0][0] = 0 then Return False
+	For $i = 1 to $aPID[0][0]
+		; Get full path by pid
+		$sPath = _WinAPI_GetProcessFileName($aPID[$i][1])
+		If StringInStr($sPath, "Stash Helper") <> 0 Then Return True 
+	Next
+	Return False
+EndFunc 
+	
 Func OpenMediaFolder()
 	$sResult = GetCurrentTabCategoryAndNumber()
 	If @error Then Return SetError(1)
@@ -497,26 +596,37 @@ EndFunc
 
 Func ReloadScrapers()
 	; Get the current handle.
+	$sQuery = '{"query":"mutation{reloadScrapers}"}'
+	$sResult = Query($sQuery)
+	If @error Then Return SetError(1)
+	
 	$sHandle = _WD_Window($sSession, "Window")
-	If $sHandle = "" Then
-		; invalid session. create a new one.
-		$sSession = _WD_CreateSession($sDesiredCapabilities)
-		$sHandle = _WD_NewTab($sSession, Default, Default, "http://localhost:9999/" , Default)
+	If $sHandle <> "" Then
+		; Valid session. Reload the content.
+		_WD_Action($sSession, "refresh")
 	EndIf
-	$sHandle = '{"handle":"' & $sHandle & '"}'
-	; New tab for scraper reload.
-	_WD_NewTab($sSession, Default, Default, "http://localhost:9999/settings?tab=scraping" , Default)
-	; OpenURL("http://localhost:9999/settings?tab=scraping")
-	$sButtonID = _WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, '//span[text()="Reload scrapers"]', 500, 10000) ; start at 500ms, expired at 10 seconds
-	Sleep(2000)  ; Just to be safe.
-	If @error =  $_WD_ERROR_Success Then
-		_WD_ElementAction($sSession, $sButtonID, "Click")
+	; This message should be sent by the func caller.
+	; MsgBox(0, "Scraper Reloaded.", "Successfully reloaded the scrapers.", 10)
+EndFunc
+
+Func GetCategory($sURL)
+	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
+	If $sStr = "" Then
+		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
+		Return SetError(1)
 	EndIf
-	Sleep(2000)
-	; Close the tab
-	_WD_Window($sSession, "Close")
-	; Switch back to the previous tab
-	_WD_Window($sSession, "switch", $sHandle)
+	If StringLeft($sStr, 1) = "/" Then
+		; remove the leading / , just in case
+		$sStr = StringTrimLeft($sStr, 1)
+	EndIf
+	; split either by
+	$aStr = StringSplit($sStr, "/?=" )
+	If $aStr[0] = 0 Then
+		MsgBox(0, "Error processing page", "The current browser is unknown.")
+		Return SetError(1)
+	EndIf
+
+	Return $aStr[1]
 EndFunc
 
 Func GetCurrentTabCategoryAndNumber()
@@ -539,7 +649,7 @@ Func GetCurrentTabCategoryAndNumber()
 		Return SetError(1)
 	EndIf
 	
-	If $aStr[0] >= 2 Then
+	If $aStr[0] >= 2 and StringIsDigit($aStr[2]) Then
 		Return $aStr[1] & "-" & $aStr[2]
 	Else
 		Return $aStr[1]
@@ -548,7 +658,7 @@ Func GetCurrentTabCategoryAndNumber()
 EndFunc
 
 Func GetURL()
-	Local $sURL = _WD_Action($sSession, "url")
+	Local $sURL = _URLDecode(_WD_Action($sSession, "url"))
 	If $sURL = "" Then
 		MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
 		Return SetError(1)
@@ -677,21 +787,191 @@ Func ClearPlayList()
 	MsgBox(0, "Playlist cleared", "OK, now the play list is empty.", 10)
 EndFunc
 
-Func AddSceneOrMovieToList()
+Func AddItemToList()
 
 	$sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	If StringRegExp($sURL, "\/scenes\/\d+") Then
-		; A Scene
-		AddSceneToList()
-	ElseIf StringRegExp($sURL, "\/movies\/\d+") Then
-		; A Movie
-		AddMovieToList()
-	Else
-		MsgBox(0, "Not a movie or scene", "Sorry, the current browser is neither a movie or a scene.")
+	$sCategory = GetCategory($sURL)
+	if @error Then Return SetError(1)
+	
+	$sQueryCount = URLtoQuery($sURL, "count")
+	c("sQueryCount: " & $sQueryCount)
+
+	Local $iItemCount
+	Switch $sQueryCount
+		Case "not support"
+			MsgBox(0, "Not support", "Sorry but this kind of collection is not supported yet.")
+			Return 
+		Case  "home"
+			MsgBox(0, "Stash HOme Page", "This is Stash's home page. Nothing to add to the play list.")
+			Return
+		Case "1"
+			$iItemCount = 1
+		Case Else 
+			$sResult = Query2($sQueryCount)
+			If @error Then Return SetError(1)
+			c("result:" & $sResult)
+			Local $aStr = StringRegExp($sResult, '"count":\s*(\d+)', $STR_REGEXPARRAYMATCH )
+			$iItemCount = Int($aStr[0])
+	EndSwitch
+	
+	If $iItemCount <> 1 Then 
+		$hConfirm = MsgBox(65,"Confirm","Totally " & $iItemCount & " " & $sCategory & " to add to the play list." & @CRLF & "Some of them might contain multiple items." & @CRLF & "Are you sure to add them to the play list?",0)
+		if $hConfirm = 2 then Return ; Cancelled.
 	EndIf
+	
+	; Get the full list of ids.
+	$sQuery = URLtoQuery($sURL, "id")
+	if @error then Return SetError(1)
+	
+	; If return just a single id.
+	If StringLeft($sQuery, 3) = "id=" Then
+		; No need to get query. Has one single id.
+		$sID = PairValue($sQuery)
+		Switch $sCategory
+			Case "scenes"
+				AddSceneToList($sID)
+				If @error then Return
+				MsgBox(0, "Done", "One scene was added to the current play list." & @CRLF _ 
+					& "Total entities in play list:  " & UBound($aPlayList))
+			Case "images"
+				AddImageToList($sID)
+				If @error then Return
+				MsgBox(0, "Done", "One image was added to the current play list." & @CRLF _ 
+					& "Total entities in play list:  " & UBound($aPlayList))
+			Case "movies"
+				$iNo = AddMovieToList($sID)
+				If @error then Return
+				MsgBox(0, "Done", "One movie with " & $iNo & " scenes was added to the current play list." & @CRLF _ 
+					& "Total entities in play list:  " & UBound($aPlayList))
+			Case "galleries"
+				$iNo = AddGalleryToList($sID)
+				If @error then Return
+				MsgBox(0, "Done", "One gallery with " & $iNo & " images was added to the current play list." & @CRLF _ 
+					& "Total entities in play list:  " & UBound($aPlayList))
+		EndSwitch
+		Return 
+	ElseIf $sQuery = "not support" Then 
+		MsgBox(0, "Not support", "Too bad, this kind of query is not support.")
+		Return
+	EndIf
+	
+	
+	$sResult = Query2($sQuery)
+	if @error Then Return SetError(1)
+	$oData = Json_Decode($sResult)
+	
+	; Start to add scenes, movies... to the play list.
+	Switch $sCategory
+		Case "scenes"
+			$aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
+			If UBound($aScenes) = 0 Then 
+				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				Return SetError(1)
+			EndIf
+			Local $i = 0
+			For $oScene in $aScenes
+				$i += AddSceneToList($oScene.item("id"))
+			Next
+			MsgBox(0, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _ 
+				& "Total entities in play list:  " & UBound($aPlayList))
+		Case "images"
+			$aImages = Json_ObjGet($oData, "data.findImages.images")
+			If UBound($aImages) = 0 Then 
+				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				Return SetError(1)
+			EndIf
+			Local $i = 0
+			For $oImage in $aImages
+				$i += AddImageToList($oImage.item("id"))
+			Next
+			MsgBox(0, "Done", "Totally "& $i & " images was added to the current play list." & @CRLF _ 
+				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
+				& "Beware: Most media players do not support playing images stored in .zip files." )
+		Case "movies"
+			$aMovies = Json_ObjGet($oData, "data.findMovies.movies")
+			If UBound($aMovies) = 0 Then 
+				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				Return SetError(1)
+			EndIf
+			Local $i = 0
+			For $oMovie in $aMovies
+				$i += AddMovieToList($oMovie.item("id"))
+			Next
+			MsgBox(0, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _ 
+				& "Total entities in play list:  " & UBound($aPlayList))
+		Case "galleries"
+			$aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
+			If UBound($aGalleries) = 0 Then 
+				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				Return SetError(1)
+			EndIf
+			Local $i = 0
+			For $oGallery in $aGalleries
+				$i += AddGalleryToList($oGallery.item("id"))
+			Next
+			MsgBox(0, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images was added to the current play list." & @CRLF _ 
+				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
+				& "Beware: Most media players do not support playing images stored in .zip files." )
+		Case Else
+			MsgBox(0, "Not supported", "Sorry, only scene/image/movie/gallery are supported.")
+	EndSwitch
+	
 EndFunc
+
+Func AddImageToList($sID)
+	If $sID = "" then return 0; Just in case.
+	; Now get the info about this scene
+	$sQuery = '{"query":"{findImage(id:' & $sID & '){title,path}}"}'
+	$sResult = Query($sQuery)
+	If @error Then Return SetError(1)
+
+	$oResult = Json_Decode($sResult)
+	$oData = Json_ObjGet($oResult, "data.findImage")
+	If Not IsObj($oData) Then Return 0
+	; $oData.Item("title") $oData.Item("path")
+	$i = UBound($aPlayList)
+	ReDim $aPlayList[$i+1][3]
+	$aPlayList[$i][$LIST_TITLE] = "Image: " & $oData.Item("title")
+	$aPlayList[$i][$LIST_DURATION] = $iSlideShowSeconds
+	$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+	Return 1  ; Once scene added to the list
+EndFunc
+
+Func AddGalleryToList($sID)
+	If $sID = "" then return 0; Just in case.
+	; Now get the info about this scene
+	$sQuery = '{"query":"{findGallery(id:' & $sID & '){title,image_count,path,images{path}}}"}'
+	$sResult = Query($sQuery)
+	If @error Then Return SetError(1)
+
+	$oResult = Json_Decode($sResult)
+	$oData = Json_ObjGet($oResult, "data.findGallery")
+	If Not IsObj($oData) Then Return 0
+	; Check gallery's path.
+	$sPath = $oData.item("path")
+	if stringlower(StringRight($sPath, 4)) = ".zip" Then 
+		$iReply = MsgBox(52,"Not Supported","This gallery is a zip file which contains images." & @CRLF _ 
+		& "Showing images in .zip files is not supported by most media players." & @CRLF _ 
+		& "So do you still want to add this gallery: " & $oData.Item("title")& "?",0)
+		if $iReply = 7 Then return 0
+	EndIf
+	$aImages = $oData.Item("images")
+	If UBound($aImages) = 0 Then Return 0
+	; Treat a gallery like a movie, just add all images to the list
+	Local $iCount = 0
+	For $oImage In $aImages
+		$iCount += 1
+		$i = UBound($aPlayList)
+		ReDim $aPlayList[$i+1][3]
+		$aPlayList[$i][$LIST_TITLE] = "Gallery: " & $oData.Item("title") & " Image: " & $iCount
+		$aPlayList[$i][$LIST_DURATION] = $iSlideShowSeconds
+		$aPlayList[$i][$LIST_FILE] = FixPath($oImage.Item("path"))
+	Next
+	Return $iCount  ; Total image count.
+EndFunc
+
 
 Func SendPlayerList()
 	; Send the media player a temporary list and let it play.
@@ -728,27 +1008,20 @@ Func SendPlayerList()
 	Play(@TempDir & "\StashPlayList.m3u")
 EndFunc
 
-Func AddMovieToList()
-	; SwitchToTab("movies")
-	; If @error Then Return SetError(1)
-
-	$sURL = GetURL()
-	If @error Then Return SetError(1)
-
-	$nMovieID = GetNumber($sURL, "movies")
-
+Func AddMovieToList($sID)
+	If $sID = "" Then Return 0 ; Just in case.
 	; Now get the movie info
-	$sQuery = '{ "query": "{findMovie(id: ' & $nMovieID & '){name,scene_count,scenes{id}}}" }'
+	$sQuery = '{ "query": "{findMovie(id: ' & $sID & '){name,scene_count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
 	$oMovieData = Json_ObjGet($oResult, "data.findMovie")
+	If $oMovieData = "" Then Return 0
 	; name, scene_count, scenes->id
 	$iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
 	If $iCount = 0 Then
-		MsgBox(0, "No scene", "There is no scene in this movie.")
-		Return SetError(1)
+		Return 0
 	EndIf
 	For $i = 0 to $iCount-1
 		$nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
@@ -764,43 +1037,40 @@ Func AddMovieToList()
 		ReDim $aPlayList[$j+1][3]
 		$aPlayList[$j][$LIST_TITLE] = "Movie: " & $oMovieData.Item("name") & " - Scene " & ($i+1)
 		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )
-		$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("path")
-
+		$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))
 	Next
-	MsgBox(0, "Done", "Movie: " & $oMovieData.Item("name") _
-		& @CRLF & "was added to the current play list." & @CRLF & "Total entities in play list:  " & UBound($aPlayList))
-
+	Return $iCount
 EndFunc
 
 
-Func AddSceneToList()
-	SwitchToTab("scenes")
-	If @error Then Return SetError(1)
-
-	$sURL = GetURL()
-	If @error Then Return SetError(1)
-
-	$nSceneID = GetNumber($sURL, "scenes")
-
+Func AddSceneToList($sID)
+	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){title,path,file{duration}}}"}'
+	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,path,file{duration}}}"}'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
 	$oData = Json_ObjGet($oResult, "data.findScene")
+	If $oData = "" Then Return 0
 	; $oData.Item("title") $oData.Item("path")
 	$i = UBound($aPlayList)
 	ReDim $aPlayList[$i+1][3]
 	$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("title")
 	$aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("file").Item("duration") )
-	$aPlayList[$i][$LIST_FILE] = $oData.Item("path")
-	MsgBox(0, "Done", "Scene:  " & $aPlayList[$i][$LIST_TITLE] _
-		& @CRLF & "was added to the current play list." & @CRLF & "Total entities in play list:  " & UBound($aPlayList))
-
+	$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+	Return 1  ; Once scene added to the list
 EndFunc
 
-
+Func FixPath($sPath)
+	; Fix the path returned from Stash
+	; g:\myvideo instead of g:myvideo
+	If stringmid($sPath, 2, 1) = ":" AND stringmid($sPath, 2, 2) <> ":\" Then
+		$sPath = StringLeft($sPath, 1) & ":\" & StringMid($sPath, 3)
+	EndIf
+	; g:\myvideo\mypath instead of g:\myvideo\\mypath
+	Return StringReplace($sPath, "\\", "\")
+EndFunc
 
 ; Converts seconds to HH:MM:SS
 Func TimeConvert($i)
@@ -950,6 +1220,13 @@ Func QueryResultError($sResult)
 	Return StringLeft($sResult,10) = '{"errors":'
 EndFunc
 
+Func Query2($sQuery)
+	; This one will wrap the {"query":" "} around $sQuery. Easier to program.
+	$sResult = Query('{"query":"'& $sQuery& '"}')
+	If @error Then Return SetError(1, 0, $sResult)
+	Return $sResult
+EndFunc 
+
 Func Query($sQuery)
 	; Use Stash's graphql to get results or do something
 	Local $hOpen = _WinHttpOpen()
@@ -964,7 +1241,7 @@ Func Query($sQuery)
 	EndIf
 	$result = _WinHttpSimpleRequest($hConnect, "POST", "/graphql", Default, _
 		$sQuery, "Content-Type: application/json" )
-	c("result:" & $result)
+	; c("result:" & $result)
 	If @error Then
 		MsgBox(0, "got data error",  "Error getting data from the stash server.")
 		; Close handles

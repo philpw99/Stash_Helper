@@ -44,6 +44,15 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when MS Edge is not under control any more.")
 	
+	GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	$inputSlideShow = GUICtrlCreateInput(string($iSlideShowSeconds),592,747,60,32,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	
 	; Set the radio selection from current settings.
 	Switch $stashBrowser
 		Case "Firefox"
@@ -171,6 +180,14 @@ Func ShowSettings()
 				EndIf 
 				; Either write an empty string, or a valid location.
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation", "REG_SZ", $sMediaPlayerLocation)
+				
+				$iSlideShowSeconds = Floor(GUICtrlRead($inputSlideShow))
+				If $iSlideShowSeconds > 0 Then 
+					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper","SlideShowSeconds", "REG_DWORD", $iSlideShowSeconds)
+				Else
+					; Reset to the right value.
+					$iSlideShowSeconds = 10
+				EndIf
 				
 				Select 
 					Case GUICtrlRead($radioChooseFirefox) = $GUI_CHECKED

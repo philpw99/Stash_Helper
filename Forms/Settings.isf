@@ -5,6 +5,8 @@
 #Include <GuiButton.au3>
 #include <EditConstants.au3>
 
+If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
+
 $Settings = GUICreate("Settings",800,940,-1,-1,-1,-1)
 GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,566,96,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
@@ -86,6 +88,14 @@ GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
 $chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
 GUICtrlSetState(-1,BitOr($GUI_CHECKED,$GUI_SHOW,$GUI_ENABLE))
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+$inputSlideShow = GUICtrlCreateInput("10",592,747,60,32,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
 
 
 
@@ -103,7 +113,7 @@ bgimage=none
 handle=$Settings
 parent=
 code=
-codebeforegui=
+codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 xpos=-1
 ypos=-1
 center_gui=true
@@ -126,7 +136,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x000E0E64]
+[0x0008220C]
 type=label
 handle=432
 locked=0
@@ -155,7 +165,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00070E66]
+[0x0001220E]
 type=label
 handle=433
 locked=0
@@ -184,7 +194,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00070E68]
+[0x00012210]
 type=input
 handle=434
 locked=0
@@ -213,7 +223,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00070E6E]
+[0x00012212]
 type=button
 handle=435
 locked=0
@@ -242,7 +252,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00070E6C]
+[0x00012214]
 type=radio
 handle=436
 locked=0
@@ -271,7 +281,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000E0E6A]
+[0x00012216]
 type=group
 handle=437
 locked=0
@@ -300,7 +310,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00090EA4]
+[0x00012218]
 type=radio
 handle=438
 locked=0
@@ -329,7 +339,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x000B0E58]
+[0x0001221A]
 type=radio
 handle=439
 locked=0
@@ -358,7 +368,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x00080C7E]
+[0x0001221C]
 type=button
 handle=440
 locked=0
@@ -387,7 +397,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000E1A60]
+[0x0001221E]
 type=button
 handle=441
 locked=0
@@ -416,7 +426,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C1A3E]
+[0x00012220]
 type=button
 handle=442
 locked=0
@@ -445,7 +455,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=11
-[0x000C1882]
+[0x00012222]
 type=button
 handle=443
 locked=0
@@ -474,7 +484,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=12
-[0x000E189A]
+[0x00012224]
 type=label
 handle=444
 locked=0
@@ -503,7 +513,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00091A4A]
+[0x00012226]
 type=checkbox
 handle=445
 locked=0
@@ -532,7 +542,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000B1788]
+[0x00012228]
 type=checkbox
 handle=446
 locked=0
@@ -561,7 +571,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=15
-[0x00091786]
+[0x0001222A]
 type=label
 handle=447
 locked=0
@@ -590,7 +600,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=16
-[0x00071760]
+[0x0001222C]
 type=input
 handle=448
 locked=0
@@ -619,7 +629,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=17
-[0x00061A62]
+[0x0001222E]
 type=button
 handle=449
 locked=0
@@ -648,7 +658,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=18
-[0x00070C88]
+[0x00012230]
 type=input
 handle=450
 locked=0
@@ -677,7 +687,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=19
-[0x00061A5C]
+[0x00012232]
 type=label
 handle=451
 locked=0
@@ -706,7 +716,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=20
-[0x00061A5E]
+[0x00012234]
 type=button
 handle=452
 locked=0
@@ -735,7 +745,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0007178E]
+[0x00012236]
 type=label
 handle=453
 locked=0
@@ -764,7 +774,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00070DBA]
+[0x00012238]
 type=button
 handle=454
 locked=0
@@ -793,7 +803,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=23
-[0x00071038]
+[0x0001223A]
 type=button
 handle=455
 locked=0
@@ -822,7 +832,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=24
-[0x00071980]
+[0x0001223C]
 type=button
 handle=456
 locked=0
@@ -851,7 +861,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=25
-[0x000703B6]
+[0x0001223E]
 type=button
 handle=457
 locked=0
@@ -880,7 +890,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=26
-[0x000819C2]
+[0x00012240]
 type=button
 handle=458
 locked=0
@@ -909,7 +919,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=27
-[0x0007197E]
+[0x00012242]
 type=checkbox
 handle=459
 locked=0
@@ -934,6 +944,93 @@ exstyle=
 bgcolour=
 code=
 order=28
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x003C18E2]
+type=label
+handle=460
+locked=0
+resize=
+x=407
+y=749
+width=180
+height=30
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Image Slideshow
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=29
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000B2288]
+type=input
+handle=469
+locked=0
+resize=
+x=592
+y=747
+width=60
+height=32
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$inputSlideShow
+text=10
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+order=30
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00321AE4]
+type=label
+handle=461
+locked=0
+resize=
+x=668
+y=747
+width=83
+height=30
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=seconds
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=31
 tabpage=-1
 iconindex=
 iconlarge=0

@@ -10,6 +10,8 @@ Connection: Keep-Alive
 
 #include <INet.au3>
 #include <File.au3>
+#include "wd_core.au3"
+; #include "URL_Encode.au3"
 
 Global $mimetypes[16] = [ _
 	"html","text/html", _
@@ -30,13 +32,56 @@ Global Const $E404 = '<html><head><meta http-equiv="Content-Type" content="text/
 ;~ 	Exit
 ;~ EndIf
 
-; Parameter 1 is the base path.
+; Parameter 1 is the browser type "Firefox","Chrome" or "Edge"
+; Para 2 is the URL
+
 ; MiniWebServer($CmdLine[1])
+If $CmdLine[0]<> 2 Then
+	c("command line error")
+	Exit
+EndIf
 
-MiniWebServer(@TempDir)
+$sBrowser = $CmdLine[1]
+$sURL = $CmdLine[2]
+$sLocalBase = "http://localhost:9980"
 
-Func MiniWebServer($sBaseDir, $timeout = 50000000000)
+$aURL = _WinHttpCrackUrl($sURL)
+; protocol & hostname
+$sURLBase= $aURL[0]& "://" & $aURL[2]
+If $aURL[3] <> 80 And $aURL[3]<>443 Then
+	; Add port number
+	$sURLBase &= ":" & $aURL[3]
+EndIf
+c("url base:"& $sURLBase)
+c("URL:" & $aURL[6])
+c("Extra:" & $aURL[7])
+
+Switch $sBrowser
+	Case "Firefox"
+		SetupFirefox()
+	Case "Chrome"
+		SetupChrome()
+	Case "Edge"
+		SetupEdge()
+	Case Else
+		SetupEdge()
+EndSwitch
+
+Global $iConsolePID = _WD_Startup()
+If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+
+$sSession = _WD_CreateSession($sDesiredCapabilities)
+If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+
+Global $sBrowserHandle
+
+OpenURL($sURL)
+
+MiniWebServer()
+
+Func MiniWebServer()
 	Local $listen, $sock, $recv
+	$timeout = 9999999999
 
 	Local Const $IP = "127.0.0.1"
 	Local Const $PORT = 9980
@@ -67,7 +112,7 @@ Func MiniWebServer($sBaseDir, $timeout = 50000000000)
 				$sFileType=StringMid($recvRequest,$pos+1)	; Get the request file extension.
 			EndIf
 			ConsoleWrite ( "Request:" & $recvRequest & " file type:" & $sFileType & @CRLF )
-			$Content = _ServerGetFile($sBaseDir, $recvRequest)    ;;Normal file request
+			$Content = _ServerGetFile($recvRequest)    ;;Normal file request
 			If $Content <> $E404 Then
 				; Not 404 error.
 				$sHeader = _ServerGetHeader($sFileType)
@@ -88,6 +133,76 @@ EndFunc
 Func ServerExit()
 	TCPShutdown()
 EndFunc
+; WD drivers
+Func SetupFirefox()
+	If Not FileExists(@AppDataDir & "\Webdriver\" & "geckodriver.exe") Then
+		Local $b64 = ( @CPUArch = "X64" )
+		Local $bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
+		If Not $bGood Then
+			MsgBox(48,"Error Getting Firefox Driver", _
+			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
+				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
+			Exit
+		EndIf
+	EndIf
+
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'geckodriver.exe')
+	_WD_Option('DriverClose', True)
+	_WD_Option('DriverParams', '--log trace')
+	_WD_Option('Port', 4444)
+
+	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
+EndFunc   ;==>SetupGecko
+
+Func SetupChrome()
+	If Not FileExists( @AppDataDir & "\Webdriver\" & "chromedriver.exe") Then
+		Local $bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default, True) ; Force update
+		If Not $bGood Then
+			MsgBox(48,"Error Getting Firefox Driver", _
+			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
+				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
+			Exit
+		EndIf
+	EndIf
+
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'chromedriver.exe')
+	_WD_Option('DriverClose', True)
+	_WD_Option('Port', 9515)
+	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\chrome.log")
+
+	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
+EndFunc   ;==>SetupChrome
+
+Func SetupEdge()
+	If Not FileExists(@AppDataDir & "\Webdriver\" & "msedgedriver.exe") Then
+		Local $b64 = ( @CPUArch = "X64" )
+		Local $bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		If Not $bGood Then
+			MsgBox(48,"Error Getting Firefox Driver", _
+			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
+				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
+			Exit
+		EndIf
+	EndIf
+
+
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'msedgedriver.exe')
+	_WD_Option('DriverClose', True)
+	_WD_Option('Port', 9515)
+	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\msedge.log")
+
+	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
+EndFunc   ;==>SetupEdge
+
+Func OpenURL($url)
+	$sBrowserHandle = _WD_Window($sSession, "Window")
+	If $sBrowserHandle = "" Then
+		; The session is invalid.
+		$sSession = _WD_CreateSession($sDesiredCapabilities)
+	EndIf
+
+	_WD_Navigate($sSession, $url)
+EndFunc
 
 ;Gets the document header
 Func _ServerGetHeader($filetype)
@@ -105,7 +220,7 @@ Func _ServerGetFileType($ext)
 EndFunc
 
 ;Get a file normally
-Func _ServerGetFile($sBaseDir, $filename)
+Func _ServerGetFile($filename)
 	;;Default to index.html
 	If $filename = "/" or $filename = "\" or $filename = "" Then
 		$filename = "\index.html"
@@ -115,7 +230,7 @@ Func _ServerGetFile($sBaseDir, $filename)
 			$filename = "\" & $filename
 		EndIf
 	EndIf
-	$file = $sBaseDir & $filename
+	$file = $filename
 
 	;;If file does not exist, send an error 404
 	If Not FileExists($file) Then
@@ -154,4 +269,8 @@ EndFunc
 ;Send Data on a socket
 Func _SockSend( $iSocket, $sData )
 	Return TCPSend($iSocket, $sData)
+EndFunc
+
+Func c($str)
+	ConsoleWrite($str&@CRLF)
 EndFunc
