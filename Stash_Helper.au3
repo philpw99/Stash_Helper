@@ -32,7 +32,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.0"
+Global Const $currentVersion = "v2.1"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -88,8 +88,8 @@ if @error Then
 EndIf
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[19]	; 20 (0-19) bmps  for the tray menus
-For $i = 0 to 18
+Local $hIcons[20]	; 20 (0-19) bmps  for the tray menus
+For $i = 0 to 19
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -285,21 +285,29 @@ _TrayMenuAddImage($hIcons[15], 16)
 Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 17
 _TrayMenuAddImage($hIcons[18], 17)
 
-Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 18
-_TrayMenuAddImage($hIcons[16], 18)
+Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 18
+_TrayMenuAddImage($hIcons[19], 18)
+Global $aCSSItems[0][4]
+; Enums for the array row.
+Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
+; Create the css menu with a function.
+CreateCSSMenu()
+
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
+_TrayMenuAddImage($hIcons[16], 19)
 Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List         Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
 
-TrayCreateItem("")										; 19
-Global $traySettings = TrayCreateItem("Settings")		; 20
-_TrayMenuAddImage($hIcons[9], 20)
-Global $trayAbout = TrayCreateItem("About")				; 21
-_TrayMenuAddImage($hIcons[10], 21)
-Global $trayExit = TrayCreateItem("Exit")				; 22
-_TrayMenuAddImage($hIcons[11], 22)
+TrayCreateItem("")										; 20
+Global $traySettings = TrayCreateItem("Settings")		; 21
+_TrayMenuAddImage($hIcons[9], 21)
+Global $trayAbout = TrayCreateItem("About")				; 22
+_TrayMenuAddImage($hIcons[10], 22)
+Global $trayExit = TrayCreateItem("Exit")				; 23
+_TrayMenuAddImage($hIcons[11], 23)
 
 ; Sub menu items for tools
 
@@ -380,12 +388,13 @@ While True
 		Case 0
 			; Nothing should be here, but Case 0 here is very necessary.
 		Case $trayAbout
-			MsgBox(64,"Stash Helper " & $currentVersion,"Stash helper " & $currentVersion & ", written by Philip Wang, at your service." _
+			MsgBox(64,"Stash Helper " & $currentVersion,"Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
 				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for this huge project." _
 				& @CRLF & "Kudos also go to Christian Faderl's ISN AutoIt Studio! It's such a powerful AutoIt IDE, which making this program much easier to write." _
 				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" _
-				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice!"	,20)
+				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice," _
+				& @CRLF & "and thank you gamerjax for your play list suggestions.!"	,20)
 		Case $trayExit
 			ExitScript()
 		Case $traySettings
@@ -484,6 +493,61 @@ While True
 					ContinueLoop 2
 				EndIf
 			Next
+			; Now handle the CSS Magic sub menu items
+			For $i = 0 To UBound($aCSSItems) -1
+				If $aCSSItems[$i][$CSS_HANDLE] = $nMsg Then 
+					$sQuery = "{configuration{interface{cssEnabled}}}"
+					$sResult = Query2($sQuery)
+					If @error Then ContinueLoop
+					If StringInStr($sResult, "true", 2) = 0 Then 
+						; the result is false
+						MsgBox(0, "Need to enable custom css feature.", 'You need to enable custom css in "Settings->Interface->Custom CSS" first.' )
+						ContinueLoop
+					EndIf
+					$sFile = $stashPath & "custom.css"
+					$sCSS =  FileRead($sFile)
+					If @error Then $sCSS = ""
+
+					If $aCSSItems[$i][$CSS_ENABLE] = 1 Then 
+						; Already Enabled. Disable it by removing.
+						$sSearchStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						$sSearchEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						$iPos1 = StringInStr($sCSS, $sSearchStart, 2)
+						$iPos2 = StringInStr($sCSS, $sSearchEnd, 2)
+						If $iPos2 > $iPos1 and $iPos1 <> 0 Then
+							; Only do it when the numbers are valid
+							$iPos2 += StringLen($sSearchEnd)
+							$sCSS = StringLeft($sCSS, $iPos1-1) & StringMid($sCSS, $iPos2)
+							Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
+							If $hFile = -1 Then 
+								MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
+								ContinueLoop 
+							EndIf
+							FileWrite($hFile, $sCSS)
+						EndIf
+						$aCSSItems[$i][$CSS_ENABLE] = 0
+						TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_UNCHECKED)
+					Else
+						; Not enable yet. Add it to the end
+						$sStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						$sEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						; Add the crlf to the end if not there yet.
+						If StringRight($sCSS, 1) <> @LF Then $sCSS &= @LF
+						$sCSS &= $sStart & @LF & $aCSSItems[$i][$CSS_CONTENT] & @LF & $sEnd
+						Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
+						If $hFile = -1 Then 
+							MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
+							ContinueLoop 
+						EndIf
+						FileWrite($hFile, $sCSS)
+						$aCSSItems[$i][$CSS_ENABLE] = 1
+						TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_CHECKED)
+					EndIf
+					; Now refresh the browser
+					_WD_Action($sSession, "refresh")
+				EndIf
+			Next
+			
 	EndSwitch
 Wend
 
@@ -494,10 +558,122 @@ Exit
 
 #Region Functions
 
+Func CreateCSSMenu()
+	; Create the sub items for CSS Magic menu
+	; Global $trayMenuCSS
+	; Global $aCSSItems[0][4]
+	; Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
+	If UBound($aCSSItems) = 0 Then InitCSSArray($aCSSItems)
+
+	For $i = 0 To UBound($aCSSItems) -1
+		; Create the item for the CSS item
+		$aCSSItems[$i][$CSS_HANDLE] = TrayCreateItem($aCSSItems[$i][$CSS_TITLE], $trayMenuCSS)
+		; Set the check state if the CSS is already enabled.
+		If $aCSSItems[$i][$CSS_ENABLE] = 1 Then 
+			TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_CHECKED)
+		EndIf
+	Next
+	
+EndFunc
+
+Func InitCSSArray(ByRef $a)
+	; Global $trayCSSItems[0][3]
+	; Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE
+	ReDim $a[18][4]
+	$a[0][0] = "Scene - Fit More Thumbnails on Each Row."
+	$a[0][1] = ".grid { padding: 0px !important; }"
+	
+	$a[1][0] = "Scene - Longer Studio Text in Scene Cards"
+	$a[1][1] = ".scene-studio-overlay { font-weight: 600 !important; opacity: 1 !important; width: 60% !important; text-overflow: ellipsis !important;}"
+	
+	$a[2][0] = "Scene - Hide Scene Specs from Scene Cards"
+	$a[2][1] = ".scene-specs-overlay{display: none;}"
+	
+	$a[3][0] = "Scene - Hide Studio from Scene Cards"
+	$a[3][1] = ".scene-studio-overlay{display: none;}"
+	
+	$a[4][0] = "Scene - Tags use less width"
+	$a[4][1] = ".bs-popover-bottom{max-width: 500px}"
+	
+	$a[5][0] = "Scene - Swap Studio and Specs in Scene Cards"
+	$a[5][1] = ".scene-studio-overlay{bottom: 1rem; right: 0.7rem; height: inherit; top: inherit;}" & @LF _ 
+		& ".scene-specs-overlay { right: 0.7rem; top: 0.7rem; bottom: inherit;}"
+		
+	$a[6][0] = "Scene - Adjust Mouse Over Behavior in Wall Mode"
+	$a[6][1] = "@media (min-width: 576px) { .wall-item:hover::before { opacity: 0; }" & @LF _
+		& ".wall-item:hover .wall-item-container { transform: scale(1.5); }}"
+	
+	$a[7][0] = "Scene - Disable Zoom on Hover in Wall Mode"
+	$a[7][1] = ".wall-item:hover .wall-item-container {transform: none;} " & @LF _
+		& ".wall-item:before { opacity: 0 !important;}"
+	
+	$a[8][0] = "Scene - Hide the Scene Scrubber"
+	$a[8][1] = ".scrubber-wrapper { display: none;}" & @LF _
+		& "#jwplayer-container > div:first-child { height: 100%;}"
+	
+	$a[9][0] = "Performer - Show Entire Performer's Image"
+	$a[9][1] = ".performer.image { background-size: contain !important;}"
+	
+	$a[10][0] = "Performer - Move Edit Buttons to the Top"
+	$a[10][1] = "form#performer-edit {display: flex; flex-direction: column;}" & @LF _
+		& "#performer-edit > .row { order: 1;}" & @LF _
+		& "#performer-edit > .row:last-child { order: 0; margin-bottom: 1rem;}"
+		
+	$a[11][0] = "Gallery - Grid View for Galleries"
+	$a[11][1] = ".col.col-sm-6.mx-auto.table .d-none.d-sm-block { display: none !important;}" & @LF _
+		& ".col.col-sm-6.mx-auto.table .w-100.w-sm-auto { width: 175px !important; background-color: rgba(0, 0, 0, .45); box-shadow: 0 0 2px rgba(0, 0, 0, .35);}" & @LF _
+		& ".col.col-sm-6.mx-auto.table tr { display: inline-table;}"
+	
+	$a[12][0] = "Images - Disable Lightbox Animation"
+	$a[12][1] = ".Lightbox-carousel { transition: none;}"
+	
+	$a[13][0] = "Images - Don't Crop Preview Thumbnails"
+	$a[13][1] = ".flexbin > * > img { object-fit: inherit; max-width: none; min-width: initial;}"
+	
+	$a[14][0] = "Movies - Better Layout for Desktops 1 - Regular Posters"
+	$a[14][1] = ".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex-basis: 70%}" & @LF _
+		& ".col-xl-8.col-lg-6{ flex-basis: 30% }" & @LF _
+		& ".movie-images{  flex-wrap: wrap}" & @LF _
+		& ".movie-image-container { flex: 0 0 500px}"
+	
+	$a[15][0] = "Movies - Better Layout for Desktops 2 - Larger Posters"
+	$a[15][1] = ".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex-basis: 70%}" & @LF _
+		& ".col-xl-8.col-lg-6{ flex-basis: 30% }" & @LF _
+		& ".movie-images{ flex-direction: column; flex-wrap: wrap}" & @LF _
+		& ".movie-image-container { flex: 1 1 700px}"
+	
+	$a[16][0] = "Global - Hide the Donation Button"
+	$a[16][1] = ".btn-primary.btn.donate.minimal { display: none;}"
+	
+	$a[17][0] = "Global - Blur NSFW Images"
+	$a[17][1] = ".scene-card-preview-video, .scene-card-preview-image, .image-card-preview-image, .image-thumbnail, .gallery-card-image," & @LF _
+		& ".performer-card-image, img.performer, .movie-card-image, .gallery .flexbin img, .wall-item-media, .scene-studio-overlay .image-thumbnail," & @LF _
+		& ".image-card-preview-image, #scene-details-container .text-input, #scene-details-container .scene-header, #scene-details-container .react-select__single-value," & @LF _
+		& ".scene-details .pre, #scene-tabs-tabpane-scene-file-info-panel span.col-8.text-truncate > a, .gallery .flexbin img, .movie-details .logo " & @LF _
+		& "{filter: blur(8px);}" & @LF _
+		& ".scene-card-video {filter: blur(13px);}" & @LF _
+		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
+		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }"
+	
+	; Read the custom.css and set the CSS_Enable value
+	$sFile = $stashPath & "custom.css"
+	$sCSS =  FileRead($sFile)
+	If @error Then $sCSS = ""
+	; Use /* Start:$a[xx][0] */ as the starting point
+	; /* End:$a[xx][0] */ as the ending point
+	For $i = 0 To UBound($a) -1
+		$sSearch = "/* Start:" & $a[$i][0] & " */"
+		$a[$i][$CSS_ENABLE] = (StringInStr($sCSS, $sSearch, 2) <> 0) ? 1 : 0
+	Next
+	
+EndFunc
+
 Func AlreadyRunning() 
 	Local $aPID = ProcessList("AutoIt3.exe")
 	If @error or $aPID[0][0] = 0 then Return False
 	For $i = 1 to $aPID[0][0]
+		; Skip this one.
+		If $aPID[$i][1] = @AutoItPID Then ContinueLoop 
 		; Get full path by pid
 		$sPath = _WinAPI_GetProcessFileName($aPID[$i][1])
 		If StringInStr($sPath, "Stash Helper") <> 0 Then Return True 
