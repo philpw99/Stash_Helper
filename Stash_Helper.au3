@@ -32,7 +32,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1.1"
+Global Const $currentVersion = "v2.1.2"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -1552,9 +1552,13 @@ Func OpenURL($url)
 	If $sBrowserHandle = "" Then
 		; The session is invalid.
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
+		_WD_Navigate($sSession, $url)
+		$sBrowserHandle = _WD_Window($sSession, "Window")
+	Else
+		_WD_Navigate($sSession, $url)
 	EndIf
-
-	_WD_Navigate($sSession, $url)
+	; Switch to this tab
+	_WD_Window($sSession, 'Switch', '{"handle":"' & $sBrowserHandle & '"}')
 EndFunc
 
 Func Alert($sMessage)
