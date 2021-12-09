@@ -20,9 +20,9 @@
 #include "URL_Encode.au3"
 ; #include "MiniWebServer.au3"
 
-If AlreadyRunning() Then 
-	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _ 
-		& "You can use the 'task manager' to close it." & @CRLF _ 
+If AlreadyRunning() Then
+	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _
+		& "You can use the 'task manager' to close it." & @CRLF _
 		& "I don't recommend running two Stash Helper at the same time.",0)
 	Exit
 EndIf
@@ -32,7 +32,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1"
+Global Const $currentVersion = "v2.1.1"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -62,10 +62,10 @@ EndIf
 ; For v0.11 and above. Disable the browser from autostart
 $sFileConfig = stringleft( $stashFilePath, stringinstr($stashFilePath, "\", 2, -1) ) & "config.yml"
 $sNoBrowser = ""
-If FileExists($sFileConfig) Then 
+If FileExists($sFileConfig) Then
 	$sConfigContent = FileRead($sFileConfig)
 	; If exist this setting, then it's v0.11 and above
-	If StringInStr($sConfigContent, "autostart_video:", 2) <> 0 Then 
+	If StringInStr($sConfigContent, "autostart_video:", 2) <> 0 Then
 		$sNoBrowser = " --nobrowser"
 	EndIf
 EndIf
@@ -82,7 +82,7 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Global $iSlideShowSeconds = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds")
-if @error Then 
+if @error Then
 	$iSlideShowSeconds = 10
 	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds", "REG_DWORD", 10)
 EndIf
@@ -189,37 +189,37 @@ Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items
 
 ; Use query to get the version
 $sResult = Query('{"query":"{version{version,hash}}"}')
-If Not @error Then 
+If Not @error Then
 	; Query and Get current version.
 	$oResult = Json_Decode($sResult)
 	$oVersion = Json_ObjGet($oResult, "data.version")
 	$stashVersion = $oVersion.Item("version")
 	$stashVersionHash = $oVersion.Item("hash")
-	
+
 	; Now get the latest version.
 	$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
-	If Not @error Then 
+	If Not @error Then
 		; Successfully get the info about latest version.
 		$oResult = Json_Decode($sResult)
 		$oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
 		$sLatestVersionHash = $oLatestVersion.Item("shorthash")
 		$sLatestVersionURL = $oLatestVersion.Item("url")
 		$sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
-		
-		If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then 
+
+		If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then
 			; A new version is waiting.
 			Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
 			$sNewVersion = $aMatchStr[0]
-			$hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _ 
-				& " Do you want to update the current stash to the new one?" & @CRLF _ 
-				& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _ 
-				& "If you hit 'No', this new version will be ignored." & @CRLF _ 
+			$hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
+				& " Do you want to update the current stash to the new one?" & @CRLF _
+				& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
+				& "If you hit 'No', this new version will be ignored." & @CRLF _
 				& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
 			switch $hAskUpgrade
 				case 6 ;YES, update.
 					ProcessClose($iStashPID)
 					InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
-					If Not @error Then 
+					If Not @error Then
 						; Download successful.
 						FileDelete($stashFilePath)
 						FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
@@ -234,7 +234,7 @@ If Not @error Then
 					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
 				case 2 ;CANCEL
 			endswitch
-		EndIf 
+		EndIf
 	EndIf
 EndIf
 
@@ -495,11 +495,11 @@ While True
 			Next
 			; Now handle the CSS Magic sub menu items
 			For $i = 0 To UBound($aCSSItems) -1
-				If $aCSSItems[$i][$CSS_HANDLE] = $nMsg Then 
+				If $aCSSItems[$i][$CSS_HANDLE] = $nMsg Then
 					$sQuery = "{configuration{interface{cssEnabled}}}"
 					$sResult = Query2($sQuery)
 					If @error Then ContinueLoop
-					If StringInStr($sResult, "true", 2) = 0 Then 
+					If StringInStr($sResult, "true", 2) = 0 Then
 						; the result is false
 						MsgBox(0, "Need to enable custom css feature.", 'You need to enable custom css in "Settings->Interface->Custom CSS" first.' )
 						ContinueLoop
@@ -508,7 +508,7 @@ While True
 					$sCSS =  FileRead($sFile)
 					If @error Then $sCSS = ""
 
-					If $aCSSItems[$i][$CSS_ENABLE] = 1 Then 
+					If $aCSSItems[$i][$CSS_ENABLE] = 1 Then
 						; Already Enabled. Disable it by removing.
 						$sSearchStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
 						$sSearchEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
@@ -519,9 +519,9 @@ While True
 							$iPos2 += StringLen($sSearchEnd)
 							$sCSS = StringLeft($sCSS, $iPos1-1) & StringMid($sCSS, $iPos2)
 							Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
-							If $hFile = -1 Then 
+							If $hFile = -1 Then
 								MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
-								ContinueLoop 
+								ContinueLoop
 							EndIf
 							FileWrite($hFile, $sCSS)
 						EndIf
@@ -535,9 +535,9 @@ While True
 						If StringRight($sCSS, 1) <> @LF Then $sCSS &= @LF
 						$sCSS &= $sStart & @LF & $aCSSItems[$i][$CSS_CONTENT] & @LF & $sEnd
 						Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
-						If $hFile = -1 Then 
+						If $hFile = -1 Then
 							MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
-							ContinueLoop 
+							ContinueLoop
 						EndIf
 						FileWrite($hFile, $sCSS)
 						$aCSSItems[$i][$CSS_ENABLE] = 1
@@ -547,7 +547,7 @@ While True
 					_WD_Action($sSession, "refresh")
 				EndIf
 			Next
-			
+
 	EndSwitch
 Wend
 
@@ -569,11 +569,11 @@ Func CreateCSSMenu()
 		; Create the item for the CSS item
 		$aCSSItems[$i][$CSS_HANDLE] = TrayCreateItem($aCSSItems[$i][$CSS_TITLE], $trayMenuCSS)
 		; Set the check state if the CSS is already enabled.
-		If $aCSSItems[$i][$CSS_ENABLE] = 1 Then 
+		If $aCSSItems[$i][$CSS_ENABLE] = 1 Then
 			TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_CHECKED)
 		EndIf
 	Next
-	
+
 EndFunc
 
 Func InitCSSArray(ByRef $a)
@@ -582,69 +582,69 @@ Func InitCSSArray(ByRef $a)
 	ReDim $a[18][4]
 	$a[0][0] = "Scene - Fit More Thumbnails on Each Row."
 	$a[0][1] = ".grid { padding: 0px !important; }"
-	
+
 	$a[1][0] = "Scene - Longer Studio Text in Scene Cards"
 	$a[1][1] = ".scene-studio-overlay { font-weight: 600 !important; opacity: 1 !important; width: 60% !important; text-overflow: ellipsis !important;}"
-	
+
 	$a[2][0] = "Scene - Hide Scene Specs from Scene Cards"
 	$a[2][1] = ".scene-specs-overlay{display: none;}"
-	
+
 	$a[3][0] = "Scene - Hide Studio from Scene Cards"
 	$a[3][1] = ".scene-studio-overlay{display: none;}"
-	
+
 	$a[4][0] = "Scene - Tags use less width"
 	$a[4][1] = ".bs-popover-bottom{max-width: 500px}"
-	
+
 	$a[5][0] = "Scene - Swap Studio and Specs in Scene Cards"
-	$a[5][1] = ".scene-studio-overlay{bottom: 1rem; right: 0.7rem; height: inherit; top: inherit;}" & @LF _ 
+	$a[5][1] = ".scene-studio-overlay{bottom: 1rem; right: 0.7rem; height: inherit; top: inherit;}" & @LF _
 		& ".scene-specs-overlay { right: 0.7rem; top: 0.7rem; bottom: inherit;}"
-		
+
 	$a[6][0] = "Scene - Adjust Mouse Over Behavior in Wall Mode"
 	$a[6][1] = "@media (min-width: 576px) { .wall-item:hover::before { opacity: 0; }" & @LF _
 		& ".wall-item:hover .wall-item-container { transform: scale(1.5); }}"
-	
+
 	$a[7][0] = "Scene - Disable Zoom on Hover in Wall Mode"
 	$a[7][1] = ".wall-item:hover .wall-item-container {transform: none;} " & @LF _
 		& ".wall-item:before { opacity: 0 !important;}"
-	
+
 	$a[8][0] = "Scene - Hide the Scene Scrubber"
 	$a[8][1] = ".scrubber-wrapper { display: none;}" & @LF _
 		& "#jwplayer-container > div:first-child { height: 100%;}"
-	
+
 	$a[9][0] = "Performer - Show Entire Performer's Image"
 	$a[9][1] = ".performer.image { background-size: contain !important;}"
-	
+
 	$a[10][0] = "Performer - Move Edit Buttons to the Top"
 	$a[10][1] = "form#performer-edit {display: flex; flex-direction: column;}" & @LF _
 		& "#performer-edit > .row { order: 1;}" & @LF _
 		& "#performer-edit > .row:last-child { order: 0; margin-bottom: 1rem;}"
-		
+
 	$a[11][0] = "Gallery - Grid View for Galleries"
 	$a[11][1] = ".col.col-sm-6.mx-auto.table .d-none.d-sm-block { display: none !important;}" & @LF _
 		& ".col.col-sm-6.mx-auto.table .w-100.w-sm-auto { width: 175px !important; background-color: rgba(0, 0, 0, .45); box-shadow: 0 0 2px rgba(0, 0, 0, .35);}" & @LF _
 		& ".col.col-sm-6.mx-auto.table tr { display: inline-table;}"
-	
+
 	$a[12][0] = "Images - Disable Lightbox Animation"
 	$a[12][1] = ".Lightbox-carousel { transition: none;}"
-	
+
 	$a[13][0] = "Images - Don't Crop Preview Thumbnails"
 	$a[13][1] = ".flexbin > * > img { object-fit: inherit; max-width: none; min-width: initial;}"
-	
+
 	$a[14][0] = "Movies - Better Layout for Desktops 1 - Regular Posters"
-	$a[14][1] = ".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex-basis: 70%}" & @LF _
-		& ".col-xl-8.col-lg-6{ flex-basis: 30% }" & @LF _
+	$a[14][1] = ".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex: 0 0 70%; max-width: 70%}" & @LF _
+		& ".col-xl-8.col-lg-6{ flex: 0 0 30%; max-width: 30% }" & @LF _
 		& ".movie-images{  flex-wrap: wrap}" & @LF _
 		& ".movie-image-container { flex: 0 0 500px}"
-	
+
 	$a[15][0] = "Movies - Better Layout for Desktops 2 - Larger Posters"
-	$a[15][1] = ".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex-basis: 70%}" & @LF _
-		& ".col-xl-8.col-lg-6{ flex-basis: 30% }" & @LF _
+	$a[15][1] = ".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex:0 0 70%; max-width: 70%}" & @LF _
+		& ".col-xl-8.col-lg-6{ flex: 0 0 30%; max-width: 30% }" & @LF _
 		& ".movie-images{ flex-direction: column; flex-wrap: wrap}" & @LF _
 		& ".movie-image-container { flex: 1 1 700px}"
-	
+
 	$a[16][0] = "Global - Hide the Donation Button"
 	$a[16][1] = ".btn-primary.btn.donate.minimal { display: none;}"
-	
+
 	$a[17][0] = "Global - Blur NSFW Images"
 	$a[17][1] = ".scene-card-preview-video, .scene-card-preview-image, .image-card-preview-image, .image-thumbnail, .gallery-card-image," & @LF _
 		& ".performer-card-image, img.performer, .movie-card-image, .gallery .flexbin img, .wall-item-media, .scene-studio-overlay .image-thumbnail," & @LF _
@@ -654,7 +654,7 @@ Func InitCSSArray(ByRef $a)
 		& ".scene-card-video {filter: blur(13px);}" & @LF _
 		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
 		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }"
-	
+
 	; Read the custom.css and set the CSS_Enable value
 	$sFile = $stashPath & "custom.css"
 	$sCSS =  FileRead($sFile)
@@ -665,43 +665,43 @@ Func InitCSSArray(ByRef $a)
 		$sSearch = "/* Start:" & $a[$i][0] & " */"
 		$a[$i][$CSS_ENABLE] = (StringInStr($sCSS, $sSearch, 2) <> 0) ? 1 : 0
 	Next
-	
+
 EndFunc
 
-Func AlreadyRunning() 
+Func AlreadyRunning()
 	Local $aPID = ProcessList("AutoIt3.exe")
 	If @error or $aPID[0][0] = 0 then Return False
 	For $i = 1 to $aPID[0][0]
 		; Skip this one.
-		If $aPID[$i][1] = @AutoItPID Then ContinueLoop 
+		If $aPID[$i][1] = @AutoItPID Then ContinueLoop
 		; Get full path by pid
 		$sPath = _WinAPI_GetProcessFileName($aPID[$i][1])
-		If StringInStr($sPath, "Stash Helper") <> 0 Then Return True 
+		If StringInStr($sPath, "Stash Helper") <> 0 Then Return True
 	Next
 	Return False
-EndFunc 
-	
+EndFunc
+
 Func OpenMediaFolder()
 	$sResult = GetCurrentTabCategoryAndNumber()
 	If @error Then Return SetError(1)
 	; Return string is like "scenes-11" or "scenes"
-	If StringInStr($sResult, "-") = 0 Then 
+	If StringInStr($sResult, "-") = 0 Then
 		; in main category or collection
 		MsgBox(0, "Need specific item", "The current browser is showing a collection, need to show specific scene/movie/image/gallery." )
-		Return 
+		Return
 	EndIf
 
 	Local $aStr = StringSplit($sResult, "-")
 	Switch $aStr[1]
 		Case "performers"
 			MsgBox(0, "Cannot be a performer", "No folder location for performers.")
-			Return 
+			Return
 		Case "studios"
 			MsgBox(0, "Cannot be a studio", "No folder location for studios.")
-			Return 
+			Return
 		Case "markers"
 			MsgBox(0, "Cannot be markers", "Sorry, no support for markers yet.")
-			Return 
+			Return
 		Case "movies"
 			; Now get the movie info
 			$sQuery = '{ "query": "{findMovie(id: ' & $aStr[2] & '){name,scene_count,scenes{id}}}" }'
@@ -729,7 +729,7 @@ Func OpenMediaFolder()
 			$iPos =  StringInStr($sFilePath, "\", 2, -1)
 			$sPath = StringLeft($sFilePath, $iPos)
 			ShellExecute($sPath)
-			
+
 		Case "scenes"
 			$sQuery = '{"query":"{findScene(id:' & $aStr[2] & '){path}}"}'
 			$sResult = Query($sQuery)
@@ -767,7 +767,7 @@ Func OpenMediaFolder()
 			$sPath = StringLeft($sFilePath, $iPos)
 			ShellExecute($sPath)
 
-	EndSwitch 	
+	EndSwitch
 EndFunc
 
 Func ReloadScrapers()
@@ -775,7 +775,7 @@ Func ReloadScrapers()
 	$sQuery = '{"query":"mutation{reloadScrapers}"}'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
-	
+
 	$sHandle = _WD_Window($sSession, "Window")
 	If $sHandle <> "" Then
 		; Valid session. Reload the content.
@@ -824,7 +824,7 @@ Func GetCurrentTabCategoryAndNumber()
 		MsgBox(0, "Error processing page", "The current browser is unknown.")
 		Return SetError(1)
 	EndIf
-	
+
 	If $aStr[0] >= 2 and StringIsDigit($aStr[2]) Then
 		Return $aStr[1] & "-" & $aStr[2]
 	Else
@@ -970,7 +970,7 @@ Func AddItemToList()
 
 	$sCategory = GetCategory($sURL)
 	if @error Then Return SetError(1)
-	
+
 	$sQueryCount = URLtoQuery($sURL, "count")
 	c("sQueryCount: " & $sQueryCount)
 
@@ -978,29 +978,29 @@ Func AddItemToList()
 	Switch $sQueryCount
 		Case "not support"
 			MsgBox(0, "Not support", "Sorry but this kind of collection is not supported yet.")
-			Return 
+			Return
 		Case  "home"
 			MsgBox(0, "Stash HOme Page", "This is Stash's home page. Nothing to add to the play list.")
 			Return
 		Case "1"
 			$iItemCount = 1
-		Case Else 
+		Case Else
 			$sResult = Query2($sQueryCount)
 			If @error Then Return SetError(1)
 			c("result:" & $sResult)
 			Local $aStr = StringRegExp($sResult, '"count":\s*(\d+)', $STR_REGEXPARRAYMATCH )
 			$iItemCount = Int($aStr[0])
 	EndSwitch
-	
-	If $iItemCount <> 1 Then 
+
+	If $iItemCount <> 1 Then
 		$hConfirm = MsgBox(65,"Confirm","Totally " & $iItemCount & " " & $sCategory & " to add to the play list." & @CRLF & "Some of them might contain multiple items." & @CRLF & "Are you sure to add them to the play list?",0)
 		if $hConfirm = 2 then Return ; Cancelled.
 	EndIf
-	
+
 	; Get the full list of ids.
 	$sQuery = URLtoQuery($sURL, "id")
 	if @error then Return SetError(1)
-	
+
 	; If return just a single id.
 	If StringLeft($sQuery, 3) = "id=" Then
 		; No need to get query. Has one single id.
@@ -1009,40 +1009,40 @@ Func AddItemToList()
 			Case "scenes"
 				AddSceneToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One scene was added to the current play list." & @CRLF _ 
+				MsgBox(0, "Done", "One scene was added to the current play list." & @CRLF _
 					& "Total entities in play list:  " & UBound($aPlayList))
 			Case "images"
 				AddImageToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One image was added to the current play list." & @CRLF _ 
+				MsgBox(0, "Done", "One image was added to the current play list." & @CRLF _
 					& "Total entities in play list:  " & UBound($aPlayList))
 			Case "movies"
 				$iNo = AddMovieToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One movie with " & $iNo & " scenes was added to the current play list." & @CRLF _ 
+				MsgBox(0, "Done", "One movie with " & $iNo & " scenes was added to the current play list." & @CRLF _
 					& "Total entities in play list:  " & UBound($aPlayList))
 			Case "galleries"
 				$iNo = AddGalleryToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One gallery with " & $iNo & " images was added to the current play list." & @CRLF _ 
+				MsgBox(0, "Done", "One gallery with " & $iNo & " images was added to the current play list." & @CRLF _
 					& "Total entities in play list:  " & UBound($aPlayList))
 		EndSwitch
-		Return 
-	ElseIf $sQuery = "not support" Then 
+		Return
+	ElseIf $sQuery = "not support" Then
 		MsgBox(0, "Not support", "Too bad, this kind of query is not support.")
 		Return
 	EndIf
-	
-	
+
+
 	$sResult = Query2($sQuery)
 	if @error Then Return SetError(1)
 	$oData = Json_Decode($sResult)
-	
+
 	; Start to add scenes, movies... to the play list.
 	Switch $sCategory
 		Case "scenes"
 			$aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
-			If UBound($aScenes) = 0 Then 
+			If UBound($aScenes) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
@@ -1050,11 +1050,11 @@ Func AddItemToList()
 			For $oScene in $aScenes
 				$i += AddSceneToList($oScene.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _ 
+			MsgBox(0, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList))
 		Case "images"
 			$aImages = Json_ObjGet($oData, "data.findImages.images")
-			If UBound($aImages) = 0 Then 
+			If UBound($aImages) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
@@ -1062,12 +1062,12 @@ Func AddItemToList()
 			For $oImage in $aImages
 				$i += AddImageToList($oImage.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& $i & " images was added to the current play list." & @CRLF _ 
+			MsgBox(0, "Done", "Totally "& $i & " images was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
 				& "Beware: Most media players do not support playing images stored in .zip files." )
 		Case "movies"
 			$aMovies = Json_ObjGet($oData, "data.findMovies.movies")
-			If UBound($aMovies) = 0 Then 
+			If UBound($aMovies) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
@@ -1075,11 +1075,11 @@ Func AddItemToList()
 			For $oMovie in $aMovies
 				$i += AddMovieToList($oMovie.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _ 
+			MsgBox(0, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList))
 		Case "galleries"
 			$aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
-			If UBound($aGalleries) = 0 Then 
+			If UBound($aGalleries) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
@@ -1087,13 +1087,13 @@ Func AddItemToList()
 			For $oGallery in $aGalleries
 				$i += AddGalleryToList($oGallery.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images was added to the current play list." & @CRLF _ 
+			MsgBox(0, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
 				& "Beware: Most media players do not support playing images stored in .zip files." )
 		Case Else
 			MsgBox(0, "Not supported", "Sorry, only scene/image/movie/gallery are supported.")
 	EndSwitch
-	
+
 EndFunc
 
 Func AddImageToList($sID)
@@ -1127,9 +1127,9 @@ Func AddGalleryToList($sID)
 	If Not IsObj($oData) Then Return 0
 	; Check gallery's path.
 	$sPath = $oData.item("path")
-	if stringlower(StringRight($sPath, 4)) = ".zip" Then 
-		$iReply = MsgBox(52,"Not Supported","This gallery is a zip file which contains images." & @CRLF _ 
-		& "Showing images in .zip files is not supported by most media players." & @CRLF _ 
+	if stringlower(StringRight($sPath, 4)) = ".zip" Then
+		$iReply = MsgBox(52,"Not Supported","This gallery is a zip file which contains images." & @CRLF _
+		& "Showing images in .zip files is not supported by most media players." & @CRLF _
 		& "So do you still want to add this gallery: " & $oData.Item("title")& "?",0)
 		if $iReply = 7 Then return 0
 	EndIf
@@ -1401,7 +1401,7 @@ Func Query2($sQuery)
 	$sResult = Query('{"query":"'& $sQuery& '"}')
 	If @error Then Return SetError(1, 0, $sResult)
 	Return $sResult
-EndFunc 
+EndFunc
 
 Func Query($sQuery)
 	; Use Stash's graphql to get results or do something
