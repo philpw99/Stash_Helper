@@ -32,7 +32,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1.2"
+Global Const $currentVersion = "v2.1.3"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -834,12 +834,28 @@ Func GetCurrentTabCategoryAndNumber()
 EndFunc
 
 Func GetURL()
-	Local $sURL = _URLDecode(_WD_Action($sSession, "url"))
-	If $sURL = "" Then
-		MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
-		Return SetError(1)
-	EndIf
-	Return $sURL
+	; Probably it's close or no windows at all.
+	$aHandles =  _WD_Window($sSession, 'Handles')
+	Switch  UBound($aHandles)
+		case 0
+			; No wd windows opened.
+			MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
+			Return SetError(1)
+		case 1
+			Local $sResult = _WD_Action($sSession, "url")
+			If @error <> $_WD_ERROR_Success Then
+				; Set the new current tab as the active browser tab
+				$sHandle =  $aHandles[0]
+				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
+				$sResult = _WD_Action($sSession, "url")
+			EndIf
+		case Else
+			; Multi-tab situation. No good solution here.
+			$sHandle =  $aHandles[0]
+			_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
+			$sResult = _WD_Action($sSession, "url")
+	EndSwitch
+	Return _URLDecode($sResult)
 EndFunc
 
 Func BookmarkCurrentTab()
@@ -1548,17 +1564,20 @@ Func BrowserError($code)
 EndFunc
 
 Func OpenURL($url)
-	$sBrowserHandle = _WD_Window($sSession, "Window")
-	If $sBrowserHandle = "" Then
-		; The session is invalid.
-		$sSession = _WD_CreateSession($sDesiredCapabilities)
-		_WD_Navigate($sSession, $url)
-		$sBrowserHandle = _WD_Window($sSession, "Window")
-	Else
-		_WD_Navigate($sSession, $url)
-	EndIf
-	; Switch to this tab
-	_WD_Window($sSession, 'Switch', '{"handle":"' & $sBrowserHandle & '"}')
+	; Probably it's close or no windows at all.
+	$aHandles =  _WD_Window($sSession, 'Handles')
+
+	Switch  UBound($aHandles)
+		Case 0
+			; No browser at all, open a new one.
+			$sSession = _WD_CreateSession($sDesiredCapabilities)
+			_WD_Navigate($sSession, $url)
+			$sBrowserHandle = _WD_Window($sSession, "Window")
+		Case Else
+			$sBrowserHandle = $aHandles[0]
+			_WD_Window($sSession, "switch", '{"handle":"' & $sBrowserHandle & '"}' )
+			_WD_Navigate($sSession, $url)
+	EndSwitch
 EndFunc
 
 Func Alert($sMessage)
