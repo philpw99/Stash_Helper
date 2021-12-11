@@ -355,6 +355,8 @@ If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
 
+; c("Session ID:" & $sSession)
+
 Global $sBrowserHandle
 
 #EndRegion Globals
@@ -844,8 +846,8 @@ Func GetURL()
 		case 1
 			Local $sResult = _WD_Action($sSession, "url")
 			If @error <> $_WD_ERROR_Success Then
-				; Set the new current tab as the active browser tab
-				$sHandle =  $aHandles[0]
+				; Set the last tab as the current browser tab
+				$sHandle =  $aHandles[UBound($aHandles)-1]
 				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
 				$sResult = _WD_Action($sSession, "url")
 			EndIf
@@ -881,6 +883,9 @@ Func BookmarkCurrentTab()
 	$sDescription = InputBox("Title required", "Please enter a brief description/title for this " & $sThing & ".")
 	If $sDescription = "" Then Return
 	$sDescription = StringLeft($sDescription, 50)
+
+	; For bookmarks, the URL need to be encoded.
+	$sURL = _URLEncode($sURL, 2)
 
 	Switch $sCategory
 		Case "scenes"
@@ -1566,18 +1571,17 @@ EndFunc
 Func OpenURL($url)
 	; Probably it's close or no windows at all.
 	$aHandles =  _WD_Window($sSession, 'Handles')
-
-	Switch  UBound($aHandles)
-		Case 0
-			; No browser at all, open a new one.
+	If UBound($aHandles) = 0 Then 
+			; No browser at all, open a new session.
 			$sSession = _WD_CreateSession($sDesiredCapabilities)
 			_WD_Navigate($sSession, $url)
 			$sBrowserHandle = _WD_Window($sSession, "Window")
-		Case Else
-			$sBrowserHandle = $aHandles[0]
+	Else
+			; The session is still alive. Switch to the last handle to make sure that's the current one
+			$sBrowserHandle = $aHandles[UBound($aHandles)-1]
 			_WD_Window($sSession, "switch", '{"handle":"' & $sBrowserHandle & '"}' )
 			_WD_Navigate($sSession, $url)
-	EndSwitch
+	EndIf
 EndFunc
 
 Func Alert($sMessage)
