@@ -520,13 +520,14 @@ While True
 							; Only do it when the numbers are valid
 							$iPos2 += StringLen($sSearchEnd)
 							$sCSS = StringLeft($sCSS, $iPos1-1) & StringMid($sCSS, $iPos2)
-							Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
-							If $hFile = -1 Then
-								MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
-								ContinueLoop
-							EndIf
-							FileWrite($hFile, $sCSS)
+							; Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
+							;If $hFile = -1 Then
+							;	MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
+							;	ContinueLoop
+							;EndIf
+							;FileWrite($hFile, $sCSS)
 						EndIf
+						ApplyCSS($sCSS)
 						$aCSSItems[$i][$CSS_ENABLE] = 0
 						TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_UNCHECKED)
 					Else
@@ -536,12 +537,13 @@ While True
 						; Add the crlf to the end if not there yet.
 						If StringRight($sCSS, 1) <> @LF Then $sCSS &= @LF
 						$sCSS &= $sStart & @LF & $aCSSItems[$i][$CSS_CONTENT] & @LF & $sEnd
-						Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
-						If $hFile = -1 Then
-							MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
-							ContinueLoop
-						EndIf
-						FileWrite($hFile, $sCSS)
+						;Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
+						;If $hFile = -1 Then
+						;	MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
+						;	ContinueLoop
+						;EndIf
+						;FileWrite($hFile, $sCSS)
+						ApplyCSS($sCSS)
 						$aCSSItems[$i][$CSS_ENABLE] = 1
 						TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_CHECKED)
 					EndIf
@@ -559,6 +561,17 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func ApplyCSS($str)
+	$str = StringReplace($str, @CRLF, "\\n", 0, 2)
+	$str = StringReplace($str, @LF, "\\n", 0, 2)
+	If StringLeft($str, 3) = "\\n" Then
+		$str = StringMid($str, 4)
+	EndIf
+	$sQuery = 'mutation{configureInterface(input:{css:\"' & $str & '\" cssEnabled: true }){css}}'
+	Query2($sQuery)
+	if @error then return SetError(1)
+EndFunc
 
 Func CreateCSSMenu()
 	; Create the sub items for CSS Magic menu
@@ -1419,6 +1432,7 @@ EndFunc
 
 Func Query2($sQuery)
 	; This one will wrap the {"query":" "} around $sQuery. Easier to program.
+	c("QueryString:" & '{"query":"'& $sQuery& '"}')
 	$sResult = Query('{"query":"'& $sQuery& '"}')
 	If @error Then Return SetError(1, 0, $sResult)
 	Return $sResult
