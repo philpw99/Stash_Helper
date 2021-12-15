@@ -8,11 +8,11 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 	; 
 	; get the string after the base url
 	Local $aResult[1]
-	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
+	Local $sStr = StringMid($sURL, StringLen($stashURL) +1 )
 	If StringLeft($sStr, 1) = "/" Then $sStr = StringTrimLeft($sStr, 1)
 	$aStr = StringSplit($sStr, "?&/")
 	; Even $sStr is empty. Still $aStr[0] is 1
-	$iCount = $aStr[0]
+	Local $iCount = $aStr[0]
 	
 	Local $sSortby = "", $sSortDir = "ASC", $sQuickQuery = ""
 	Local $aCQuery[0]  ; For "c=xxx" queries
@@ -36,7 +36,7 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 				$iCount -= 1
 			Case "c"
 				; Add one c query
-				$iU = UBound($aCQuery)
+				Local $iU = UBound($aCQuery)
 				ReDim $aCQuery[ $iU + 1]
 				$aCQuery[$iU] = PairValue($aStr[$i])
 		EndSwitch 
@@ -89,12 +89,12 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 	EndIf
 	
 	; Now it's just pure c= queries
-	$sCriteria = ""
+	Local $sCriteria = ""
 	If UBound($aCQuery) > 0 Then 
 		; Have to check before this for...in...
 		For $sCQuery In $aCQuery
 			c("$sCQuery:" & $sCQuery)
-			$oCriteria =  Json_Decode($sCQuery)
+			Local $oCriteria =  Json_Decode($sCQuery)
 			If @error Or ( Not IsObj($oCriteria)) Then
 				ContinueLoop
 			Else 
@@ -107,7 +107,7 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 						Switch $oCriteria.item("modifier")
 							Case "BETWEEN", "NOT_BETWEEN"
 								; It has value 1 and value 2. So much trouble !
-								$sValues = $oCriteria.Item("value").Item("value") & " value2:" & $oCriteria.Item("value").Item("value2")
+								Local $sValues = $oCriteria.Item("value").Item("value") & " value2:" & $oCriteria.Item("value").Item("value2")
 								$sCriteria &= MakeCriteria("duration", $sValues, $oCriteria.Item("modifier") )
 							Case Else 
 								$sCriteria &= MakeCriteria("duration", $oCriteria.Item("value").Item("value"), $oCriteria.Item("modifier") )

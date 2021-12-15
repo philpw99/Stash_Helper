@@ -6,7 +6,7 @@
 
 Func ShowSettings()
 	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation
-	Local $sBrowser
+	Local $sBrowser, $bBrowserChanged = False 
 	Local $guiSettings = GUICreate("Settings",800,940,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	; Disable the tray clicks
@@ -23,31 +23,31 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$radioChooseFirefox = GUICtrlCreateRadio("Firefox",166,187,147,38,$BS_AUTORADIOBUTTON,-1)
+	Local $radioChooseFirefox = GUICtrlCreateRadio("Firefox",166,187,147,38,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	
-	$btnUpdateFirefox = GUICtrlCreateButton("Update",387,195,112,32,-1,-1)
+	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",387,195,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when Firefox is not under control any more.")
 	
-	$radioChooseChrome = GUICtrlCreateRadio("Chrome",166,237,147,38,$BS_AUTORADIOBUTTON,-1)
+	Local $radioChooseChrome = GUICtrlCreateRadio("Chrome",166,237,147,38,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	$btnUpdateChrome = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
+	Local $btnUpdateChrome = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when Chrome is not under control any more.")
 	
-	$radioChooseEdge = GUICtrlCreateRadio("MS Edge",166,287,147,38,$BS_AUTORADIOBUTTON,-1)
+	Local $radioChooseEdge = GUICtrlCreateRadio("MS Edge",166,287,147,38,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	$btnUpdateEdge = GUICtrlCreateButton("Update",387,293,112,32,-1,-1)
+	Local $btnUpdateEdge = GUICtrlCreateButton("Update",387,293,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when MS Edge is not under control any more.")
 	
 	GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
-	$inputSlideShow = GUICtrlCreateInput(string($iSlideShowSeconds),592,747,60,32,-1,$WS_EX_CLIENTEDGE)
+	Local $inputSlideShow = GUICtrlCreateInput(string($iSlideShowSeconds),592,747,60,32,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
@@ -63,12 +63,12 @@ Func ShowSettings()
 			GUICtrlSetState($radioChooseEdge, $GUI_CHECKED)
 	EndSwitch
 
-	$chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
+	Local $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
 	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
-	$chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
+	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
 	If $showWDConsole = 1 Then GUICtrlSetState($chkShowWebDriver, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
@@ -77,17 +77,17 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$inputStashWinLocation = GUICtrlCreateInput($stashFilePath,66,487,473,36,-1,$WS_EX_CLIENTEDGE)
+	Local $inputStashWinLocation = GUICtrlCreateInput($stashFilePath,66,487,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	
-	$btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
+	Local $btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
 	GUICtrlCreateLabel("Stash URL:",68,531,299,37,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$inputStashURL = GUICtrlCreateInput($stashURL,68,572,473,36,-1,$WS_EX_CLIENTEDGE)
+	Local $inputStashURL = GUICtrlCreateInput($stashURL,68,572,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
 
@@ -95,11 +95,11 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$inputMediaPlayerLocation = GUICtrlCreateInput($sMediaPlayerLocation,68,681,473,36,-1,$WS_EX_CLIENTEDGE)
+	Local $inputMediaPlayerLocation = GUICtrlCreateInput($sMediaPlayerLocation,68,681,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to player the scene file.")
 
-	$btnBrowsePlayer = GUICtrlCreateButton("Browse",566,675,142,42,-1,-1)
+	Local $btnBrowsePlayer = GUICtrlCreateButton("Browse",566,675,142,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
 
@@ -107,31 +107,31 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$btnPlayerPot = GUICtrlCreateButton("PotPlayer",74,795,133,40,-1,-1)
+	Local $btnPlayerPot = GUICtrlCreateButton("PotPlayer",74,795,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
 
-	$btnPlayerVLC = GUICtrlCreateButton("VLC",207,795,133,40,-1,-1)
+	Local $btnPlayerVLC = GUICtrlCreateButton("VLC",207,795,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
 
-	$btnPlayerMPC = GUICtrlCreateButton("MPC",340,795,133,40,-1,-1)
+	Local $btnPlayerMPC = GUICtrlCreateButton("MPC",340,795,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Media Player Classic from  mpc-hc.org")
 
-	$btnPlayerGOM = GUICtrlCreateButton("GOM",74,842,133,40,-1,-1)
+	Local $btnPlayerGOM = GUICtrlCreateButton("GOM",74,842,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"GOM Player from player.gomlab.com")
 
-	$btnPlayerKodi = GUICtrlCreateButton("Kodi",207,842,133,40,-1,-1)
+	Local $btnPlayerKodi = GUICtrlCreateButton("Kodi",207,842,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
 
-	$btnPlayerKMP = GUICtrlCreateButton("KMP",340,842,133,40,-1,-1)
+	Local $btnPlayerKMP = GUICtrlCreateButton("KMP",340,842,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
 
-	$chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
+	Local $chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
 	If @OSArch = "X64" Then
 		GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE, $GUI_CHECKED))
 	Else 
@@ -140,7 +140,7 @@ Func ShowSettings()
 
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	$btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
+	Local $btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	
 	GUISetState(@SW_SHOW, $guiSettings)
@@ -149,13 +149,13 @@ Func ShowSettings()
 	While True
 		Sleep(10)
 		; if click on tray icon, activate the current GUI
-		$nTrayMsg = TrayGetMsg()
+		Local $nTrayMsg = TrayGetMsg()
 		Switch $nTrayMsg
 			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
 				WinActivate($guiSettings)
  		EndSwitch 
 
- 		$nMsg = GUIGetMsg()
+ 		Local $nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case $btnBrowseStash
 				Local $sFile = FileOpenDialog("Open the Stash-Win.exe:", _ 
@@ -197,19 +197,19 @@ Func ShowSettings()
 					Case GUICtrlRead($radioChooseEdge) = $GUI_CHECKED
 						$sBrowser = "Edge"
 				EndSelect
+				If $sBrowser <> $stashBrowser Then $bBrowserChanged = True
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", _ 
 					GUICtrlRead($inputStashWinLocation))
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
-				$iShow = (GUICtrlRead($chkShowStash) = $GUI_CHECKED) ? 1 : 0
+				Local $iShow = (GUICtrlRead($chkShowStash) = $GUI_CHECKED) ? 1 : 0
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole", "REG_DWORD", $iShow)
 				$iShow = (GUICtrlRead($chkShowWebDriver) = $GUI_CHECKED) ? 1 : 0
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole", "REG_DWORD", $iShow)
 				
 				$stashURL = GUICtrlRead($inputStashURL)
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
-				
-				MsgBox(64,"Setting saved.", _ 
-				  "You need to restart the program for the new settings to take effect, though.",0)
+				Local $sMessage =  $bBrowserChanged ? "You need to restart the program for the new settings to take effect, though." : "Settings are in effect now."
+				MsgBox(64,"Setting saved.", $sMessage,0)
 				ExitLoop
 			Case $btnUpdateFirefox
 				If $stashBrowser = "Firefox" Then 

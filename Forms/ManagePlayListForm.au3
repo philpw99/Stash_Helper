@@ -1,8 +1,8 @@
 Func ManagePlayList()
 	; Global $aPlayList
 	
-	$guiManagePlayList = GUICreate("Manage Play List",1034,1037,-1,-1,$WS_SIZEBOX,-1)
-	$lvPlayList = GUICtrlCreatelistview("#|Title|Duration|File/Path",30,60,959,864,-1,$WS_EX_CLIENTEDGE + $LVS_EX_FULLROWSELECT + $LVS_EX_GRIDLINES)
+	Global $guiManagePlayList = GUICreate("Manage Play List",1034,1037,-1,-1,$WS_SIZEBOX,-1)
+	Global $lvPlayList = GUICtrlCreatelistview("#|Title|Duration|File/Path",30,60,959,864,-1,$WS_EX_CLIENTEDGE + $LVS_EX_FULLROWSELECT + $LVS_EX_GRIDLINES)
 	_GUICtrlListView_SetTextBkColor($lvPlayList, $CLR_CREAM )
 	GUICtrlSetResizing(-1,102)
 	_GUICtrlListView_SetColumnWidth($lvPlayList, 0, 40)	 	; #
@@ -11,30 +11,30 @@ Func ManagePlayList()
 	_GUICtrlListView_SetColumnWidth($lvPlayList, 3, 500)	; File
 	_GUICtrlListView_JustifyColumn($lvPlayList, 0, 2)
 	_GUICtrlListView_JustifyColumn($lvPlayList, 2, 2)
-	$btnDelete = GUICtrlCreateButton("Delete",30,936,161,42,-1,-1)
+	Local $btnDelete = GUICtrlCreateButton("Delete",30,936,161,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Delete the current selected item from the list.")
 	GUICtrlSetResizing(-1,834)
-	$btnLoad = GUICtrlCreateButton("Load",621,937,161,42,-1,-1)
+	Local $btnLoad = GUICtrlCreateButton("Load",621,937,161,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Load a play list file (.m3u) from a folder.")
 	GUICtrlSetResizing(-1,836)
-	$btnSave = GUICtrlCreateButton("Save",830,937,161,42,-1,-1)
+	Local $btnSave = GUICtrlCreateButton("Save",830,937,161,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Save the current list to a M3U file.")
 	GUICtrlSetResizing(-1,836)
-	$btnPlay = GUICtrlCreateButton("Play",236,937,161,42,-1,-1)
+	Local $btnPlay = GUICtrlCreateButton("Play",236,937,161,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Play this list in external media player.")
 	GUICtrlSetResizing(-1,834)
-	$btnClear = GUICtrlCreateButton("Clear",422,937,161,42,-1,-1)
+	Local $btnClear = GUICtrlCreateButton("Clear",422,937,161,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Clear the play list.")
 	GUICtrlSetResizing(-1,960)
 
 	; load the $aPlayList array to the list
 	For $i = 0 To UBound($aPlayList)-1
-		$iRow = _GUICtrlListView_AddItem($lvPlayList, $i+1)
+		Local $iRow = _GUICtrlListView_AddItem($lvPlayList, $i+1)
 		_GUICtrlListView_SetItemText($lvPlayList, $iRow, $aPlayList[$i][$LIST_TITLE], 1)
 		_GUICtrlListView_SetItemText($lvPlayList, $iRow, TimeConvert($aPlayList[$i][$LIST_DURATION]), 2)
 		_GUICtrlListView_SetItemText($lvPlayList, $iRow, $aPlayList[$i][$LIST_FILE], 3)
@@ -47,13 +47,13 @@ Func ManagePlayList()
 	
 	While True 
 		; if click on tray icon, activate the current GUI
-		$nTrayMsg = TrayGetMsg()
+		Local $nTrayMsg = TrayGetMsg()
 		Switch $nTrayMsg
 			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
 				WinActivate($guiManagePlayList)
  		EndSwitch 
 
-		$nMsg = GUIGetMsg()
+		Local $nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case $btnDelete
 				; Delete the highlighted item in the play list.
@@ -125,7 +125,7 @@ Func SaveList($lvPlayList)
 	Local $sTitle, $sFile
 	For $i = 0 to $iCount-1
 		$sTitle = $aPlayList[$i][$LIST_TITLE]
-		$iDuration = $aPlayList[$i][$LIST_DURATION]
+		Local $iDuration = $aPlayList[$i][$LIST_DURATION]
 		$sFile = $aPlayList[$i][$LIST_FILE]
 		Local $line = "#EXTINF:" & $iDuration & "," & $sTitle
 		FileWriteLine($hFile, $line ) ; $aData[2] is the name of the file.
@@ -166,7 +166,7 @@ Func LoadList($lvPlayList)
 	
 	Local $EOF = False 
 	While Not $EOF
-		$sLine = FileReadLine($hFile)
+		Local $sLine = FileReadLine($hFile)
 		If @error Then
 			$EOF = True
 			ExitLoop 
@@ -176,15 +176,15 @@ Func LoadList($lvPlayList)
 			$i = UBound($aPlayList)
 			ReDim $aPlayList[$i+1][3]
 			; Add the item to the array.
-			$iPos = StringInStr($sLine, ",", 2)
-			$sTitle = stringmid($sLine, $iPos + 1 )
-			$iDuration = Int( StringMid($sLine, 9, $iPos-9) )
+			Local $iPos = StringInStr($sLine, ",", 2)
+			Local $sTitle = stringmid($sLine, $iPos + 1 )
+			Local $iDuration = Int( StringMid($sLine, 9, $iPos-9) )
 			$aPlayList[$i][$LIST_TITLE] = $sTitle
 			$aPlayList[$i][$LIST_DURATION] = $iDuration
 			$aPlayList[$i][$LIST_FILE] = StringStripWS( FileReadLine($hFile), 3) ; The full file/path
 			
 			; Add the item to the list
-			$iRow = _GUICtrlListView_AddItem($lvPlayList, $i+1)
+			Local $iRow = _GUICtrlListView_AddItem($lvPlayList, $i+1)
 			_GUICtrlListView_SetItemText($lvPlayList, $iRow, $sTitle, 1)
 			_GUICtrlListView_SetItemText($lvPlayList, $iRow, TimeConvert($iDuration), 2)
 			_GUICtrlListView_SetItemText($lvPlayList, $iRow, $aPlayList[$i][$LIST_FILE], 3)

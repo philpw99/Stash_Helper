@@ -18,7 +18,8 @@
 #include <Array.au3>
 #include "DTC.au3"
 #include "URL_Encode.au3"
-; #include "MiniWebServer.au3"
+
+opt("MustDeclareVars", 1)
 
 If AlreadyRunning() Then
 	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _
@@ -32,7 +33,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1.3"
+Global Const $currentVersion = "v2.1.5"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -60,10 +61,10 @@ If @error Or Not FileExists($stashFilePath) Then
 EndIf
 
 ; For v0.11 and above. Disable the browser from autostart
-$sFileConfig = stringleft( $stashFilePath, stringinstr($stashFilePath, "\", 2, -1) ) & "config.yml"
-$sNoBrowser = ""
+Global $sFileConfig = stringleft( $stashFilePath, stringinstr($stashFilePath, "\", 2, -1) ) & "config.yml"
+Global $sNoBrowser = ""
 If FileExists($sFileConfig) Then
-	$sConfigContent = FileRead($sFileConfig)
+	Local $sConfigContent = FileRead($sFileConfig)
 	; If exist this setting, then it's v0.11 and above
 	If StringInStr($sConfigContent, "autostart_video:", 2) <> 0 Then
 		$sNoBrowser = " --nobrowser"
@@ -93,7 +94,9 @@ For $i = 0 to 19
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
-Global $minfo = ObjCreate("Scripting.Dictionary")
+; For SceneToMovieForm.
+Global $mInfo = ObjCreate("Scripting.Dictionary")
+If @error Then MsgExit("Error Creating global $minfo object.")
 
 ; All forms.
 #include <Forms\SettingsForm.au3>
@@ -115,7 +118,7 @@ If $stashURL = "" Then
 	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
 	; Run it for the first time. Merged.
 	$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE, $STDERR_MERGED)
-	$hTimer = TimerInit()
+	Local $hTimer = TimerInit()
 	While True
 		Local $sLine = StdoutRead($iStashPID)
 		If @error Then
@@ -130,8 +133,8 @@ If $stashURL = "" Then
 				$stashVersion = StringMid($sLine, StringInStr($sLine, "stash version:", 2))
 				$stashVersion = StringStripWS($stashVersion, $STR_STRIPTRAILING)
 			Case StringInStr($sLine, "stash is running at ")
-				$iPos1 = StringInStr($sLine, "http", 2)
-				$iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
+				Local $iPos1 = StringInStr($sLine, "http", 2)
+				Local $iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
 				$stashURL = StringMid($sLine, $iPos1, $iPos2 -$iPos1)
 				$stashURL = StringStripWS($stashURL, $STR_STRIPTRAILING)
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
@@ -149,8 +152,7 @@ If $stashURL = "" Then
 Else
 	; StashURL already saved.
 	Local $aStr = StringRegExp($stashURL, "\:\/\/(.*)\:(\d+)", $STR_REGEXPARRAYMATCH )
-	$sHost = $aStr[0]
-	$sPort = $aStr[1]
+	Local $sHost = $aStr[0], $sPort = $aStr[1]
 	If $sHost = "localhost" Then
 		$iStashPID = ProcessExists("stash-win.exe")
 		If $iStashPID = 0 Then
@@ -162,9 +164,9 @@ Else
 			EndIf
 		Else
 			; Already running. Get the PID which is listening to that port
-			$iPid = Run(@ComSpec & ' /C netstat -ano|find "0.0.0.0:' & $sPort & '"',"",@SW_HIDE, $STDOUT_CHILD )
+			Local $iPid = Run(@ComSpec & ' /C netstat -ano|find "0.0.0.0:' & $sPort & '"',"",@SW_HIDE, $STDOUT_CHILD )
 			ProcessWaitClose($iPid)
-			$sReadOut = StdoutRead($iPid)
+			Local $sReadOut = StdoutRead($iPid)
 			; Get the PID
 			$aStr = StringRegExp($sReadOut, "LISTENING\s+(\d+)", $STR_REGEXPARRAYMATCH)
 			If @error Then
@@ -188,29 +190,29 @@ Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items
 ; Now create the top level tray menu items.
 
 ; Use query to get the version
-$sResult = Query('{"query":"{version{version,hash}}"}')
+Local $sResult = Query('{"query":"{version{version,hash}}"}')
 If Not @error Then
 	; Query and Get current version.
-	$oResult = Json_Decode($sResult)
-	$oVersion = Json_ObjGet($oResult, "data.version")
+	Local $oResult = Json_Decode($sResult)
+	Local $oVersion = Json_ObjGet($oResult, "data.version")
 	$stashVersion = $oVersion.Item("version")
-	$stashVersionHash = $oVersion.Item("hash")
+	Local $stashVersionHash = $oVersion.Item("hash")
 
 	; Now get the latest version.
 	$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
 	If Not @error Then
 		; Successfully get the info about latest version.
 		$oResult = Json_Decode($sResult)
-		$oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
-		$sLatestVersionHash = $oLatestVersion.Item("shorthash")
-		$sLatestVersionURL = $oLatestVersion.Item("url")
-		$sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
+		Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
+		Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
+		Local $sLatestVersionURL = $oLatestVersion.Item("url")
+		Local $sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
 
 		If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then
 			; A new version is waiting.
 			Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
-			$sNewVersion = $aMatchStr[0]
-			$hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
+			Local $sNewVersion = $aMatchStr[0]
+			Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
 				& " Do you want to update the current stash to the new one?" & @CRLF _
 				& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
 				& "If you hit 'No', this new version will be ignored." & @CRLF _
@@ -385,7 +387,7 @@ HotKeySet("^!o", "OpenMediaFolder")
 
 ; Looping to get message
 While True
-	$nMsg = TrayGetMsg()
+	Local $nMsg = TrayGetMsg()
 	Switch $nMsg
 		Case 0
 			; Nothing should be here, but Case 0 here is very necessary.
@@ -498,7 +500,7 @@ While True
 			; Now handle the CSS Magic sub menu items
 			For $i = 0 To UBound($aCSSItems) -1
 				If $aCSSItems[$i][$CSS_HANDLE] = $nMsg Then
-					$sQuery = "{configuration{interface{cssEnabled}}}"
+					Local $sQuery = "{configuration{interface{cssEnabled}}}"
 					$sResult = Query2($sQuery)
 					If @error Then ContinueLoop
 					If StringInStr($sResult, "true", 2) = 0 Then
@@ -506,16 +508,16 @@ While True
 						MsgBox(0, "Need to enable custom css feature.", 'You need to enable custom css in "Settings->Interface->Custom CSS" first.' )
 						ContinueLoop
 					EndIf
-					$sFile = $stashPath & "custom.css"
-					$sCSS =  FileRead($sFile)
+					Local $sFile = $stashPath & "custom.css"
+					Local $sCSS =  FileRead($sFile)
 					If @error Then $sCSS = ""
 
 					If $aCSSItems[$i][$CSS_ENABLE] = 1 Then
 						; Already Enabled. Disable it by removing.
-						$sSearchStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
-						$sSearchEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
-						$iPos1 = StringInStr($sCSS, $sSearchStart, 2)
-						$iPos2 = StringInStr($sCSS, $sSearchEnd, 2)
+						Local $sSearchStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						Local $sSearchEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						Local $iPos1 = StringInStr($sCSS, $sSearchStart, 2)
+						Local $iPos2 = StringInStr($sCSS, $sSearchEnd, 2)
 						If $iPos2 > $iPos1 and $iPos1 <> 0 Then
 							; Only do it when the numbers are valid
 							$iPos2 += StringLen($sSearchEnd)
@@ -532,8 +534,8 @@ While True
 						TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_UNCHECKED)
 					Else
 						; Not enable yet. Add it to the end
-						$sStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
-						$sEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						Local $sStart = "/* Start:" & $aCSSItems[$i][$CSS_TITLE] & " */"
+						Local $sEnd = "/* End:" & $aCSSItems[$i][$CSS_TITLE] & " */"
 						; Add the crlf to the end if not there yet.
 						If StringRight($sCSS, 1) <> @LF Then $sCSS &= @LF
 						$sCSS &= $sStart & @LF & $aCSSItems[$i][$CSS_CONTENT] & @LF & $sEnd
@@ -671,13 +673,13 @@ Func InitCSSArray(ByRef $a)
 		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }"
 
 	; Read the custom.css and set the CSS_Enable value
-	$sFile = $stashPath & "custom.css"
-	$sCSS =  FileRead($sFile)
+	Local $sFile = $stashPath & "custom.css"
+	Local $sCSS =  FileRead($sFile)
 	If @error Then $sCSS = ""
 	; Use /* Start:$a[xx][0] */ as the starting point
 	; /* End:$a[xx][0] */ as the ending point
 	For $i = 0 To UBound($a) -1
-		$sSearch = "/* Start:" & $a[$i][0] & " */"
+		Local $sSearch = "/* Start:" & $a[$i][0] & " */"
 		$a[$i][$CSS_ENABLE] = (StringInStr($sCSS, $sSearch, 2) <> 0) ? 1 : 0
 	Next
 
@@ -690,7 +692,7 @@ Func AlreadyRunning()
 		; Skip this one.
 		If $aPID[$i][1] = @AutoItPID Then ContinueLoop
 		; Get full path by pid
-		$sPath = _WinAPI_GetProcessFileName($aPID[$i][1])
+		Local $sPath = _WinAPI_GetProcessFileName($aPID[$i][1])
 		If StringInStr($sPath, "Stash Helper") <> 0 Then Return True
 	Next
 	Return False
@@ -724,25 +726,25 @@ Func OpenMediaFolder()
 			If @error Then Return SetError(1)
 
 			$oResult = Json_Decode($sResult)
-			$oMovieData = Json_ObjGet($oResult, "data.findMovie")
+			Local $oMovieData = Json_ObjGet($oResult, "data.findMovie")
 			; name, scene_count, scenes->id
-			$iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
+			Local $iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
 			If $iCount = 0 Then
 				MsgBox(0, "No scene", "There is no scene in this movie.")
 				Return SetError(1)
 			EndIf
 			; Just need the first scene location
-			$nSceneID = $oMovieData.Item("scenes")[0].Item("id")
+			Local $nSceneID = $oMovieData.Item("scenes")[0].Item("id")
 			$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path}}"}'
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
 			$oResult = Json_Decode($sResult)
-			$oSceneData = Json_ObjGet($oResult, "data.findScene")
-			$sFilePath = $oSceneData.Item("path")
+			Local $oSceneData = Json_ObjGet($oResult, "data.findScene")
+			Local $sFilePath = $oSceneData.Item("path")
 			; Geth the path only
-			$iPos =  StringInStr($sFilePath, "\", 2, -1)
-			$sPath = StringLeft($sFilePath, $iPos)
+			Local $iPos =  StringInStr($sFilePath, "\", 2, -1)
+			Local $sPath = StringLeft($sFilePath, $iPos)
 			ShellExecute($sPath)
 
 		Case "scenes"
@@ -791,7 +793,7 @@ Func ReloadScrapers()
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
-	$sHandle = _WD_Window($sSession, "Window")
+	Local $sHandle = _WD_Window($sSession, "Window")
 	If $sHandle <> "" Then
 		; Valid session. Reload the content.
 		_WD_Action($sSession, "refresh")
@@ -801,7 +803,7 @@ Func ReloadScrapers()
 EndFunc
 
 Func GetCategory($sURL)
-	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
+	Local $sStr = StringMid($sURL, StringLen($stashURL) +1 )
 	If $sStr = "" Then
 		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
 		Return SetError(1)
@@ -824,7 +826,7 @@ Func GetCurrentTabCategoryAndNumber()
 	Local $sURL = GetURL()
 	If @error then Return SetError(1)
 	; Get the text after http://localhost:9999/
-	$sStr = StringMid($sURL, StringLen($stashURL) +1 )
+	Local $sStr = StringMid($sURL, StringLen($stashURL) +1 )
 	If $sStr = "" Then
 		MsgBox(0, "This is home page", "The current browser is showing the home page of stash.")
 		Return SetError(1)
@@ -850,7 +852,7 @@ EndFunc
 
 Func GetURL()
 	; Probably it's close or no windows at all.
-	$aHandles =  _WD_Window($sSession, 'Handles')
+	Local $aHandles =  _WD_Window($sSession, 'Handles')
 	Switch  UBound($aHandles)
 		case 0
 			; No wd windows opened.
@@ -860,13 +862,13 @@ Func GetURL()
 			Local $sResult = _WD_Action($sSession, "url")
 			If @error <> $_WD_ERROR_Success Then
 				; Set the last tab as the current browser tab
-				$sHandle =  $aHandles[UBound($aHandles)-1]
+				Local $sHandle =  $aHandles[UBound($aHandles)-1]
 				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
 				$sResult = _WD_Action($sSession, "url")
 			EndIf
 		case Else
 			; Multi-tab situation. No good solution here.
-			$sHandle =  $aHandles[0]
+			Local $sHandle =  $aHandles[0]
 			_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
 			$sResult = _WD_Action($sSession, "url")
 	EndSwitch
@@ -874,14 +876,14 @@ Func GetURL()
 EndFunc
 
 Func BookmarkCurrentTab()
-	$sResult = GetCurrentTabCategoryAndNumber()
+	Local $sResult = GetCurrentTabCategoryAndNumber()
 	If @error Then Return SetError(1)
-	$sURL = GetURL()
+	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
 	local $sThing = "thing"
 	$aStr = StringSplit($sResult, "-")
-	$sCategory = $aStr[1]
+	Local $sCategory = $aStr[1]
 
 	If $aStr[0] = 2 Then
 		If StringIsDigit($aStr[2]) Then
@@ -893,7 +895,7 @@ Func BookmarkCurrentTab()
 	EndIf
 	; c("aStr[0]:" & $aStr[0] & " aStr[1]:" & $aStr[1])
 	; Now we have the thing.
-	$sDescription = InputBox("Title required", "Please enter a brief description/title for this " & $sThing & ".")
+	Local $sDescription = InputBox("Title required", "Please enter a brief description/title for this " & $sThing & ".")
 	If $sDescription = "" Then Return
 	$sDescription = StringLeft($sDescription, 50)
 
@@ -902,7 +904,7 @@ Func BookmarkCurrentTab()
 
 	Switch $sCategory
 		Case "scenes"
-			$iRow = AddBookmarkToArray($sDescription, $sURL, $traySceneLinks )
+			Local $iRow = AddBookmarkToArray($sDescription, $sURL, $traySceneLinks )
 			TrayItemDelete($customScenes)
 			$traySceneLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuScenes )
 			$customScenes = TrayCreateItem("Customize...", $trayMenuScenes)
@@ -964,9 +966,9 @@ EndFunc
 Func SaveMenuItems($sCategory, ByRef $aArray)
 	; Save the menu items to the registry
 	; First letter should be capital.
-	$sCat = StringUpper(stringleft($sCategory, 1)) & stringmid($sCategory, 2)
+	Local $sCat = StringUpper(stringleft($sCategory, 1)) & stringmid($sCategory, 2)
 	; First item
-	$str = "1|" & $aArray[0][$ITEM_TITLE] & "|" & $aArray[0][$ITEM_LINK]
+	Local $str = "1|" & $aArray[0][$ITEM_TITLE] & "|" & $aArray[0][$ITEM_LINK]
 	; the rest
 	For $i = 1 to $iMaxSubItems-1
 		$str &= "@@@" & String($i+1) & "|" & $aArray[$i][$ITEM_TITLE] & "|" & $aArray[$i][$ITEM_LINK]
@@ -999,13 +1001,13 @@ EndFunc
 
 Func AddItemToList()
 
-	$sURL = GetURL()
+	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	$sCategory = GetCategory($sURL)
+	Local $sCategory = GetCategory($sURL)
 	if @error Then Return SetError(1)
 
-	$sQueryCount = URLtoQuery($sURL, "count")
+	Local $sQueryCount = URLtoQuery($sURL, "count")
 	c("sQueryCount: " & $sQueryCount)
 
 	Local $iItemCount
@@ -1027,7 +1029,7 @@ Func AddItemToList()
 	EndSwitch
 
 	If $iItemCount <> 1 Then
-		$hConfirm = MsgBox(65,"Confirm","Totally " & $iItemCount & " " & $sCategory & " to add to the play list." & @CRLF & "Some of them might contain multiple items." & @CRLF & "Are you sure to add them to the play list?",0)
+		Local $hConfirm = MsgBox(65,"Confirm","Totally " & $iItemCount & " " & $sCategory & " to add to the play list." & @CRLF & "Some of them might contain multiple items." & @CRLF & "Are you sure to add them to the play list?",0)
 		if $hConfirm = 2 then Return ; Cancelled.
 	EndIf
 
@@ -1038,7 +1040,7 @@ Func AddItemToList()
 	; If return just a single id.
 	If StringLeft($sQuery, 3) = "id=" Then
 		; No need to get query. Has one single id.
-		$sID = PairValue($sQuery)
+		Local $sID = PairValue($sQuery), $iNo
 		Switch $sCategory
 			Case "scenes"
 				AddSceneToList($sID)
@@ -1070,12 +1072,12 @@ Func AddItemToList()
 
 	$sResult = Query2($sQuery)
 	if @error Then Return SetError(1)
-	$oData = Json_Decode($sResult)
+	Local $oData = Json_Decode($sResult)
 
 	; Start to add scenes, movies... to the play list.
 	Switch $sCategory
 		Case "scenes"
-			$aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
+			Local $aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
 			If UBound($aScenes) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
@@ -1087,7 +1089,7 @@ Func AddItemToList()
 			MsgBox(0, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList))
 		Case "images"
-			$aImages = Json_ObjGet($oData, "data.findImages.images")
+			Local $aImages = Json_ObjGet($oData, "data.findImages.images")
 			If UBound($aImages) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
@@ -1100,7 +1102,7 @@ Func AddItemToList()
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
 				& "Beware: Most media players do not support playing images stored in .zip files." )
 		Case "movies"
-			$aMovies = Json_ObjGet($oData, "data.findMovies.movies")
+			Local $aMovies = Json_ObjGet($oData, "data.findMovies.movies")
 			If UBound($aMovies) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
@@ -1112,7 +1114,7 @@ Func AddItemToList()
 			MsgBox(0, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList))
 		Case "galleries"
-			$aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
+			Local $aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
 			If UBound($aGalleries) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
@@ -1138,7 +1140,7 @@ Func AddImageToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
-	$oData = Json_ObjGet($oResult, "data.findImage")
+	Local $oData = Json_ObjGet($oResult, "data.findImage")
 	If Not IsObj($oData) Then Return 0
 	; $oData.Item("title") $oData.Item("path")
 	$i = UBound($aPlayList)
@@ -1157,17 +1159,17 @@ Func AddGalleryToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
-	$oData = Json_ObjGet($oResult, "data.findGallery")
+	Local $oData = Json_ObjGet($oResult, "data.findGallery")
 	If Not IsObj($oData) Then Return 0
 	; Check gallery's path.
-	$sPath = $oData.item("path")
+	Local $sPath = $oData.item("path")
 	if stringlower(StringRight($sPath, 4)) = ".zip" Then
-		$iReply = MsgBox(52,"Not Supported","This gallery is a zip file which contains images." & @CRLF _
+		Local $iReply = MsgBox(52,"Not Supported","This gallery is a zip file which contains images." & @CRLF _
 		& "Showing images in .zip files is not supported by most media players." & @CRLF _
 		& "So do you still want to add this gallery: " & $oData.Item("title")& "?",0)
 		if $iReply = 7 Then return 0
 	EndIf
-	$aImages = $oData.Item("images")
+	Local $aImages = $oData.Item("images")
 	If UBound($aImages) = 0 Then Return 0
 	; Treat a gallery like a movie, just add all images to the list
 	Local $iCount = 0
@@ -1191,7 +1193,7 @@ Func SendPlayerList()
 		MsgBox(48,"Play list is empty","There is nothing in the play list. Cannot play it.",10)
 		Return SetError(1)
 	EndIf
-	$sFileName = @TempDir & "\StashPlayList.m3u"
+	Local $sFileName = @TempDir & "\StashPlayList.m3u"
 
 	Local $hFile = FileOpen($sFileName, $FO_OVERWRITE)
 	If $hFile = -1 Then
@@ -1203,12 +1205,12 @@ Func SendPlayerList()
 	FileWriteLine($hFile, "#EXTM3U")
 	; Now write the file/path list
 	Local $iCount = UBound($aPlayList)
-	Local $sTitle, $sFile
+	Local $sTitle, $sFile, $iDuration, $line
 	For $i = 0 to $iCount-1
 		$sTitle = $aPlayList[$i][$LIST_TITLE]
 		$iDuration = $aPlayList[$i][$LIST_DURATION]
 		$sFile = $aPlayList[$i][$LIST_FILE]
-		Local $line = "#EXTINF:" & $iDuration & "," & $sTitle
+		$line = "#EXTINF:" & $iDuration & "," & $sTitle
 		FileWriteLine($hFile, $line ) ; $aData[2] is the name of the file.
 		; Write the real file/path on second line.
 		FileWriteLine($hFile, $sFile)
@@ -1226,24 +1228,24 @@ Func AddMovieToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
-	$oMovieData = Json_ObjGet($oResult, "data.findMovie")
+	Local $oMovieData = Json_ObjGet($oResult, "data.findMovie")
 	If $oMovieData = "" Then Return 0
 	; name, scene_count, scenes->id
-	$iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
+	Local $iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
 	If $iCount = 0 Then
 		Return 0
 	EndIf
 	For $i = 0 to $iCount-1
-		$nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
+		Local $nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
 		; Now add this scene to the  play list
 		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration} }}"}'
 		$sResult = Query($sQuery)
 		If @error Then Return SetError(1)
 
 		$oResult = Json_Decode($sResult)
-		$oSceneData = Json_ObjGet($oResult, "data.findScene")
+		Local $oSceneData = Json_ObjGet($oResult, "data.findScene")
 		; path
-		$j = UBound($aPlayList)
+		Local $j = UBound($aPlayList)
 		ReDim $aPlayList[$j+1][3]
 		$aPlayList[$j][$LIST_TITLE] = "Movie: " & $oMovieData.Item("name") & " - Scene " & ($i+1)
 		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )
@@ -1261,7 +1263,7 @@ Func AddSceneToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
-	$oData = Json_ObjGet($oResult, "data.findScene")
+	Local $oData = Json_ObjGet($oResult, "data.findScene")
 	If $oData = "" Then Return 0
 	; $oData.Item("title") $oData.Item("path")
 	$i = UBound($aPlayList)
@@ -1326,10 +1328,10 @@ Func PlayMovie()
 	If @error then return SetError(1)
 
 	; Movie tab found and set current
-	$sURL = GetURL()
+	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	$nMovie = GetNumber($sURL, "movies")
+	Local $nMovie = GetNumber($sURL, "movies")
 	PlayMovieInCurrentTab($nMovie)
 EndFunc
 
@@ -1346,10 +1348,10 @@ EndFunc
 Func SwitchToTab($sCategory)
 	; It will switch to the tab that contains the category, then return the no.
 	; First check if the currrent tab is the right one
-	$sURL = GetURL()
+	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	$sSearchRegEx = "\/" & $sCategory & "\/\d+"
+	Local $sSearchRegEx = "\/" & $sCategory & "\/\d+"
 	If StringRegExp($sURL, $sSearchRegEx) Then
 		; Current tab matches. It's a scene or movie.
 		Return
@@ -1373,7 +1375,7 @@ Func SwitchToTab($sCategory)
 		EndIf
 	Next
 	If Not $bFound Then
-		$sItem = StringLeft($sCategory, stringlen($sCategory)-1)
+		Local $sItem = StringLeft($sCategory, stringlen($sCategory)-1)
 		MsgBox(48,"Cannot find the " & $sItem,"Sorry, but I cannot find the browser tab with the " & $sItem & " you want.",0)
 		Return SetError(1)
 	EndIf
@@ -1383,13 +1385,13 @@ Func PlayMovieInCurrentTab($nMovie)
 	; Use graphql to get the scenes in movies
 	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path}}}"}' )
 	If @error Then Return
-	$oData = Json_Decode($sResult)
+	Local $oData = Json_Decode($sResult)
 	If Not Json_IsObject($oData) Then
 		MsgBox(0, "Data error.", "The data return from stash has errors.")
 		Return
 	EndIf
 	; Get the scenes array
-	$aScenes = Json_ObjGet($oData, "data.findMovie.scenes")
+	Local $aScenes = Json_ObjGet($oData, "data.findMovie.scenes")
 	c("aScenes:" & UBound($aScenes))
 	Switch UBound($aScenes)
 		Case 0
@@ -1399,7 +1401,7 @@ Func PlayMovieInCurrentTab($nMovie)
 			Play( $aScenes[0].Item("path") )
 		Case Else
 			; write a temp m3u file
-			$hFile = FileOpen(@TempDir & "\StashMovie.m3u", $FO_OVERWRITE )
+			Local $hFile = FileOpen(@TempDir & "\StashMovie.m3u", $FO_OVERWRITE )
 			If $hFile = -1 Then
 				MsgBox(0, "m3u create error", "failed to create a m3u file for this movie.")
 				Return
@@ -1450,7 +1452,7 @@ Func Query($sQuery)
 		_WinHttpCloseHandle($hOpen)
 		Return SetError(1)
 	EndIf
-	$result = _WinHttpSimpleRequest($hConnect, "POST", "/graphql", Default, _
+	Local $result = _WinHttpSimpleRequest($hConnect, "POST", "/graphql", Default, _
 		$sQuery, "Content-Type: application/json" )
 	; c("result:" & $result)
 	If @error Then
@@ -1483,10 +1485,10 @@ Func PlayScene()
 EndFunc
 
 Func PlayCurrentScene()
-	$sURL = GetURL()
+	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	$aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
+	Local $aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
 	c("scene id:" & $aMatch[0])
 	$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
 	c("scene query:" & $sQuery)
@@ -1495,7 +1497,7 @@ Func PlayCurrentScene()
 	$sResult = Query( $sQuery )
 	If @error  Then Return SetError(1)
 
-	$oData = Json_Decode($sResult)
+	Local $oData = Json_Decode($sResult)
 	If Not Json_IsObject($oData) Then
 		MsgBox(0, "Data error.", "The data return from stash has errors.")
 		Return
@@ -1584,8 +1586,8 @@ EndFunc
 
 Func OpenURL($url)
 	; Probably it's close or no windows at all.
-	$aHandles =  _WD_Window($sSession, 'Handles')
-	If UBound($aHandles) = 0 Then 
+	Local $aHandles =  _WD_Window($sSession, 'Handles')
+	If UBound($aHandles) = 0 Then
 			; No browser at all, open a new session.
 			$sSession = _WD_CreateSession($sDesiredCapabilities)
 			_WD_Navigate($sSession, $url)
@@ -1799,7 +1801,7 @@ EndFunc
 Func ReloadSubMenu($sCategory, ByRef $aArray)
 	; $sCategory is like "movies","scenes"...
 	; Make the first one capital letter.
-	$sCat = StringUpper(stringleft($sCategory, 1)) & StringMid($sCategory, 2)
+	Local $sCat = StringUpper(stringleft($sCategory, 1)) & StringMid($sCategory, 2)
 	; Delete all the submenu items
 	For $i = 0 To UBound($aArray) -1
 		If $aArray[$i][$ITEM_HANDLE] <> Null Then
@@ -1896,8 +1898,8 @@ EndFunc
 Func DataToArray($sData, ByRef $aLink)
 	; Data is like "0|All Movies|http://localhost...@crlf 1|Second Item|http:..."
 	; Data in $aLink will be changed.
-	$aLines = StringSplit($sData, "@@@", $STR_ENTIRESPLIT + $STR_NOCOUNT)
-
+	Local $aLines = StringSplit($sData, "@@@", $STR_ENTIRESPLIT + $STR_NOCOUNT)
+	Local $aItem
 	For $i = 0 To UBound($aLines)-1
 		; c("Line:" & $aLines[$i])
 		$aItem = StringSplit($aLines[$i], "|", $STR_NOCOUNT)
@@ -1930,5 +1932,11 @@ EndFunc   ;==>ExitScript
 
 Func c($str)
 	ConsoleWrite($str & @CRLF)
+EndFunc
+
+Func MsgExit($str)
+	; For serious problems that has to exit.
+	MsgBox(16,"Error !",$str,0)
+	ExitScript()
 EndFunc
 #EndRegion Functions

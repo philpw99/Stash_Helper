@@ -24,10 +24,10 @@ Func ScrapersManager()
 	; Disable the tray clicks
 	TraySetClick(0)
 	
-	$guiScrapers = GUICreate("Scrapers Management",1700,1030,-1,-1,$WS_SIZEBOX,-1)
+	Global $guiScrapers = GUICreate("Scrapers Management",1700,1030,-1,-1,$WS_SIZEBOX,-1)
 	GUISetIcon("helper2.ico")
 	
-	$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,102)
 	; Website
@@ -59,27 +59,27 @@ Func ScrapersManager()
 	GUICtrlSetBkColor(-1,"-2")
 	GUICtrlSetResizing(-1,38)
 
-	$btnInstall = GUICtrlCreateButton("Install",1065,212,167,49,-1,-1)
+	Local $btnInstall = GUICtrlCreateButton("Install",1065,212,167,49,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Install the scrapers with check marks.")
 	GUICtrlSetResizing(-1,804)
 
-	$btnRemove = GUICtrlCreateButton("Remove",1298,212,167,49,-1,-1)
+	Local $btnRemove = GUICtrlCreateButton("Remove",1298,212,167,49,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Remove the scrapers with check marks.")
 	GUICtrlSetResizing(-1,804)
 	
 	GUISetState(@SW_SHOW, $guiScrapers)
 	
-	$inputFind = GUICtrlCreateInput("",42,218,570,35,-1,$WS_EX_CLIENTEDGE)
+	Local $inputFind = GUICtrlCreateInput("",42,218,570,35,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,550)
 	
-	$btnFind = GUICtrlCreateButton("Find",640,220,148,33,-1,-1)
+	Local $btnFind = GUICtrlCreateButton("Find",640,220,148,33,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,804)
 	
-	$btnUpdate = GUICtrlCreateButton("Update",1494,212,167,49,-1,-1)
+	Local $btnUpdate = GUICtrlCreateButton("Update",1494,212,167,49,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update the installed scrapers.")
 	GUICtrlSetResizing(-1,804)
@@ -96,21 +96,21 @@ Func ScrapersManager()
 
 	While True
 		; if click on tray icon, activate the current GUI
-		$nTrayMsg = TrayGetMsg()
+		Local $nTrayMsg = TrayGetMsg()
 		Switch $nTrayMsg
 			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
 				WinActivate($guiScrapers)
  		EndSwitch 
 		
 		; Main control loop
-		$nMsg = GUIGetMsg()
+		Local $nMsg = GUIGetMsg()
 		
 		Switch $nMsg
 			Case 0
 				; Nothing should be her, but case 0 must be here.
 			Case $inputFind, $btnFind
-				$sText = GUICtrlRead($inputFind)
-				$iFound = _GUICtrlListView_FindInText($scraperList, $sText, $iCurrentSearchIndex, False )
+				Local $sText = GUICtrlRead($inputFind)
+				Local $iFound = _GUICtrlListView_FindInText($scraperList, $sText, $iCurrentSearchIndex, False )
 				If $iFound = -1 Then 
 					; Not found, reset the index
 					$iCurrentSearchIndex = 0
@@ -124,13 +124,13 @@ Func ScrapersManager()
 				EndIf
 				
 			Case $btnInstall ; Install scrapers
-				$iCount = _GUICtrlListView_GetItemCount($scraperList)
-				$iTotalInstalled = 0
+				Local $iCount = _GUICtrlListView_GetItemCount($scraperList)
+				Local $iTotalInstalled = 0
 				ReDim $aFiles[0]  ; clear the array
 				For $i = 0 To $iCount -1
 					; go through the whole list
 					If _GUICtrlListView_GetItemChecked($scraperList, $i) Then
-						$sScraperFile = _GUICtrlListView_GetItemText($scraperList, $i, 1)
+						Local $sScraperFile = _GUICtrlListView_GetItemText($scraperList, $i, 1)
 						If _ArraySearch($aFiles, $sScraperFile) = -1 Then
 							; Not in file array
 							$i = UBound($aFiles)
@@ -171,7 +171,7 @@ Func ScrapersManager()
 
 			Case $btnRemove  ; Remove scrapers
 				$iCount = _GUICtrlListView_GetItemCount($scraperList)
-				$iTotalRemoved = 0
+				Local $iTotalRemoved = 0
 				ReDim $aFiles[0]  ; clear the array
 				For $i = 0 To $iCount -1
 					; go through the whole list
@@ -191,7 +191,7 @@ Func ScrapersManager()
 				; Now go through the file list
 				For $i = 0 To UBound($aFiles)-1
 					FileDelete($sScraperPath & $sScraperFile)
-					$sPyFile = Stringleft($sScraperFile, stringinstr($sScraperFile, ".", 2, -1) -1) & ".py"
+					Local $sPyFile = Stringleft($sScraperFile, stringinstr($sScraperFile, ".", 2, -1) -1) & ".py"
 					If FileExists($sScraperPath & $sPyFile) Then 
 						FileDelete($sScraperPath & $sPyFile)
 					EndIf
@@ -223,12 +223,12 @@ Func ScrapersManager()
 						; if search, search from here.
 						$iCurrentSearchIndex = $i
 						
-						$bItemChecked = _GUICtrlListView_GetItemChecked($scraperList, $i)
+						Local $bItemChecked = _GUICtrlListView_GetItemChecked($scraperList, $i)
 						If $bItemChecked <> $aItemID[$i][1] Then
 							; Check status changed.
 							$aItemID[$i][1] = $bItemChecked
 							; Now set all the item with same yml file to the same check status
-							$sYMLfile = StringStripWS( _GUICtrlListView_GetItemText($scraperList, $i, 1), 3)
+							Local $sYMLfile = StringStripWS( _GUICtrlListView_GetItemText($scraperList, $i, 1), 3)
 							; Find the item with same file
 							For $j = 0 To UBound($aScraperArray) -1
 								Local $aStr = StringSplit($aScraperArray[$j], "|")
@@ -263,24 +263,24 @@ Func UpdateScrapers()
 		; get last line
 		Local $sLastLine = StringMid( $sLocalFile, StringInStr($sLocalFile, "# Last Updated", 2, -1) )
 		$sLastLine = StringStripWS($sLastLine, 3)
-		$sContentBinary = InetRead($sScraperBaseURL & $aScraperFiles[$i])
-		$sContent = BinaryToString($sContentBinary)
+		Local $sContentBinary = InetRead($sScraperBaseURL & $aScraperFiles[$i])
+		Local $sContent = BinaryToString($sContentBinary)
 		If $sContent = "" Then 
-			$reply = MsgBox(276,"Error getting scraper file","Error in downloading " & $aScraperFiles[$i] & " from the repo. Maybe it's no longer] in use. Do you want to delete the local scraper file too?",0)
+			Local $reply = MsgBox(276,"Error getting scraper file","Error in downloading " & $aScraperFiles[$i] & " from the repo. Maybe it's no longer] in use. Do you want to delete the local scraper file too?",0)
 			If $reply = $IDYES Then 
 				FileDelete($sScraperPath & $aScraperFiles[$i])
 			EndIf
 			ContinueLoop 
 		EndIf
 		;  get the last line from content
-		$sLastLine2 = StringMid( $sContent, StringInStr($sContent, "# Last Updated", 2 ,-1 ) )
+		Local $sLastLine2 = StringMid( $sContent, StringInStr($sContent, "# Last Updated", 2 ,-1 ) )
 		$sLastLine2 = StringStripWS($sLastLine2, 3)
 		; c("Last line 2:" & $sLastLine2)
 		; MsgBox(0, "result", "Line 1:" & $sLastLine & @CRLF & "Line2:" & $sLastLine2)
-		$sLocalDate = stringstripws( stringmid($sLastLine, 15), 3 )
-		$iLocalDate = Int( _Date_Time_Convert($sLocalDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
-		$sRemoteDate =StringStripWS( stringmid($sLastLine2, 15), 3)
-		$iRemoteDate =Int( _Date_Time_Convert($sRemoteDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
+		local $sLocalDate = stringstripws( stringmid($sLastLine, 15), 3 )
+		Local $iLocalDate = Int( _Date_Time_Convert($sLocalDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
+		Local $sRemoteDate =StringStripWS( stringmid($sLastLine2, 15), 3)
+		Local $iRemoteDate =Int( _Date_Time_Convert($sRemoteDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
 		; c("local:" & $iLocalDate & "remote:" & $iRemoteDate)
 		If $iRemoteDate > $iLocalDate Then
 			
@@ -292,8 +292,8 @@ Func UpdateScrapers()
 				ExitLoop
 			EndIf
 			; Yes
-			$hFile = FileOpen($sScraperPath & $aScraperFiles[$i], $FO_OVERWRITE)
-			$result = FileWrite($hFile, $sContent)
+			Local $hFile = FileOpen($sScraperPath & $aScraperFiles[$i], $FO_OVERWRITE)
+			Local $result = FileWrite($hFile, $sContent)
 			If $result = 0 Then 
 				MsgBox(0, "Error writing files", "Error in writing the scraper file:" & $aScraperFiles[$i])
 				FileClose($hFile)
@@ -304,7 +304,7 @@ Func UpdateScrapers()
 			; Handle the .py scrapers
 			If StringInStr($sContent, "- python", 2) <>0 And StringInStr($sContent, "action: script") <> 0  Then
 				; Python script. Need to download the py file
-				$sPyFile = Stringleft($aScraperFiles[$i], stringinstr($aScraperFiles[$i], ".", 2, -1) -1) & ".py"
+				Local $sPyFile = Stringleft($aScraperFiles[$i], stringinstr($aScraperFiles[$i], ".", 2, -1) -1) & ".py"
 				; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
 				InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
 			EndIf
@@ -356,7 +356,7 @@ EndFunc
 Func FetchScraper($sFile)
 	; Global $stashFilePath, $sScraperPath
 	; Download it from GitHub
-	$result = InetGet( $sScraperBaseURL & $sFile, $sScraperPath & $sFile)
+	Local $result = InetGet( $sScraperBaseURL & $sFile, $sScraperPath & $sFile)
 	If $result = 0 Then 
 		Return SetError(1)
 	EndIf
@@ -364,7 +364,7 @@ Func FetchScraper($sFile)
 	$sFile = FileRead($sScraperPath & $sFile)
 	If StringInStr($sFile, "- python", 2) <>0 And StringInStr($sFile, "action: script") <> 0  Then
 		; Python script. Need to download the py file
-		$sPyFile = Stringleft($sFile, stringinstr($sFile, ".", 2, -1) -1) & ".py"
+		Local $sPyFile = Stringleft($sFile, stringinstr($sFile, ".", 2, -1) -1) & ".py"
 		; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
 		InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
 		Return 
@@ -373,7 +373,7 @@ EndFunc
 
 Func SetScraperArray()
 	; Set the global $aScraperArray
-	$iCount = 0
+	Local $iCount = 0
 	
 	Local $bGetList = True, $sLine
 	$aScraperFiles = _FileListToArray($sScraperPath, "*.yml", $FLTA_FILES)
@@ -395,7 +395,7 @@ Func SetScraperArray()
 		EndIf
 	EndIf 
 		
-	$hFile = FileOpen($sScraperPath & "SCRAPERS-LIST.md")
+	Local $hFile = FileOpen($sScraperPath & "SCRAPERS-LIST.md")
 	If $hFile = -1 Then 
 		MsgBox(16,"Error open SCRAPERS-LIST.md","Error opening stash's scraper list file.",0)
 		Return SetError(1)
@@ -430,17 +430,16 @@ Func SetScraperArray()
 		$sLine = StringReplace($sLine, ":x:", "x", 0, 2)
 		
 		; Get the yml file name
-		$iPos1 = StringInStr($sLine, "|", 2, 1)
-		$iPos2 = StringInStr($sLine, "|", 2, 2)
-		$sYml = StringMid($sLine, $iPos1 + 1, $iPos2-$iPos1-1 )
+		Local $iPos1 = StringInStr($sLine, "|", 2, 1), $iPos2 = StringInStr($sLine, "|", 2, 2)
+		Local $sYml = StringMid($sLine, $iPos1 + 1, $iPos2-$iPos1-1 )
 
 		; Search this one in the files array
-		$result = _ArraySearch($aScraperFiles, $sYml, 0, 0, 0, 2)
-		$sInstalled = ($result= -1 )? "No|" : "Yes|"
+		Local $result = _ArraySearch($aScraperFiles, $sYml, 0, 0, 0, 2)
+		Local $sInstalled = ($result= -1 )? "No|" : "Yes|"
 		
 		; Add "Installed" to the array before the ExtraReq
-		$iPos = StringInStr($sLine, "|", 2, -2)
-		$sFinalLine = StringLeft($sLine, $iPos) & $sInstalled & StringMid($sLine, $iPos + 1)
+		Local $iPos = StringInStr($sLine, "|", 2, -2)
+		Local $sFinalLine = StringLeft($sLine, $iPos) & $sInstalled & StringMid($sLine, $iPos + 1)
 		
 		; Add the whole line to the end of the array.
 		ReDim $aScraperArray[$iCount + 1]
@@ -448,5 +447,4 @@ Func SetScraperArray()
 		$iCount += 1
 	Wend
 	FileClose($hFile)
-	$hCurrentGUI = 0
 EndFunc

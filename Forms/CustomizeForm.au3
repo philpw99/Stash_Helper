@@ -17,7 +17,7 @@ Func CustomList($sCategory, ByRef $aCategory)
 	; Disable the tray clicks
 	TraySetClick(0)
 		
-	$guiCustom = GUICreate("Customize " & $sCategory,1060,1126,-1,-1,-1,-1)
+	Local $guiCustom = GUICreate("Customize " & $sCategory,1060,1126,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	
 	GUICtrlCreateLabel("Customize the list of " & $sCategory & _ 
@@ -39,10 +39,10 @@ Func CustomList($sCategory, ByRef $aCategory)
 	_GUICtrlListView_SetColumnWidth($customList, 2, 700)
 	; _GUICtrlListView_JustifyColumn($customList, 2, 2)
 	
-	$btnSave = GUICtrlCreateButton("Save",773,993,238,47,-1,-1)
+	Local $btnSave = GUICtrlCreateButton("Save",773,993,238,47,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Save the list and apply the changes.")
-	$btnDelete = GUICtrlCreateButton("Delete",47,993,238,47,-1,-1)
+	local $btnDelete = GUICtrlCreateButton("Delete",47,993,238,47,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Delete the highlighted row.")
 	
@@ -68,27 +68,27 @@ Func CustomList($sCategory, ByRef $aCategory)
 
 	GUISetState(@SW_SHOW, $guiCustom)
 	; Make list view editable
-	$iLV_Index = _GUIListViewEx_Init($customList, $aList, 0, 0, True, 2)
+	Local $iLV_Index = _GUIListViewEx_Init($customList, $aList, 0, 0, True, 2)
 	_GUIListViewEx_SetEditStatus($iLV_Index, "1;2", 1, Default)
 	_GUIListViewEx_MsgRegister(True, False, False)
 	
 	; Now do the loop
 	While True
 		; if click on tray icon, activate the current GUI
-		$nTrayMsg = TrayGetMsg()
+		Local $nTrayMsg = TrayGetMsg()
 		Switch $nTrayMsg
 			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
 				WinActivate($guiCustom)
  		EndSwitch 
 
-		$nMsg = GUIGetMsg()
+		Local $nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case 0
 				; Nothing should be here.
 			Case $customList
 				; ConsoleWrite("here" & @CRLF)
 			Case $btnSave
-				$aRead =  _GUIListViewEx_ReturnArray($iLV_Index)
+				Local $aRead =  _GUIListViewEx_ReturnArray($iLV_Index)
 				; _ArrayDisplay($aRead)
 				Local $str = $aRead[0]
 				For $i = 1 to $iMaxSubItems-1
