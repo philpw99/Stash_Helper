@@ -131,6 +131,10 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 	If @error Then Return SetError(1)
 
 	Local $oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	Local $oData = Json_ObjGet($oResult, "data.findScenes")
 	Local $iCount = $oData.Item("count")
 
@@ -183,6 +187,10 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 		If @error Then ExitLoop 
 		
 		$oResult = Json_Decode($sResult)
+		If Not IsObj($oResult) Then
+			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+			Return SetError(1)
+		EndIf
 		$mInfo.Item("MovieID") = Json_ObjGet($oResult, "data.movieCreate.id")
 		; c ( "ID:" & $sMovieID)
 		
@@ -249,6 +257,10 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	If @error Then Return SetError(1)
 
 	Local $oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	$mInfo.Item("MovieID") = Json_ObjGet($oResult, "data.movieCreate.id")
 	; c ( "ID:" & $sMovieID)
 	
@@ -277,6 +289,10 @@ Func GetSceneInfo($nSceneNo)
 
 	; Got the result
 	Local $oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	If not IsObj($oResult) Then Return SetError(1)
 	Local $oData = Json_ObjGet($oResult, "data.findScene")
 	If @error Then Return SetError(1)

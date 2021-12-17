@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1.7"
+Global Const $currentVersion = "v2.1.8"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -196,53 +196,57 @@ Local $sResult = Query('{"query":"{version{version,hash}}"}')
 If Not @error Then
 	; Query and Get current version.
 	Local $oResult = Json_Decode($sResult)
-	Local $oVersion = Json_ObjGet($oResult, "data.version")
-	$stashVersion = $oVersion.Item("version")
-	Local $stashVersionHash = $oVersion.Item("hash")
+	If IsObj($oResult) Then
+		Local $oVersion = Json_ObjGet($oResult, "data.version")
+		$stashVersion = $oVersion.Item("version")
+		Local $stashVersionHash = $oVersion.Item("hash")
 
-	; Now get the latest version. Only above 0.11
-	$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
-	If Not @error Then
-		; Successfully get the info about latest version.
-		$oResult = Json_Decode($sResult)
-		Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
-		Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
-		Local $sLatestVersionURL = $oLatestVersion.Item("url")
-		Local $sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
+		; Now get the latest version. Only above 0.11
+		$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
+		If Not @error Then
+			; Successfully get the info about latest version.
+			$oResult = Json_Decode($sResult)
+			If IsObj($oResult) Then
+				Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
+				Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
+				Local $sLatestVersionURL = $oLatestVersion.Item("url")
+				Local $sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
 
-		If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then
-			; A new version is waiting.
-			Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
-			Local $sNewVersion = $aMatchStr[0]
-			Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
-				& " Do you want to update the current stash to the new one?" & @CRLF _
-				& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
-				& "If you hit 'No', this new version will be ignored." & @CRLF _
-				& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
-			switch $hAskUpgrade
-				case 6 ;YES, update.
-					ProcessClose($iStashPID)
-					InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
-					If Not @error Then
-						; Download successful.
-						FileDelete($stashFilePath)
-						FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
-						; Run it now.
-						If $showStashConsole Then
-							$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
-						Else
-							$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
-						EndIf
-					EndIf
-				case 7 ;NO, ignore.
-					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
-				case 2 ;CANCEL
-			endswitch
-		EndIf
-	EndIf
-Else 
+				If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then
+					; A new version is waiting.
+					Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
+					Local $sNewVersion = $aMatchStr[0]
+					Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
+						& " Do you want to update the current stash to the new one?" & @CRLF _
+						& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
+						& "If you hit 'No', this new version will be ignored." & @CRLF _
+						& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
+					switch $hAskUpgrade
+						case 6 ;YES, update.
+							ProcessClose($iStashPID)
+							InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
+							If Not @error Then
+								; Download successful.
+								FileDelete($stashFilePath)
+								FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
+								; Run it now.
+								If $showStashConsole Then
+									$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+								Else
+									$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+								EndIf
+							EndIf
+						case 7 ;NO, ignore.
+							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
+						case 2 ;CANCEL
+					endswitch
+				EndIf
+			EndIf ; End of if $oResult is object.
+		EndIf ; End of Query latest version no error
+	EndIf ; End of if $oResult is object
+Else
 	; Error getting version
-	
+
 EndIf
 
 If $stashVersion <> "" Then
@@ -731,6 +735,10 @@ Func OpenMediaFolder()
 			If @error Then Return SetError(1)
 
 			$oResult = Json_Decode($sResult)
+			If Not IsObj($oResult) Then
+				MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+				Return SetError(1)
+			EndIf
 			Local $oMovieData = Json_ObjGet($oResult, "data.findMovie")
 			; name, scene_count, scenes->id
 			Local $iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
@@ -745,6 +753,10 @@ Func OpenMediaFolder()
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
 			$oResult = Json_Decode($sResult)
+			If Not IsObj($oResult) Then
+				MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+				Return SetError(1)
+			EndIf
 			Local $oSceneData = Json_ObjGet($oResult, "data.findScene")
 			Local $sFilePath = $oSceneData.Item("path")
 			; Geth the path only
@@ -758,6 +770,10 @@ Func OpenMediaFolder()
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
 			$oResult = Json_Decode($sResult)
+			If Not IsObj($oResult) Then
+				MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+				Return SetError(1)
+			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findScene")
 			$sFilePath = $oSceneData.Item("path")
 			; Geth the path only
@@ -770,6 +786,10 @@ Func OpenMediaFolder()
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
 			$oResult = Json_Decode($sResult)
+			If Not IsObj($oResult) Then
+				MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+				Return SetError(1)
+			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findImage")
 			$sFilePath = $oSceneData.Item("path")
 			; Geth the path only
@@ -782,6 +802,10 @@ Func OpenMediaFolder()
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
 			$oResult = Json_Decode($sResult)
+			If Not IsObj($oResult) Then
+				MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+				Return SetError(1)
+			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findGallery")
 			$sFilePath = $oSceneData.Item("path")
 			; Geth the path only
@@ -1078,6 +1102,10 @@ Func AddItemToList()
 	$sResult = Query2($sQuery)
 	if @error Then Return SetError(1)
 	Local $oData = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 
 	; Start to add scenes, movies... to the play list.
 	Switch $sCategory
@@ -1145,6 +1173,10 @@ Func AddImageToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	Local $oData = Json_ObjGet($oResult, "data.findImage")
 	If Not IsObj($oData) Then Return 0
 	; $oData.Item("title") $oData.Item("path")
@@ -1164,6 +1196,10 @@ Func AddGalleryToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	Local $oData = Json_ObjGet($oResult, "data.findGallery")
 	If Not IsObj($oData) Then Return 0
 	; Check gallery's path.
@@ -1233,6 +1269,10 @@ Func AddMovieToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	Local $oMovieData = Json_ObjGet($oResult, "data.findMovie")
 	If $oMovieData = "" Then Return 0
 	; name, scene_count, scenes->id
@@ -1248,6 +1288,10 @@ Func AddMovieToList($sID)
 		If @error Then Return SetError(1)
 
 		$oResult = Json_Decode($sResult)
+		If Not IsObj($oResult) Then
+			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+			Return SetError(1)
+		EndIf
 		Local $oSceneData = Json_ObjGet($oResult, "data.findScene")
 		; path
 		Local $j = UBound($aPlayList)
@@ -1268,6 +1312,10 @@ Func AddSceneToList($sID)
 	If @error Then Return SetError(1)
 
 	$oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	Local $oData = Json_ObjGet($oResult, "data.findScene")
 	If $oData = "" Then Return 0
 	; $oData.Item("title") $oData.Item("path")
@@ -1391,9 +1439,9 @@ Func PlayMovieInCurrentTab($nMovie)
 	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path}}}"}' )
 	If @error Then Return
 	Local $oData = Json_Decode($sResult)
-	If Not Json_IsObject($oData) Then
-		MsgBox(0, "Data error.", "The data return from stash has errors.")
-		Return
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
 	EndIf
 	; Get the scenes array
 	Local $aScenes = Json_ObjGet($oData, "data.findMovie.scenes")
@@ -1499,6 +1547,10 @@ Func PlayCurrentScene()
 	If @error  Then Return SetError(1)
 
 	Local $oData = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		Return SetError(1)
+	EndIf
 	If Not Json_IsObject($oData) Then
 		MsgBox(0, "Data error.", "The data return from stash has errors.")
 		Return
