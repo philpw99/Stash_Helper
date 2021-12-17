@@ -8,13 +8,12 @@
 
 Func InitialSettingsForm()
 	Global $stashFilePath
-	Local $Initial_Settings, $tab, $stashPath, $btnBrowse, $btnOK
 
 	; Create the whole initial setting's GUI
-	$Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
+	Local $Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	
-	$tab = GUICtrlCreatetab(41,70,1232,661,-1,-1)
+	Local $tab = GUICtrlCreatetab(41,70,1232,661,-1,-1)
 	GuiCtrlSetState(-1,2048)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
@@ -29,17 +28,17 @@ Func InitialSettingsForm()
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$stashPath = GUICtrlCreateInput("",280,391,610,41,-1,$WS_EX_CLIENTEDGE)
+	Local $stashPath = GUICtrlCreateInput("",280,391,610,41,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE))
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 
-	$btnBrowse = GUICtrlCreateButton("Browse",910,391,170,41,-1,-1)
+	Local $btnBrowse = GUICtrlCreateButton("Browse",910,391,170,41,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlCreateLabel("If you don't have it yet, you can download it here.",283,470,615,49,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$btnWebsite = GUICtrlCreateButton("Website",910,470,170,41,-1,-1)
+	Local $btnWebsite = GUICtrlCreateButton("Website",910,470,170,41,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 
 	; Tab 2
@@ -49,16 +48,16 @@ Func InitialSettingsForm()
 	GUICtrlSetFont(-1,16,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	$chooseFirefox = GUICtrlCreateRadio("Firefox",201,286,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseFirefox = GUICtrlCreateRadio("Firefox",201,286,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	$chooseChrome = GUICtrlCreateRadio("Chrome",201,348,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseChrome = GUICtrlCreateRadio("Chrome",201,348,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	$chooseEdge = GUICtrlCreateRadio("MS Edge",201,415,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseEdge = GUICtrlCreateRadio("MS Edge",201,415,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	$browserDetails = GUICtrlCreateLabel("",451,300,656,163,-1,-1)
+	Local $browserDetails = GUICtrlCreateLabel("",451,300,656,163,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 	; The frame for the details
@@ -78,7 +77,7 @@ Func InitialSettingsForm()
 
 	; For all tabs
 	GUICtrlCreateTabItem("")
-	$btnNext = GUICtrlCreateButton("Next",960,630,211,57,-1,-1)
+	Local $btnNext = GUICtrlCreateButton("Next",960,630,211,57,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_DISABLE))
 	; Back to tab 0
@@ -91,7 +90,7 @@ Func InitialSettingsForm()
 	Local $bPathReady = False , $bBrowserReady = False, $sBrowser
 	While Not $bSettingDone
 		Sleep(10)
-		$nMsg = GUIGetMsg()
+		Local $nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case $btnBrowse
 				Local $sFile = FileOpenDialog("Open the Stash-Win.exe:", _ 

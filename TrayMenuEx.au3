@@ -155,7 +155,7 @@ Func _IconExtractFromFile($szIconFile, $iconID)
 	;PROTO: UINT ExtractIconEx(LPCTSTR lpszFile, int nIconIndex, HICON *phiconLarge, HICON *phiconSmall, UINT nIcons);
     Local $result = DllCall("shell32.dll", "hwnd", "ExtractIconEx", "str", $szIconFile, "int", $iconID, "hwnd", 0, "ptr", DllStructGetPtr($hIcon), "int", 1)
     ;TODO: Do we have to make shure some cleanup is done? Or will the memory bee freed when Autoit terminates
-	$ret = DllStructGetData($hIcon,1)
+	Local $ret = DllStructGetData($hIcon,1)
     Return $ret
 EndFunc ; ==> _IconExtractFromFile
 

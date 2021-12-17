@@ -13,13 +13,15 @@
 #include <EditConstants.au3>
 #include <wd_core.au3>
 #include <wd_helper.au3>
-#include <Forms\InitialSettingsForm.au3>
-#include "TrayMenuEx.au3"
 #include <Array.au3>
+
+; opt("MustDeclareVars", 1)
+
+#include <Forms\InitialSettingsForm.au3>
 #include "DTC.au3"
 #include "URL_Encode.au3"
+#include "TrayMenuEx.au3"
 
-opt("MustDeclareVars", 1)
 
 If AlreadyRunning() Then
 	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _
@@ -33,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1.5"
+Global Const $currentVersion = "v2.1.7"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -198,7 +200,7 @@ If Not @error Then
 	$stashVersion = $oVersion.Item("version")
 	Local $stashVersionHash = $oVersion.Item("hash")
 
-	; Now get the latest version.
+	; Now get the latest version. Only above 0.11
 	$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
 	If Not @error Then
 		; Successfully get the info about latest version.
@@ -238,6 +240,9 @@ If Not @error Then
 			endswitch
 		EndIf
 	EndIf
+Else 
+	; Error getting version
+	
 EndIf
 
 If $stashVersion <> "" Then
@@ -1455,20 +1460,16 @@ Func Query($sQuery)
 	Local $result = _WinHttpSimpleRequest($hConnect, "POST", "/graphql", Default, _
 		$sQuery, "Content-Type: application/json" )
 	; c("result:" & $result)
+	; Close handles
+	_WinHttpCloseHandle($hConnect)
+	_WinHttpCloseHandle($hOpen)
 	If @error Then
 		MsgBox(0, "got data error",  "Error getting data from the stash server.")
-		; Close handles
-		_WinHttpCloseHandle($hConnect)
-		_WinHttpCloseHandle($hOpen)
 		Return SetError(1)
 	ElseIf QueryResultError($result) Then
-		_WinHttpCloseHandle($hConnect)
-		_WinHttpCloseHandle($hOpen)
 		MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
+		Return SetError(1)
 	EndIf
-	; Close handles
-    _WinHttpCloseHandle($hConnect)
-    _WinHttpCloseHandle($hOpen)
 	Return $result
 EndFunc
 
