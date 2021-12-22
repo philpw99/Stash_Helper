@@ -112,8 +112,16 @@ Func CurrentImagesViewer()
 	EndSwitch
 	; Now process the $aImages
 	Local $sLinks = ""
-
-	For $i = 0 to UBound($aImages)-1
+	
+	; If too many images, give out a warning.
+	Local $iImageCount = UBound($aImages)
+	If $iImageCount > 1000 Then 
+		Local $reply = MsgBox(266272,"Are you sure?","There are " & $iImageCount & " images in this list. It will take the web browser quite a while to process them." _ 
+			& @CRLF & "Do you want to continue?",0)
+		if $reply = $IDNO Then Return 
+	EndIf
+	
+	For $i = 0 to $iImageCount-1
 		$sLinks &= '<a  class="gallery-item" href="' & $stashURL & 'image/' & $aImages[$i].Item("id") & '/image">' & @LF _
 			& '<img class="img-responsive"  src="' & $stashURL & 'image/' & $aImages[$i].Item("id") & '/thumbnail" /> </a>' & @LF
 	Next
