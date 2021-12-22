@@ -1,6 +1,24 @@
 # Stash_Helper
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
 Though Stash is powerful. It comes with just a console window and not super easy to use for the beginners. This program is trying to improve that aspect and add some features to it.
+## Features of SH
+* Allow you to choose which browser to run Stash: Firefox, Chrome or MS Edge. It will use the according webdriver to launch Stash web interface.
+* Provide 20 bookmark slots for each category: Scenes, Images, Movies...etc. You can give a short name for that bookmark, like "Good Video", "Nice Actress"...etc, so you can find and launch the page easily.
+* You can specify a media player to handle the videos/playlists/images. 6 built-in media player presets like VLC, PotPlayer...etc. 
+* Easy to use scraper manager. Installing a new scraper is as easy as a mouse click. It will also check available updates for your installed scrapers, and ask your permission to update.
+* Create movies from scenes. It will copy the current scene data and create a new movie with it. Or it can create movies by studios.
+* One button to scan for new files in your collection.
+* Open the current scene/movie/image's media folder so you can find the files easily.
+* CSS Magic to add/remove special CSS Snippets quickly.
+* Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose.
+* Ctrl-Enter is the boss coming key. Hit it and it will immediately close the browser and the media player.
+* Stash autoupdate (for v11 and above). Each time SH is launched, it will check the latest version of Stash. If it found the new released version, it will ask you about updating. You can choose to ignore it, update it or just cancel.
+
+## Shortcomings of SH
+* Windows only.
+* Some anti-virus programs don't like AutoIt scripts (.a3x). So far no one told me an virus alarm was triggered yet.
+* Poor handling of multi-tab browsing due to the limit of webdriver. I recommend using Stash_Helper with single tab browser only.
+
 ## Installation
 Get the latest release <a href='https://github.com/philpw99/Stash_Helper/releases'>here</a> and just run it. Basically the installer has nothing need to change.
 
