@@ -4,47 +4,51 @@
 ; $sURL is the full url in stash browser.
 ; $sQueryType is either "count" or "id"
 
-Func URLtoQuery($sURL, $sQueryType = "id")
+Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 	; 
 	; get the string after the base url
+	If $sQueryExtra <> "" Then $sQueryExtra = ',' & $sQueryExtra
 	Local $aResult[1]
 	Local $sStr = StringMid($sURL, StringLen($stashURL) +1 )
 	If StringLeft($sStr, 1) = "/" Then $sStr = StringTrimLeft($sStr, 1)
 	$aStr = StringSplit($sStr, "?&/")
+	
+	local $aStrOut[1] = [0]
 	; Even $sStr is empty. Still $aStr[0] is 1
 	Local $iCount = $aStr[0]
 	
 	Local $sSortby = "", $sSortDir = "ASC", $sQuickQuery = ""
 	Local $aCQuery[0]  ; For "c=xxx" queries
 	; Remove the 'sortby=xxx' or "qsortd=xxx" from the array
-	For $i = 1 to $iCount-1
+	For $i = 1 to $iCount
 		Switch PairName($aStr[$i])
 			Case "sortby", "qsort"
 				$sSortby = PairValue( $aStr[$i])
-				_ArrayDelete($aStr, $i)
-				$iCount -= 1
 			Case "sortdir", "qsortd"
 				$sSortDir = StringUpper( PairValue($aStr[$i]) )
-				_ArrayDelete($aStr, $i)
-				$iCount -= 1
 			Case "disp", "p", "perPage"
-				_ArrayDelete($aStr, $i)
-				$iCount -= 1
+				; Dont care about this at all.
 			Case "q"
 				$sQuickQuery = PairValue($aStr[$i])
-				_ArrayDelete($aStr, $i)
-				$iCount -= 1
 			Case "c"
 				; Add one c query
 				Local $iU = UBound($aCQuery)
 				ReDim $aCQuery[ $iU + 1]
 				$aCQuery[$iU] = PairValue($aStr[$i])
+			Case Else
+				; Save the other settings to $aStrOut
+				Local $iUB = UBound($aStrOut)
+				ReDim $aStrOut[ $iUB+1 ]
+				$aStrOut[$iUB] = $aStr[$i]
 		EndSwitch 
 	Next
-	
+	$aStr = $aStrOut
+	; Reset the iCount after remove the filters
+	$iCount = UBound($aStr)-1
+	$aStr[0] = $iCount
 	Local $sFilter = "filter:{per_page:-1 "
 	If $sQuickQuery <> "" Then $sFilter &= "q: " & QueryQ($sQuickQuery) & " "
-	If $sSortby <> "" Then $sFilter &= "sort:" & $sSortby & " direction:" & $sSortDir
+	If $sSortby <> "" Then $sFilter &= "sort:" & QueryQ($sSortby) & " direction:" & $sSortDir
 	$sFilter &= "}"
 
 	c("sFilter:" & $sFilter & " icount:" & $iCount)
@@ -55,21 +59,21 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 			Case "id", "count"
 				return "home"
 			Case "scenescount"
-				Return '{findScenes(scene_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }}){count}}'
+				Return '{findScenes(scene_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
 			Case "scenesid"
-				Return '{findScenes(scene_filter:{title:{value: \".+\"modifier: MATCHES_REGEX }} ' & $sFilter & '){count, scenes {id}}}'
+				Return '{findScenes(scene_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, scenes {id ' & $sQueryExtra & '}}}'
 			Case "imagescount"
-				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count}}'
+				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
 			Case "imagesid"
-				Return '{findImages(image_filter:{title:{value: \".+\"modifier: MATCHES_REGEX }} ' & $sFilter & '){count, images {id}}}'
+				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, images {id ' & $sQueryExtra & '}}}'
 			Case "moviescount"
-				Return '{findMovies(movie_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }}){count}}'
+				Return '{findMovies(movie_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
 			Case "moviesid"
-				Return '{findMovies(movie_filter:{name:{value: \".+\"modifier: MATCHES_REGEX }} ' & $sFilter & '){count, movies {id}}}'
+				Return '{findMovies(movie_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, movies {id ' & $sQueryExtra & '}}}'
 			Case "galleriescount"
-				Return '{findGalleries(gallery_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count}}'
+				Return '{findGalleries(gallery_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
 			Case "galleriesid"
-				Return '{findGalleries(gallery_filter:{title:{value: \".+\"modifier: MATCHES_REGEX }} ' & $sFilter & '){count,galleries {id}}}'
+				Return '{findGalleries(gallery_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count,galleries {id ' & $sQueryExtra & '}}}'
 			Case Else
 				Return 'not support'
 		EndSwitch
@@ -82,7 +86,22 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 				Return "1"
 			Case "scenesid", "imagesid", "moviesid", "galleriesid"
 				; return a single scene id
-				Return 'id='& $aStr[2]
+				If  $sQueryExtra = "" Then 
+					Return 'id='& $aStr[2]
+				Else 
+					Switch $aStr[1]
+						Case "scenes" 
+							Return '{findScene(id:' & $aStr[2]& '){id '& $sQueryExtra& '}}'
+						Case "movies"
+							; Cannot use findMovies with  movie id
+							Return '{findMovie('& $aStr[2]& '){id ' & $sQueryExtra & '}}'
+						Case "images"
+							Return '{findImage(id:'& $aStr[2]& '){id '& $sQueryExtra & '}}'
+						Case "galleries"
+							; Cannot use findGalleries with gallery id either.
+							Return '{findGallery(id:'& $aStr[2] & '){id '& $sQueryExtra & '}}'
+					EndSwitch
+				EndIf 
 			Case Else
 				Return "not support"
 		EndSwitch 
@@ -306,42 +325,42 @@ Func URLtoQuery($sURL, $sQueryType = "id")
 		Case "scenescount"
 			$sQString = '{findScenes('
 			If $sCriteria <> "" Then $sQString &= "scene_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count}}'
+			$sQString &= $sFilter & '){count '& $sQueryExtra & '}}'
 			Return $sQString
 		Case "scenesid"
 			$sQString = '{findScenes('
 			If $sCriteria <> "" Then $sQString &= "scene_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count,scenes{id}}}'
+			$sQString &= $sFilter & '){count,scenes{id '& $sQueryExtra & '}}}'
 			Return $sQString
 		Case "moviescount"
 			$sQString = '{findMovies('
 			If $sCriteria <> "" Then $sQString &= "movie_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count}}'
+			$sQString &= $sFilter & '){count '& $sQueryExtra & '}}'
 			Return $sQString
 		Case "moviesid"
 			$sQString = '{findMovies('
 			If $sCriteria <> "" Then $sQString &= "movie_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count,movies{id}}}'
+			$sQString &= $sFilter & '){count,movies{id '& $sQueryExtra & '}}}'
 			Return $sQString
 		Case "imagescount"
 			$sQString = '{findImages('
 			If $sCriteria <> "" Then $sQString &= "image_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count}}'
+			$sQString &= $sFilter & '){count '& $sQueryExtra & '}}'
 			Return $sQString
 		Case "imagesid"
 			$sQString = '{findImages('
 			If $sCriteria <> "" Then $sQString &= "image_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count,images{id}}}'
+			$sQString &= $sFilter & '){count,images{id '& $sQueryExtra & '}}}'
 			Return $sQString
 		Case "galleriescount"
 			$sQString = '{findGalleries('
 			If $sCriteria <> "" Then $sQString &= "gallery_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count}}'
+			$sQString &= $sFilter & '){count '& $sQueryExtra & '}}'
 			Return $sQString
 		Case "galleriesid"
 			$sQString = '{findGalleries('
 			If $sCriteria <> "" Then $sQString &= "gallery_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count,galleries{id}}}'
+			$sQString &= $sFilter & '){count,galleries{id '& $sQueryExtra & '}}}'
 			Return $sQString
 		Case Else
 			Return 'not support'

@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.1.8"
+Global Const $currentVersion = "v2.2.0"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -91,8 +91,8 @@ if @error Then
 EndIf
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
-Local $hIcons[20]	; 20 (0-19) bmps  for the tray menus
-For $i = 0 to 19
+Local $hIcons[21]	; 20 (0-19) bmps  for the tray menus
+For $i = 0 to 20
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
@@ -186,7 +186,7 @@ EndIf
 
 ; This must run after $stashURL
 #include "URLtoQuery.au3"
-
+#include "CurrentImagesViewer.au3"
 
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
 ; Now create the top level tray menu items.
@@ -284,41 +284,45 @@ _TrayMenuAddImage($hIcons[12], 12)
 Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;13
 ; GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[13], 13)
-Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 14
-; GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
-_TrayMenuAddImage($hIcons[8], 14)
-Global $trayScan = TrayCreateItem("Scan New Files") 	; 15
-_TrayMenuAddImage($hIcons[14], 15)
-; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
-Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 16
-_TrayMenuAddImage($hIcons[15], 16)
-; GUICtrlSetTip(-1,"Create a movie from current scene.")
-Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 17
-_TrayMenuAddImage($hIcons[18], 17)
 
-Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 18
-_TrayMenuAddImage($hIcons[19], 18)
+Global $trayPlayImages = TrayCreateItem("Play Current Gallery/Images"); 14
+_TrayMenuAddImage($hIcons[20], 14)
+
+Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 15
+; GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
+_TrayMenuAddImage($hIcons[8], 15)
+Global $trayScan = TrayCreateItem("Scan New Files") 	; 16
+_TrayMenuAddImage($hIcons[14], 16)
+; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
+Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 17
+_TrayMenuAddImage($hIcons[15], 17)
+; GUICtrlSetTip(-1,"Create a movie from current scene.")
+Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 18
+_TrayMenuAddImage($hIcons[18], 18)
+
+Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 19
+_TrayMenuAddImage($hIcons[19], 19)
 Global $aCSSItems[0][4]
 ; Enums for the array row.
 Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 ; Create the css menu with a function.
 CreateCSSMenu()
 
-Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
-_TrayMenuAddImage($hIcons[16], 19)
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 20
+_TrayMenuAddImage($hIcons[16], 20)
 Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List         Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
 
-TrayCreateItem("")										; 20
-Global $traySettings = TrayCreateItem("Settings")		; 21
-_TrayMenuAddImage($hIcons[9], 21)
-Global $trayAbout = TrayCreateItem("About")				; 22
-_TrayMenuAddImage($hIcons[10], 22)
-Global $trayExit = TrayCreateItem("Exit")				; 23
-_TrayMenuAddImage($hIcons[11], 23)
+TrayCreateItem("")										; 21
+Global $traySettings = TrayCreateItem("Settings")		; 22
+_TrayMenuAddImage($hIcons[9], 22)
+Global $trayAbout = TrayCreateItem("About")				; 23
+_TrayMenuAddImage($hIcons[10], 23)
+Global $trayExit = TrayCreateItem("Exit")				; 24
+_TrayMenuAddImage($hIcons[11], 24)
 
 ; Sub menu items for tools
 
@@ -436,6 +440,8 @@ While True
 			PlayScene()
 		Case $trayPlayMovie
 			PlayMovie()
+		Case $trayPlayImages
+			CurrentImagesViewer()
 		Case $trayScan
 			ScanFiles()
 		Case $trayMovie2Scene
