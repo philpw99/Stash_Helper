@@ -5,7 +5,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
 <table>
   <tr>
    <td><img src="https://user-images.githubusercontent.com/22040708/147078458-74833489-8460-4ba0-bd8b-4ded7263db94.png" /></td>
-    <td>(New) Light Gallery photos browsing. Watching images and galleries, well, just like a gallery. Just click on "Play Current Images/Galleries".</td>
+    <td>(New) Light Gallery photos browsing. Watching images and galleries, well, like a gallery. Just click on "Play Current Images/Galleries".</td>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/22040708/147073715-633ce13f-4d05-4552-9243-383af6adf974.png" /></td>
