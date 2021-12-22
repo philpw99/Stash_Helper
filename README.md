@@ -12,6 +12,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
 * CSS Magic to add/remove special CSS Snippets quickly.
 * Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose.
 * Ctrl-Enter is the boss coming key. Hit it and it will immediately close the browser and the media player.
+* Stash autoupdate (for v11 and above). Each time SH is launched, it will check the latest version of Stash. If it found the new released version, it will ask you about updating. You can choose to ignore it, update it or just cancel.
 
 ## Shortcomings of SH
 * Windows only.
