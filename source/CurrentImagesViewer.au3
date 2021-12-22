@@ -17,29 +17,28 @@ Func CurrentImagesViewer()
 		"PSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2Jvb3RzdHJh" & _
 		"cEA1LjAuMS9kaXN0L2Nzcy9ib290c3RyYXAuY3NzIiAvPgoJPGxpbmsgdHlwZT0idGV4dC9jc3Mi" & _
 		"IHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9saWdo" & _
-		"dGdhbGxlcnlAMi4wLjAtYmV0YS4zL2Nzcy9sZy10aHVtYm5haWwuY3NzIiAvPgo8L2hlYWQ+Cjxi" & _
-		"b2R5Pgo8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9qcXVlcnlAMy42" & _
-		"LjAvZGlzdC9qcXVlcnkuanMiPjwvc2NyaXB0Pgo8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG4uanNk" & _
-		"ZWxpdnIubmV0L25wbS9saWdodGdhbGxlcnlAMi4wLjAtYmV0YS4zL2xpZ2h0Z2FsbGVyeS51bWQu" & _
-		"anMiPjwvc2NyaXB0Pgo8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9s" & _
-		"aWdodGdhbGxlcnlAMi4wLjAtYmV0YS4zL3BsdWdpbnMvem9vbS9sZy16b29tLnVtZC5qcyI+PC9z" & _
-		"Y3JpcHQ+CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2p1c3RpZmll" & _
-		"ZEdhbGxlcnlAMy44LjEvZGlzdC9qcy9qcXVlcnkuanVzdGlmaWVkR2FsbGVyeS5qcyI+PC9zY3Jp" & _
-		"cHQ+CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xpZ2h0Z2FsbGVy" & _
-		"eUAyLjAuMC1iZXRhLjMvcGx1Z2lucy90aHVtYm5haWwvbGctdGh1bWJuYWlsLnVtZC5qcyI+PC9z" & _
-		"Y3JpcHQ+Cgo8ZGl2IGNsYXNzPSJjb250YWluZXItc20iPgogIDxkaXYgY2xhc3M9InJvdyBqdXN0" & _
-		"aWZ5LWNvbnRlbnQtY2VudGVyIj4KICAgIDxkaXYgY2xhc3M9ImNvbCBjb2wtbWQtMTAiPgogICAg" & _
-		"ICA8ZGl2IGNsYXNzPSJnYWxsZXJ5LWNvbnRhaW5lciIgaWQ9ImFuaW1hdGVkLXRodW1ibmFpbHMt" & _
-		"Z2FsbGVyeSI+Cg==" )
+		"dGdhbGxlcnlAMi4wLjAtYmV0YS4zL2Nzcy9sZy10aHVtYm5haWwuY3NzIiAvPgo8c3R5bGU+CmJv" & _
+		"ZHkgewogIGJhY2tncm91bmQtY29sb3I6ICMwMDAwMDA7Cn0KLmZsZXgtY29udGFpbmVyewogIGRp" & _
+		"c3BsYXk6IGZsZXg7CiAgZmxleC13cmFwOiB3cmFwOwp9Cjwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+" & _
+		"CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2pxdWVyeUAzLjYuMC9k" & _
+		"aXN0L2pxdWVyeS5qcyI+PC9zY3JpcHQ+CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2" & _
+		"ci5uZXQvbnBtL2xpZ2h0Z2FsbGVyeUAyLjAuMC1iZXRhLjMvbGlnaHRnYWxsZXJ5LnVtZC5qcyI+" & _
+		"PC9zY3JpcHQ+CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xpZ2h0" & _
+		"Z2FsbGVyeUAyLjAuMC1iZXRhLjMvcGx1Z2lucy96b29tL2xnLXpvb20udW1kLmpzIj48L3Njcmlw" & _
+		"dD4KPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vanVzdGlmaWVkR2Fs" & _
+		"bGVyeUAzLjguMS9kaXN0L2pzL2pxdWVyeS5qdXN0aWZpZWRHYWxsZXJ5LmpzIj48L3NjcmlwdD4K" & _
+		"PHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIu" & _
+		"MC4wLWJldGEuMy9wbHVnaW5zL3RodW1ibmFpbC9sZy10aHVtYm5haWwudW1kLmpzIj48L3Njcmlw" & _
+		"dD4KCiAgICAgIDxkaXYgY2xhc3M9ImZsZXgtY29udGFpbmVyIiBpZD0iYW5pbWF0ZWQtdGh1bWJu" & _
+		"YWlscy1nYWxsZXJ5Ij4=" )
 
-	Const $sHTML_Tail = _BinaryCall_Base64Decode ("ICAgIDwvZGl2PgogICAgPC9kaXY+CiAgICA8L2Rpdj4KICA8L2Rpdj4KCjxzY3JpcHQgdHlwZT0i" & _
-		"dGV4dC9qYXZhc2NyaXB0Ij4KCWpRdWVyeSgiI2FuaW1hdGVkLXRodW1ibmFpbHMtZ2FsbGVyeSIp" & _
-		"CgkgIC5qdXN0aWZpZWRHYWxsZXJ5KHsKCSAgICBjYXB0aW9uczogZmFsc2UsCgkgICAgbGFzdFJv" & _
-		"dzogImhpZGUiLAoJICAgIHJvd0hlaWdodDogMzAwLAoJICAgIG1hcmdpbnM6IDEwCgkgIH0pCgkg" & _
-		"IC5vbigiamcuY29tcGxldGUiLCBmdW5jdGlvbiAoKSB7CgkgICAgd2luZG93LmxpZ2h0R2FsbGVy" & _
-		"eSgKCSAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJhbmltYXRlZC10aHVtYm5haWxzLWdh" & _
-		"bGxlcnkiKSwKCSAgICAgIHsKCSAgICAgICAgcGx1Z2luczogW2xnWm9vbSwgbGdUaHVtYm5haWxd" & _
-		"CgkgICAgICB9CgkgICAgKTsKCSAgfSk7Cjwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4=" )
+	Const $sHTML_Tail = _BinaryCall_Base64Decode ( "ICA8L2Rpdj4KCjxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0Ij4KCWpRdWVyeSgiI2FuaW1h" & _
+		"dGVkLXRodW1ibmFpbHMtZ2FsbGVyeSIpCgkgIC5qdXN0aWZpZWRHYWxsZXJ5KHsKCSAgICBjYXB0" & _
+		"aW9uczogZmFsc2UsCgkgICAgcm93SGVpZ2h0OiAzMDAsCgkgICAgbWFyZ2luczogMjAKCSAgfSkK" & _
+		"CSAgLm9uKCJqZy5jb21wbGV0ZSIsIGZ1bmN0aW9uICgpIHsKCSAgICB3aW5kb3cubGlnaHRHYWxs" & _
+		"ZXJ5KAoJICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImFuaW1hdGVkLXRodW1ibmFpbHMt" & _
+		"Z2FsbGVyeSIpLAoJICAgICAgewoJICAgICAgICBwbHVnaW5zOiBbbGdab29tLCBsZ1RodW1ibmFp" & _
+		"bF0KCSAgICAgIH0KCSAgICApOwoJICB9KTsKPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPg==" )
 	
 
 	; Get all the files in a gallery.

@@ -35,16 +35,16 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.2.0"
+Global Const $currentVersion = "v2.2.1"
 
-Global $sAboutText = "Stash Helper " & $currentVersion,"Stash helper " & $currentVersion & ", written by Philip Wang." _
+Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
 				& @CRLF & "Kudos to the great Stash App team ! kermieisinthehouse, WithoutPants, bnkai ... and all other great contributors working for this huge project." _
 				& @CRLF & "Kudos also go to Christian Faderl's ISN AutoIt Studio! It's such a powerful AutoIt IDE, which making this program much easier to write." _
 				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" _
 				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice," _
 				& @CRLF & "and thank you gamerjax for your play list suggestions!" _
-				& @CRLF & "Wraithstalker90, you made my program more solid, thank you !" ,20)
+				& @CRLF & "Wraithstalker90, you made my program more solid, thank you !"
 
 
 ; This already declared in Custom.au3
@@ -415,7 +415,7 @@ While True
 		Case 0
 			; Nothing should be here, but Case 0 here is very necessary.
 		Case $trayAbout
-			MsgBox(64,$sAboutText, 20)
+			MsgBox(64, "Stash Helper " & $currentVersion, $sAboutText, 20)
 		Case $trayExit
 			ExitScript()
 		Case $traySettings

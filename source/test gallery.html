@@ -7,6 +7,15 @@
 	<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.css" />
 	<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.css" />
 	<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.3/css/lg-thumbnail.css" />
+<style>
+body {
+  background-color: #000000;
+}
+.flex-container{
+  display: flex;
+  flex-wrap: wrap;
+}
+</style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.js"></script>
@@ -15,57 +24,50 @@
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.3/plugins/thumbnail/lg-thumbnail.umd.js"></script>
 
-<div class="container-sm">
-  <div class="row justify-content-center">
-    <div class="col col-md-10">
-      <div class="gallery-container" id="animated-thumbnails-gallery">
+      <div class="flex-container" id="animated-thumbnails-gallery">
 
-	<a  class="gallery-item" href="http://localhost:9999/image/1/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/1/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/1/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/2/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/2/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/2/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/3/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/3/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/3/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/4/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/4/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/4/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/5/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/5/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/5/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/6/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/6/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/6/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/6/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/6/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/6/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/7/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/7/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/7/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/8/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/8/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/8/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/9/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/9/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/9/thumbnail?1637525551" />
 	</a>
-	<a  class="gallery-item" href="http://localhost:9999/image/10/image?1637525551">
+	<a  class="gallery-item" data-src="http://localhost:9999/image/10/image?1637525551">
 		<img class="img-responsive"  src="http://localhost:9999/image/10/thumbnail?1637525551" />
 	</a>
 
-    </div>
-    </div>
-    </div>
   </div>
 
 <script type="text/javascript">
 	jQuery("#animated-thumbnails-gallery")
 	  .justifiedGallery({
 	    captions: false,
-	    lastRow: "hide",
 	    rowHeight: 300,
-	    margins: 10
+	    margins: 20
 	  })
 	  .on("jg.complete", function () {
 	    window.lightGallery(
