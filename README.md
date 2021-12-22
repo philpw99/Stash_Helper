@@ -36,15 +36,15 @@ Though Stash is powerful. It comes with just a console window and not super easy
     <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
   </tr>
   <tr>
-    <td></td>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147080557-e4a4f6d0-ea0d-49f6-bc8f-34dd25c9ac8d.png" /></td>
     <td>Ctrl-Enter is the boss coming key. Hit it and it will immediately close the browser and the media player.</td>
   </tr>
   <tr>
-    <td></td>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147080791-91397c04-5258-4b8e-8726-6cae34e1d06e.png" /></td>
     <td>Stash autoupdate (for v11 and above). Each time SH is launched, it will check the latest version of Stash. If it found the new released version, it will ask you about updating. You can choose to ignore it, update it or just cancel.</td>
   </tr>
   <tr>
-    <td></td>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147081068-416b62bd-38f5-48d1-980a-3f7106df4466.png" /></td>
     <td>One button to scan for new files in your collection.</td>
   </tr>
   <tr>
