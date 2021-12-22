@@ -2,17 +2,58 @@
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
 Though Stash is powerful. It comes with just a console window and not super easy to use for the beginners. This program is trying to improve that aspect and add some features to it.
 ## Features of SH
-* Allow you to choose which browser to run Stash: Firefox, Chrome or MS Edge. It will use the according webdriver to launch Stash web interface.
-* Provide 20 bookmark slots for each category: Scenes, Images, Movies...etc. You can give a short name for that bookmark, like "Good Video", "Nice Actress"...etc, so you can find and launch the page easily.
-* You can specify a media player to handle the videos/playlists/images. 6 built-in media player presets like VLC, PotPlayer...etc. 
-* Easy to use scraper manager. Installing a new scraper is as easy as a mouse click. It will also check available updates for your installed scrapers, and ask your permission to update.
-* Create movies from scenes. It will copy the current scene data and create a new movie with it. Or it can create movies by studios.
-* One button to scan for new files in your collection.
-* Open the current scene/movie/image's media folder so you can find the files easily.
-* CSS Magic to add/remove special CSS Snippets quickly.
-* Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose.
-* Ctrl-Enter is the boss coming key. Hit it and it will immediately close the browser and the media player.
-* Stash autoupdate (for v11 and above). Each time SH is launched, it will check the latest version of Stash. If it found the new released version, it will ask you about updating. You can choose to ignore it, update it or just cancel.
+<table>
+  <tr>
+   <td><img src="https://user-images.githubusercontent.com/22040708/147078458-74833489-8460-4ba0-bd8b-4ded7263db94.png" /></td>
+    <td>(New) Light Gallery photos browsing. Watching images and galleries, well, like a gallery. Just click on "Play Current Images/Galleries".</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147073715-633ce13f-4d05-4552-9243-383af6adf974.png" /></td>
+    <td>Allow you to choose which browser to run Stash: Firefox, Chrome or MS Edge. It will use the according webdriver to launch Stash web interface.</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147073952-91165432-05b0-4428-93fd-8d7a942e5710.png" /></td>
+    <td>Provide 20 bookmark slots for each category: Scenes, Images, Movies...etc. You can give a short name for that bookmark, like "Good Video", "Nice Actress"...etc, so you can find and launch the page easily. </td>
+  </tr>
+  <tr>
+     <td><img src="https://user-images.githubusercontent.com/22040708/147075069-eec3bfa9-d5a1-401e-a678-f51736981183.png" /></td>
+     <td> You can specify a media player to handle the videos/playlists/images. 6 built-in media player presets like VLC, PotPlayer...etc. </td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147077051-3d05ff4e-6b8e-44f2-b676-45c82c84164a.png" /></td>
+    <td>Easy to use scraper manager. Installing a new scraper is as easy as a mouse click. It will also check available updates for your installed scrapers, and ask your permission to update.</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147078060-f4c27a55-11a7-410d-839e-0fecf5008110.png" /></td>
+    <td>Create movies from scenes. It will copy the current scene data and create a new movie with it. Or it can create movies by studios.</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147079136-70f923d9-d26a-41fe-a833-be32ccf0269d.png" /></td>
+    <td>CSS Magic to add/remove special CSS Snippets quickly.</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147079498-a2563ab1-6705-4d5d-a62a-e5a016744d42.png" /></td>
+    <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147080557-e4a4f6d0-ea0d-49f6-bc8f-34dd25c9ac8d.png" /></td>
+    <td>Ctrl-Enter is the boss coming key. Hit it and it will immediately close the browser and the media player.</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147080791-91397c04-5258-4b8e-8726-6cae34e1d06e.png" /></td>
+    <td>Stash autoupdate (for v11 and above). Each time SH is launched, it will check the latest version of Stash. If it found the new released version, it will ask you about updating. You can choose to ignore it, update it or just cancel.</td>
+  </tr>
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/22040708/147081068-416b62bd-38f5-48d1-980a-3f7106df4466.png" /></td>
+    <td>One button to scan for new files in your collection.</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>Open the current scene/movie/image's media folder so you can find the files easily.</td>
+  </tr>
+  
+  
+</table>
 
 ## Shortcomings of SH
 * Windows only.
