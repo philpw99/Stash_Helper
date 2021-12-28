@@ -11,16 +11,16 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 	Local $aResult[1]
 	Local $sStr = StringMid($sURL, StringLen($stashURL) +1 )
 	If StringLeft($sStr, 1) = "/" Then $sStr = StringTrimLeft($sStr, 1)
-	$aStr = StringSplit($sStr, "?&/")
+	$aStr = StringSplit($sStr, "?&/", $STR_NOCOUNT)
 	
-	local $aStrOut[1] = [0]
+	local $aStrOut[0]
 	; Even $sStr is empty. Still $aStr[0] is 1
-	Local $iCount = $aStr[0]
+	Local $iCount = UBound($aStr), $bHaveQuery =  False 
 	
 	Local $sSortby = "", $sSortDir = "ASC", $sQuickQuery = ""
 	Local $aCQuery[0]  ; For "c=xxx" queries
 	; Remove the 'sortby=xxx' or "qsortd=xxx" from the array
-	For $i = 1 to $iCount
+	For $i = 0 to $iCount-1
 		Switch PairName($aStr[$i])
 			Case "sortby", "qsort"
 				$sSortby = PairValue( $aStr[$i])
@@ -30,32 +30,34 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				; Dont care about this at all.
 			Case "q"
 				$sQuickQuery = PairValue($aStr[$i])
+				$bHaveQuery = True
 			Case "c"
-				; Add one c query
+				; Add one c query, this is should be part of c
 				Local $iU = UBound($aCQuery)
 				ReDim $aCQuery[ $iU + 1]
 				$aCQuery[$iU] = PairValue($aStr[$i])
+				$bHaveQuery = True 
 			Case Else
-				; Save the other settings to $aStrOut
+				; Save the other part of URLs to $aStrOut, like ['movies','123']
 				Local $iUB = UBound($aStrOut)
 				ReDim $aStrOut[ $iUB+1 ]
 				$aStrOut[$iUB] = $aStr[$i]
 		EndSwitch 
 	Next
+	; $aStr now is removed all filters.
 	$aStr = $aStrOut
 	; Reset the iCount after remove the filters
-	$iCount = UBound($aStr)-1
-	$aStr[0] = $iCount
-	Local $sFilter = "filter:{per_page:-1 "
-	If $sQuickQuery <> "" Then $sFilter &= "q: " & QueryQ($sQuickQuery) & " "
-	If $sSortby <> "" Then $sFilter &= "sort:" & QueryQ($sSortby) & " direction:" & $sSortDir
+	$iCount = UBound($aStr)
+	Local $sFilter = "filter:{per_page:-1"
+	If $sQuickQuery <> "" Then $sFilter &= " q: " & QueryQ($sQuickQuery)
+	If $sSortby <> "" Then $sFilter &= " sort:" & QueryQ($sSortby) & " direction:" & $sSortDir
 	$sFilter &= "}"
 
 	c("sFilter:" & $sFilter & " icount:" & $iCount)
 	c("c query ubound:" & UBound($aCQuery))
-	If $iCount = 1 Then
+	If $iCount = 1 And Not $bHaveQuery Then
 		; Home page or category root
-		Switch $aStr[1] & $sQueryType
+		Switch $aStr[0] & $sQueryType
 			Case "id", "count"
 				return "home"
 			Case "scenescount"
@@ -79,9 +81,9 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 		EndSwitch
 	EndIf
 	
-	If StringIsDigit($aStr[2]) Then
+	If $iCount = 2 And StringIsDigit($aStr[1]) Then
 		; Specified scene or movie
-		Switch $aStr[1] & $sQueryType
+		Switch $aStr[0] & $sQueryType
 			Case "scenescount", "imagescount", "moviescount", "galleriescount"
 				Return "1"
 			Case "scenesid", "imagesid", "moviesid", "galleriesid"
@@ -321,7 +323,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 	
 	; Now put the Criteria and filter in the query string.
 	Local $sQString
-	Switch $aStr[1] & $sQueryType
+	Switch $aStr[0] & $sQueryType
 		Case "scenescount"
 			$sQString = '{findScenes('
 			If $sCriteria <> "" Then $sQString &= "scene_filter: {" & $sCriteria & "} "

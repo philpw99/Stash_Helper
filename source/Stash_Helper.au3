@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.2.1"
+Global Const $currentVersion = "v2.2.2"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -1039,9 +1039,10 @@ Func ClearPlayList()
 EndFunc
 
 Func AddItemToList()
-
 	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
+
+	c("URL:" & $sURL)
 
 	Local $sCategory = GetCategory($sURL)
 	if @error Then Return SetError(1)
