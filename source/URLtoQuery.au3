@@ -26,8 +26,8 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				$sSortby = PairValue( $aStr[$i])
 			Case "sortdir", "qsortd"
 				$sSortDir = StringUpper( PairValue($aStr[$i]) )
-			Case "disp", "p", "perPage"
-				; Dont care about this at all.
+			Case "disp", "p", "perPage", "qfp"
+				; Dont care about these at all.
 			Case "q"
 				$sQuickQuery = PairValue($aStr[$i])
 				$bHaveQuery = True
@@ -52,7 +52,9 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 	If $sQuickQuery <> "" Then $sFilter &= " q: " & QueryQ($sQuickQuery)
 	If $sSortby <> "" Then $sFilter &= " sort:" & QueryQ($sSortby) & " direction:" & $sSortDir
 	$sFilter &= "}"
-
+	
+	; _ArrayDisplay($aStr)
+	
 	c("sFilter:" & $sFilter & " icount:" & $iCount)
 	c("c query ubound:" & UBound($aCQuery))
 	If $iCount = 1 And Not $bHaveQuery Then
@@ -80,7 +82,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				Return 'not support'
 		EndSwitch
 	EndIf
-	
+
 	If $iCount = 2 And StringIsDigit($aStr[1]) Then
 		; Specified scene or movie
 		Switch $aStr[0] & $sQueryType
@@ -89,19 +91,19 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 			Case "scenesid", "imagesid", "moviesid", "galleriesid"
 				; return a single scene id
 				If  $sQueryExtra = "" Then 
-					Return 'id='& $aStr[2]
+					Return 'id='& $aStr[1]
 				Else 
 					Switch $aStr[1]
 						Case "scenes" 
-							Return '{findScene(id:' & $aStr[2]& '){id '& $sQueryExtra& '}}'
+							Return '{findScene(id:' & $aStr[1]& '){id '& $sQueryExtra& '}}'
 						Case "movies"
 							; Cannot use findMovies with  movie id
-							Return '{findMovie('& $aStr[2]& '){id ' & $sQueryExtra & '}}'
+							Return '{findMovie('& $aStr[1]& '){id ' & $sQueryExtra & '}}'
 						Case "images"
-							Return '{findImage(id:'& $aStr[2]& '){id '& $sQueryExtra & '}}'
+							Return '{findImage(id:'& $aStr[1]& '){id '& $sQueryExtra & '}}'
 						Case "galleries"
 							; Cannot use findGalleries with gallery id either.
-							Return '{findGallery(id:'& $aStr[2] & '){id '& $sQueryExtra & '}}'
+							Return '{findGallery(id:'& $aStr[1] & '){id '& $sQueryExtra & '}}'
 					EndSwitch
 				EndIf 
 			Case Else
