@@ -29,7 +29,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/22040708/147079136-70f923d9-d26a-41fe-a833-be32ccf0269d.png" /></td>
-    <td>CSS Magic to add/remove special CSS Snippets quickly.</td>
+    <td>CSS Magic to add/remove special CSS Snippets quickly. Usually it works right away, sometimes you need to close the browser to take effect.</td>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/22040708/147079498-a2563ab1-6705-4d5d-a62a-e5a016744d42.png" /></td>
