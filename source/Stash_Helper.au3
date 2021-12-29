@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.2.3"
+Global Const $currentVersion = "v2.2.4"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -221,49 +221,51 @@ If Not @error Then
 				Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
 				Local $sLatestVersionURL = $oLatestVersion.Item("url")
 				Local $sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
-
+				; c( "Latest Version Hash:" & $sLatestVersionHash & " VersionHash:" & $stashVersionHash & " latestVersionURL:" & $sLatestVersionURL)
 				If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then
 					; A new version is waiting.
 					Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
-					Local $sNewVersion = $aMatchStr[0]
-					Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
-						& " Do you want to update the current stash to the new one?" & @CRLF _
-						& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
-						& "If you hit 'No', this new version will be ignored." & @CRLF _
-						& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
-					switch $hAskUpgrade
-						case 6 ;YES, update.
-							ProcessClose($iStashPID)
-							InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
-							If Not @error Then
-								; Download successful.
-								FileDelete($stashFilePath)
-								FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
-								; Run it now.
-								If $showStashConsole Then
-									$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
-								Else
-									$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+					; c ("Latest Version:" & $sLatestVersionURL)
+					If UBound($aMatchStr) = 1 Then 
+						Local $sNewVersion = $aMatchStr[0]
+						Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
+							& " Do you want to update the current stash to the new one?" & @CRLF _
+							& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
+							& "If you hit 'No', this new version will be ignored." & @CRLF _
+							& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
+						switch $hAskUpgrade
+							case 6 ;YES, update.
+								ProcessClose($iStashPID)
+								InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
+								If Not @error Then
+									$stashVersion = ""
+									; Download successful.
+									FileDelete($stashFilePath)
+									FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
+									; Run it now.
+									If $showStashConsole Then
+										$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+									Else
+										$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+									EndIf
 								EndIf
-							EndIf
-						case 7 ;NO, ignore.
-							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
-						case 2 ;CANCEL
-					endswitch
+							case 7 ;NO, ignore.
+								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
+							case 2 ;CANCEL
+						endswitch
+					EndIf 
 				EndIf
 			EndIf ; End of if $oResult is object.
 		EndIf ; End of Query latest version no error
 	EndIf ; End of if $oResult is object
 Else
 	; Error getting version
-
+	c("Version result:" & $sResult)
 EndIf
 
 If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
 EndIf
-
-
 
 TrayCreateItem("Stash Helper " & $currentVersion ) ; 0
 TrayCreateItem("")										; 1

@@ -14,20 +14,19 @@ Local $sScraperBaseURL = "https://raw.githubusercontent.com/stashapp/CommunitySc
 
 Func ScrapersManager()
 	$sScraperPath = GetScraperPath()
+	If @error Then Return SetError(1)
+
 	Local $aItemID[0][0]
 	Local $iCurrentSearchIndex = 0
-	If @error Then Return 
-	; Set both $aScraperArray and $aScraperFiles
-	SetScraperArray() 
-	If @error Then Return 
 
 	; Disable the tray clicks
 	TraySetClick(0)
 	
 	Global $guiScrapers = GUICreate("Scrapers Management",1700,1030,-1,-1,$WS_SIZEBOX,-1)
 	GUISetIcon("helper2.ico")
+
 	
-	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE, $LVS_EX_SUBITEMIMAGES))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,102)
 	; Website
@@ -69,8 +68,6 @@ Func ScrapersManager()
 	GUICtrlSetTip(-1,"Remove the scrapers with check marks.")
 	GUICtrlSetResizing(-1,804)
 	
-	GUISetState(@SW_SHOW, $guiScrapers)
-	
 	Local $inputFind = GUICtrlCreateInput("",42,218,570,35,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,550)
@@ -83,13 +80,41 @@ Func ScrapersManager()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update the installed scrapers.")
 	GUICtrlSetResizing(-1,804)
+
+	GUISetState(@SW_SHOW, $guiScrapers)
+
+	; Set busy cursor.
+	$old_cursor = MouseGetCursor()
+	GUISetCursor(15, 1, $guiScrapers)
+	; Set both $aScraperArray and $aScraperFiles
+	SetScraperArray() 
+	If @error Then Return SetError(1)
+
 	
+	; Create white and green background
+	; $hImage = _GUIImageList_Create(16, 16)
+	; $hList = GUICtrlGetHandle($scraperList)
+;~ 	_GUIImageList_Add($hImage, _GUICtrlListView_CreateSolidBitMap($scraperList, $COLOR_WHITE, 16, 16))
+;~ 	_GUIImageList_Add($hImage, _GUICtrlListView_CreateSolidBitMap($scraperList, $COLOR_GREEN, 16, 16))
+;~ 	_GUICtrlListView_SetImageList($scraperList, $hImage, 1 )
+;~ 	
 	; Now all the items in the list, [0] is handle [1] is check/uncheck
 	ReDim $aItemID[UBound($aScraperArray)][2]
 	For $i = 0 to UBound($aScraperArray) -1
 		$aItemID[$i][0] = GUICtrlCreateListViewItem($aScraperArray[$i], $scraperList)
-		$aItemID[$i][1] = False ; Unchecked.
+		local $iPos = StringInStr($aScraperArray[$i], "|", 2, 6)
+		If StringMid($aScraperArray[$i], $iPos + 1, 3) = "Yes" Then 
+			GUICtrlSetBkColor($aItemID[$i][0], 0x00FF00)
+		EndIf 
+		; Set different background for installed 
+;~ 		If _GUICtrlListView_GetItemText($scraperList, $i, 6) =  "Yes" Then
+;~ 			_GUICtrlListView_SetItemImage($scraperList, $i, 1, 1)
+;~ 		EndIf
+ 		$aItemID[$i][1] = False ; Unchecked.
 	Next 
+	
+	; Set cursor back.
+	GUISetCursor($old_cursor, 1, $guiScrapers)
 	
 	; Now It's all ready. Wait for "Install" or "Remove"
 	Local $aFiles[0]
@@ -141,6 +166,8 @@ Func ScrapersManager()
 						; Now set it uncheck and "installed"
 						_GUICtrlListView_SetItemChecked($scraperList, $i, False)
 						_GUICtrlListView_SetItemText($scraperList, $i, "Yes", 6)
+						; Set to green background
+						GUICtrlSetBkColor($aItemID[$i][0], 0x00FF00)
 					EndIf
 				Next
 				
@@ -186,7 +213,8 @@ Func ScrapersManager()
 						EndIf 
 						_GUICtrlListView_SetItemChecked($scraperList, $i, False)
 						_GUICtrlListView_SetItemText($scraperList, $i, "No", 6)
-					EndIf 	
+						GUICtrlSetBkColor($aItemID[$i][0], 0xffffff)
+ 					EndIf 	
 				Next		
 				; Now go through the file list
 				For $i = 0 To UBound($aFiles)-1
@@ -373,6 +401,7 @@ EndFunc
 
 Func SetScraperArray()
 	; Set the global $aScraperArray
+	
 	Local $iCount = 0
 	
 	Local $bGetList = True, $sLine
