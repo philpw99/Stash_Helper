@@ -12,33 +12,23 @@ Func CurrentImagesViewer()
 		"cyIgLz4KCTxsaW5rIHR5cGU9InRleHQvY3NzIiByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBz" & _
 		"Oi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEuMy9jc3MvbGct" & _
 		"em9vbS5jc3MiIC8+Cgk8bGluayB0eXBlPSJ0ZXh0L2NzcyIgcmVsPSJzdHlsZXNoZWV0IiBocmVm" & _
-		"PSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2p1c3RpZmllZEdhbGxlcnlAMy44LjEvZGlz" & _
-		"dC9jc3MvanVzdGlmaWVkR2FsbGVyeS5jc3MiIC8+Cgk8bGluayB0eXBlPSJ0ZXh0L2NzcyIgcmVs" & _
-		"PSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2Jvb3RzdHJh" & _
-		"cEA1LjAuMS9kaXN0L2Nzcy9ib290c3RyYXAuY3NzIiAvPgoJPGxpbmsgdHlwZT0idGV4dC9jc3Mi" & _
-		"IHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9saWdo" & _
-		"dGdhbGxlcnlAMi4wLjAtYmV0YS4zL2Nzcy9sZy10aHVtYm5haWwuY3NzIiAvPgo8c3R5bGU+CmJv" & _
-		"ZHkgewogIGJhY2tncm91bmQtY29sb3I6ICMwMDAwMDA7Cn0KLmZsZXgtY29udGFpbmVyewogIGRp" & _
-		"c3BsYXk6IGZsZXg7CiAgZmxleC13cmFwOiB3cmFwOwp9Cjwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+" & _
-		"CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2pxdWVyeUAzLjYuMC9k" & _
-		"aXN0L2pxdWVyeS5qcyI+PC9zY3JpcHQ+CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2" & _
-		"ci5uZXQvbnBtL2xpZ2h0Z2FsbGVyeUAyLjAuMC1iZXRhLjMvbGlnaHRnYWxsZXJ5LnVtZC5qcyI+" & _
-		"PC9zY3JpcHQ+CjxzY3JpcHQgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xpZ2h0" & _
-		"Z2FsbGVyeUAyLjAuMC1iZXRhLjMvcGx1Z2lucy96b29tL2xnLXpvb20udW1kLmpzIj48L3Njcmlw" & _
-		"dD4KPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vanVzdGlmaWVkR2Fs" & _
-		"bGVyeUAzLjguMS9kaXN0L2pzL2pxdWVyeS5qdXN0aWZpZWRHYWxsZXJ5LmpzIj48L3NjcmlwdD4K" & _
-		"PHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIu" & _
-		"MC4wLWJldGEuMy9wbHVnaW5zL3RodW1ibmFpbC9sZy10aHVtYm5haWwudW1kLmpzIj48L3Njcmlw" & _
-		"dD4KCiAgICAgIDxkaXYgY2xhc3M9ImZsZXgtY29udGFpbmVyIiBpZD0iYW5pbWF0ZWQtdGh1bWJu" & _
-		"YWlscy1nYWxsZXJ5Ij4=" )
+		"PSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xpZ2h0Z2FsbGVyeUAyLjAuMC1iZXRhLjMv" & _
+		"Y3NzL2xnLXRodW1ibmFpbC5jc3MiIC8+CjxzdHlsZT4KYm9keSB7CiAgYmFja2dyb3VuZC1jb2xv" & _
+		"cjogIzAwMDAwMDsKfQouZmxleC1jb250YWluZXJ7CiAgZGlzcGxheTogZmxleDsKICBmbGV4LXdy" & _
+		"YXA6IHdyYXA7Cn0KLmdhbGxlcnktaXRlbXsKICBwYWRkaW5nOiAxMHB4Cn0KLmltZy1yZXNwb25z" & _
+		"aXZlewogIGhlaWdodDogMzAwcHg7Cn0KPC9zdHlsZT4KPC9oZWFkPgo8Ym9keT4KPHNjcmlwdCBz" & _
+		"cmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEu" & _
+		"My9saWdodGdhbGxlcnkudW1kLmpzIj48L3NjcmlwdD4KPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2Ru" & _
+		"LmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEuMy9wbHVnaW5zL3pvb20v" & _
+		"bGctem9vbS51bWQuanMiPjwvc2NyaXB0Pgo8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG4uanNkZWxp" & _
+		"dnIubmV0L25wbS9saWdodGdhbGxlcnlAMi4wLjAtYmV0YS4zL3BsdWdpbnMvdGh1bWJuYWlsL2xn" & _
+		"LXRodW1ibmFpbC51bWQuanMiPjwvc2NyaXB0PgoKICAgICAgPGRpdiBjbGFzcz0iZmxleC1jb250" & _
+		"YWluZXIiIGlkPSJhbmltYXRlZC10aHVtYm5haWxzLWdhbGxlcnkiPg==" )
 
-	Const $sHTML_Tail = _BinaryCall_Base64Decode ( "ICA8L2Rpdj4KCjxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0Ij4KCWpRdWVyeSgiI2FuaW1h" & _
-		"dGVkLXRodW1ibmFpbHMtZ2FsbGVyeSIpCgkgIC5qdXN0aWZpZWRHYWxsZXJ5KHsKCSAgICBjYXB0" & _
-		"aW9uczogZmFsc2UsCgkgICAgcm93SGVpZ2h0OiAzMDAsCgkgICAgbWFyZ2luczogMjAKCSAgfSkK" & _
-		"CSAgLm9uKCJqZy5jb21wbGV0ZSIsIGZ1bmN0aW9uICgpIHsKCSAgICB3aW5kb3cubGlnaHRHYWxs" & _
-		"ZXJ5KAoJICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImFuaW1hdGVkLXRodW1ibmFpbHMt" & _
-		"Z2FsbGVyeSIpLAoJICAgICAgewoJICAgICAgICBwbHVnaW5zOiBbbGdab29tLCBsZ1RodW1ibmFp" & _
-		"bF0KCSAgICAgIH0KCSAgICApOwoJICB9KTsKPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPg==" )
+	Const $sHTML_Tail = _BinaryCall_Base64Decode ( "ICA8L2Rpdj4KCjxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0Ij4KCSAgICB3aW5kb3cubGln" & _
+		"aHRHYWxsZXJ5KCBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYW5pbWF0ZWQtdGh1bWJuYWlscy1n" & _
+		"YWxsZXJ5IiksCgkgICAgICB7CgkgICAgICAgIHBsdWdpbnM6IFtsZ1pvb20sIGxnVGh1bWJuYWls" & _
+		"XQoJICAgICAgfQoJICAgICk7Cjwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4=")
 	
 
 	; Get all the files in a gallery.
@@ -58,8 +48,8 @@ Func CurrentImagesViewer()
 			Return
 		Case "images"
 			$sQuery = URLtoQuery($sURL)
+			c("Image query:" & $sQuery)
 			Select 
-				
 				Case $sQuery = "not support"
 					MsgBox(0, "Not support", "This URL is not supported.")
 					Return 
@@ -78,6 +68,7 @@ Func CurrentImagesViewer()
 			EndSelect
 		Case "galleries"
 			$sQuery = URLtoQuery($sURL, "id", "images{id}")
+			c("Gallery query:" & $sQuery)
 			Select 
 				Case $sQuery = "not support"
 					MsgBox(0, "Not support", "This URL is not supported.")

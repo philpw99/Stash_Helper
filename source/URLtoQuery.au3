@@ -82,7 +82,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				Return 'not support'
 		EndSwitch
 	EndIf
-
+	; c ("icount =" & $iCount & " is digit?" & StringIsDigit($aStr[1]))
 	If $iCount = 2 And StringIsDigit($aStr[1]) Then
 		; Specified scene or movie
 		Switch $aStr[0] & $sQueryType
@@ -92,8 +92,9 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				; return a single scene id
 				If  $sQueryExtra = "" Then 
 					Return 'id='& $aStr[1]
-				Else 
-					Switch $aStr[1]
+				Else
+					; With extra request
+					Switch $aStr[0]
 						Case "scenes" 
 							Return '{findScene(id:' & $aStr[1]& '){id '& $sQueryExtra& '}}'
 						Case "movies"
