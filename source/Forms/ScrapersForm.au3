@@ -15,7 +15,7 @@ Local $sScraperBaseURL = "https://raw.githubusercontent.com/stashapp/CommunitySc
 Func ScrapersManager()
 	$sScraperPath = GetScraperPath()
 	If @error Then Return SetError(1)
-
+	
 	Local $aItemID[0][0]
 	Local $iCurrentSearchIndex = 0
 
@@ -337,7 +337,8 @@ EndFunc
 Func GetScraperPath()
 	; Open the config.xml to see the folder.
 	; Return: the path string to the scrapers
-	Local $stashPath = StringLeft( $stashFilePath, StringInStr($stashFilePath, "\", 2, -1) )
+	; Global $stashPath
+
 	; $stashPath has "\" in the end.
 	Local $hFile = FileOpen($stashPath & "config.yml")
 	If $hFile = -1 Then 
@@ -357,16 +358,25 @@ Func GetScraperPath()
 			FileClose($hFile)
 			Return SetError(1)
 		EndIf
-		If StringLeft($sLine, 14) = "scrapers_path:" Then ExitLoop 
+		If StringLeft($sLine, 14) = "scrapers_path:" Then ExitLoop ; $sLine has the right value
 	Wend
 	FileClose($hFile)
 
 	; Get scraper path, create the path if it doesn't exist
-	Local $sPath = $stashPath & StringMid($sLine, 16 ) & "\"
+	Local $sScraperSetting = StringStripWS( StringMid($sLine, 15 ),3 )
+	Local $sPath ; the return value
+	If StringMid($sScraperSetting, 2, 1) = ":" Then 
+		; Full path using c:\xxx style
+		$sPath = $sScraperSetting & "\"
+	Else 
+		; Use just "scrapers" style
+		$sPath = $stashPath & $sScraperSetting & "\"
+	EndIf
 	$sPath = StringReplace($sPath, "\\", "\")
 	If Not FileExists($sPath) Then 
 		DirCreate($sPath)
 	EndIf
+	; c("scraper path is:" & $sPath)
 	Return $sPath
 EndFunc 
 	
@@ -390,6 +400,7 @@ EndFunc
 
 Func SetScraperArray()
 	; Set the global $aScraperArray
+	; Global $sScraperPath 
 	
 	Local $iCount = 0
 	
@@ -408,7 +419,8 @@ Func SetScraperArray()
 		InetGet("https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/SCRAPERS-LIST.md", _ 
 			$sScraperPath & "SCRAPERS-LIST.md")
 		If @error Then 
-			MsgBox(16,"Error downloading scrapers list","Error downloading the Stash's scraper list from its repo.",0)
+			MsgBox(16,"Error downloading scrapers list","Error downloading the Stash's scraper list from its repo." & @CRLF _
+				 & "Error code: " & @error & " File to save: " & $sScraperPath & "SCRAPERS-LIST.md",0)
 			Return SetError(1)
 		EndIf
 	EndIf 

@@ -6,7 +6,7 @@
 
 Func ShowSettings()
 	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation
-	Local $sBrowser, $bBrowserChanged = False 
+	Local $sBrowser, $bRestartRequired = False 
 	Local $guiSettings = GUICreate("Settings",800,940,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	; Disable the tray clicks
@@ -162,6 +162,7 @@ Func ShowSettings()
 					@DocumentsCommonDir, "(Stash-Win.exe)", $FD_FILEMUSTEXIST )
 				If Not @error Then
 					GUICtrlSetData($inputStashWinLocation, $sFile)
+					$bRestartRequired = True
 				EndIf
 			Case $btnBrowsePlayer
 				Local $sFile = FileOpenDialog("Open the media player's .exe file:", _ 
@@ -197,7 +198,7 @@ Func ShowSettings()
 					Case GUICtrlRead($radioChooseEdge) = $GUI_CHECKED
 						$sBrowser = "Edge"
 				EndSelect
-				If $sBrowser <> $stashBrowser Then $bBrowserChanged = True
+				If $sBrowser <> $stashBrowser Then $bRestartRequired = True
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", _ 
 					GUICtrlRead($inputStashWinLocation))
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
@@ -208,7 +209,7 @@ Func ShowSettings()
 				
 				$stashURL = GUICtrlRead($inputStashURL)
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
-				Local $sMessage =  $bBrowserChanged ? "You need to restart the program for the new settings to take effect, though." : "Settings are in effect now."
+				Local $sMessage =  $bRestartRequired ? "You need to restart the program for the new settings to take effect, though." : "Settings are in effect now."
 				MsgBox(64,"Setting saved.", $sMessage,0)
 				ExitLoop
 			Case $btnUpdateFirefox

@@ -109,9 +109,6 @@ Func InitialSettingsForm()
 							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", $stashFilePath)
 							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
 							$bSettingDone = True
-							
-							MsgBox(64,"Very Good !", _ 
-							"Thank you! Now stash will run and this helper will reside in the notification tray area, where the clock and other small icons are.",0)
 
 							ExitLoop 
 						EndIf

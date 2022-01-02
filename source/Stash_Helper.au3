@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.2.5"
+Global Const $currentVersion = "v2.2.6"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -65,20 +65,30 @@ Opt("TrayAutoPause", 0)  ; No pause in tray
 Global $sProgramFilesDir = ( @OSArch = "X64" ) ? StringReplace(@ProgramFilesDir, " (x86)", "", 1, 2) : @ProgramFilesDir
 
 Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
-Global $stashPath = stringleft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1))
-
 If @error Or Not FileExists($stashFilePath) Then
 	; First time run this program. Need to set the settings.
 	InitialSettingsForm()
 EndIf
 
+Global $stashPath = stringleft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1))
+
+; Now determine where to get the settings: working directory or %userprofile%\.stash
+Global $sFileConfig = $stashPath & "config.yml"
+If Not FileExists($sFileConfig) Then
+	$stashPath = @UserProfileDir & "\.stash\"
+	$sFileConfig = $stashPath & "config.yml"
+	If not FileExists($sFileConfig) Then 
+ 		MsgBox(0, "No Config file", "There is no config.yml in either current working directory or .stash directory yet." & @CRLF _
+ 			& "Please finish setup and generate a config.yml file then run the Stash Helper again.")
+ 	EndIf
+EndIf
+
 ; For v0.11 and above. Disable the browser from autostart
-Global $sFileConfig = stringleft( $stashFilePath, stringinstr($stashFilePath, "\", 2, -1) ) & "config.yml"
 Global $sNoBrowser = ""
 If FileExists($sFileConfig) Then
 	Local $sConfigContent = FileRead($sFileConfig)
 	; If exist this setting, then it's v0.11 and above
-	If StringInStr($sConfigContent, "autostart_video:", 2) <> 0 Then
+	If StringInStr($sConfigContent, "nobrowser:", 2) <> 0 Then
 		$sNoBrowser = " --nobrowser"
 	EndIf
 EndIf
@@ -117,7 +127,7 @@ If @error Then MsgExit("Error Creating global $minfo object.")
 #include <Forms\SceneToMovieForm.au3>
 #include <Forms\ManagePlayListForm.au3>
 ; Seems special scraper is no longer needed when visible CDP works much better.
-; #include <Forms\ScrapeSpecial2Form.au3>
+
 
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
