@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en-US">
+<head>
+	<title>Test Light gallery</title>
+	<meta charset="windows-1252">
+	<link type="text/css" rel="stylesheet" href="style.css" />
+<style>
+body {
+  background-color: #000000;
+}
+.flex-container{
+  display: flex;
+  flex-wrap: wrap;
+}
+.gallery-item{
+  padding: 10px
+}
+.img-responsive{
+  height: 300px;
+}
+</style>
+</head>
+<body>
+<script src="script.js"></script>
+
+      <div class="flex-container" id="animated-thumbnails-gallery">
+
+	<a  class="gallery-item" data-src="http://localhost:9999/image/1/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/1/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/2/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/2/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/3/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/3/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/4/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/4/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/5/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/5/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/6/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/6/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/6/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/6/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/7/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/7/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/8/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/8/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/9/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/9/thumbnail?1637525551" />
+	</a>
+	<a  class="gallery-item" data-src="http://localhost:9999/image/10/image?1637525551">
+		<img class="img-responsive"  src="http://localhost:9999/image/10/thumbnail?1637525551" />
+	</a>
+
+  </div>
+
+<script type="text/javascript">
+	    window.lightGallery( document.getElementById("animated-thumbnails-gallery"),
+	      {
+	        plugins: [lgZoom, lgThumbnail]
+	      }
+	    );
+</script>
+</body>
+</html>

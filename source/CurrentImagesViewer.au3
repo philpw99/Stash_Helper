@@ -7,28 +7,18 @@ Func CurrentImagesViewer()
 	; Don't want to handle all those quotes
 	Const $sHTML_Head = _BinaryCall_Base64Decode( "PCFET0NUWVBFIGh0bWw+PGh0bWwgbGFuZz0iZW4tVVMiPgo8aGVhZD4KCTx0aXRsZT5UZXN0IExp" & _
 		"Z2h0IGdhbGxlcnk8L3RpdGxlPgoJPG1ldGEgY2hhcnNldD0id2luZG93cy0xMjUyIj4KCTxsaW5r" & _
-		"IHR5cGU9InRleHQvY3NzIiByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vY2RuLmpzZGVs" & _
-		"aXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEuMy9jc3MvbGlnaHRnYWxsZXJ5LmNz" & _
-		"cyIgLz4KCTxsaW5rIHR5cGU9InRleHQvY3NzIiByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBz" & _
-		"Oi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEuMy9jc3MvbGct" & _
-		"em9vbS5jc3MiIC8+Cgk8bGluayB0eXBlPSJ0ZXh0L2NzcyIgcmVsPSJzdHlsZXNoZWV0IiBocmVm" & _
-		"PSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xpZ2h0Z2FsbGVyeUAyLjAuMC1iZXRhLjMv" & _
-		"Y3NzL2xnLXRodW1ibmFpbC5jc3MiIC8+CjxzdHlsZT4KYm9keSB7CiAgYmFja2dyb3VuZC1jb2xv" & _
-		"cjogIzAwMDAwMDsKfQouZmxleC1jb250YWluZXJ7CiAgZGlzcGxheTogZmxleDsKICBmbGV4LXdy" & _
-		"YXA6IHdyYXA7Cn0KLmdhbGxlcnktaXRlbXsKICBwYWRkaW5nOiAxMHB4Cn0KLmltZy1yZXNwb25z" & _
-		"aXZlewogIGhlaWdodDogMzAwcHg7Cn0KPC9zdHlsZT4KPC9oZWFkPgo8Ym9keT4KPHNjcmlwdCBz" & _
-		"cmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEu" & _
-		"My9saWdodGdhbGxlcnkudW1kLmpzIj48L3NjcmlwdD4KPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2Ru" & _
-		"LmpzZGVsaXZyLm5ldC9ucG0vbGlnaHRnYWxsZXJ5QDIuMC4wLWJldGEuMy9wbHVnaW5zL3pvb20v" & _
-		"bGctem9vbS51bWQuanMiPjwvc2NyaXB0Pgo8c2NyaXB0IHNyYz0iaHR0cHM6Ly9jZG4uanNkZWxp" & _
-		"dnIubmV0L25wbS9saWdodGdhbGxlcnlAMi4wLjAtYmV0YS4zL3BsdWdpbnMvdGh1bWJuYWlsL2xn" & _
-		"LXRodW1ibmFpbC51bWQuanMiPjwvc2NyaXB0PgoKICAgICAgPGRpdiBjbGFzcz0iZmxleC1jb250" & _
-		"YWluZXIiIGlkPSJhbmltYXRlZC10aHVtYm5haWxzLWdhbGxlcnkiPg==" )
+		"IHR5cGU9InRleHQvY3NzIiByZWw9InN0eWxlc2hlZXQiIGhyZWY9InN0eWxlLmNzcyIgLz4KPHN0" & _
+		"eWxlPgpib2R5IHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjMDAwMDAwOwp9Ci5mbGV4LWNvbnRhaW5l" & _
+		"cnsKICBkaXNwbGF5OiBmbGV4OwogIGZsZXgtd3JhcDogd3JhcDsKfQouZ2FsbGVyeS1pdGVtewog" & _
+		"IHBhZGRpbmc6IDEwcHgKfQouaW1nLXJlc3BvbnNpdmV7CiAgaGVpZ2h0OiAzMDBweDsKfQo8L3N0" & _
+		"eWxlPgo8L2hlYWQ+Cjxib2R5Pgo8c2NyaXB0IHNyYz0ic2NyaXB0LmpzIj48L3NjcmlwdD4KCiAg" & _
+		"ICA8ZGl2IGNsYXNzPSJmbGV4LWNvbnRhaW5lciIgaWQ9ImFuaW1hdGVkLXRodW1ibmFpbHMtZ2Fs" & _
+		"bGVyeSI+Cg==" )
 
-	Const $sHTML_Tail = _BinaryCall_Base64Decode ( "ICA8L2Rpdj4KCjxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0Ij4KCSAgICB3aW5kb3cubGln" & _
-		"aHRHYWxsZXJ5KCBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYW5pbWF0ZWQtdGh1bWJuYWlscy1n" & _
-		"YWxsZXJ5IiksCgkgICAgICB7CgkgICAgICAgIHBsdWdpbnM6IFtsZ1pvb20sIGxnVGh1bWJuYWls" & _
-		"XQoJICAgICAgfQoJICAgICk7Cjwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4=")
+	Const $sHTML_Tail = _BinaryCall_Base64Decode ( "CiAgICA8L2Rpdj4KCjxzY3JpcHQgdHlwZT0idGV4dC9qYXZhc2NyaXB0Ij4KCSAgICB3aW5kb3cu" & _
+		"bGlnaHRHYWxsZXJ5KCBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYW5pbWF0ZWQtdGh1bWJuYWls" & _
+		"cy1nYWxsZXJ5IiksCgkgICAgICB7CgkgICAgICAgIHBsdWdpbnM6IFtsZ1pvb20sIGxnVGh1bWJu" & _
+		"YWlsXQoJICAgICAgfQoJICAgICk7Cjwvc2NyaXB0Pgo8L2JvZHk+CjwvaHRtbD4=" )
 	
 
 	; Get all the files in a gallery.
@@ -116,7 +106,9 @@ Func CurrentImagesViewer()
 			& '<img class="img-responsive"  src="' & $stashURL & 'image/' & $aImages[$i].Item("id") & '/thumbnail" /> </a>' & @LF
 	Next
 	
-	$hFile = FileOpen( @TempDir & "\tempImageList.html", $FO_OVERWRITE)
+	CopyGalleryFiles()
+	
+	$hFile = FileOpen( @AppDataDir & "\Webdriver\tempImageList.html", $FO_OVERWRITE)
 	If $hFile = -1 Then 
 		MsgBox(0, "error", "Error creating temporary html file.")
 		Return SetError(1)
@@ -130,7 +122,26 @@ Func CurrentImagesViewer()
 		Return SetError(1)
 	EndIf
 	FileClose($hFile)
-	$sFileURL = "file:///" & StringReplace(@TempDir & "\tempImageList.html", "\", "/")
+	$sFileURL = "file:///" & StringReplace(@AppDataDir & "\Webdriver\tempImageList.html", "\", "/")
 	OpenURL($sFileURL)
+EndFunc
+
+Func CopyGalleryFiles()
+	Local $sDestPath = @AppDataDir & "\Webdriver\"
+	If Not FileExists($sDestPath & "lg.ttf") Then 
+		FileCopy(@ScriptDir & "\gallery\lg.ttf", $sDestPath & "lg.ttf")
+	EndIf
+	If Not FileExists($sDestPath & "lg.woff") Then 
+		FileCopy(@ScriptDir & "\gallery\lg.woff", $sDestPath & "lg.woff")
+	EndIf
+	If Not FileExists($sDestPath & "lg.svg") Then 
+		FileCopy(@ScriptDir & "\gallery\lg.svg", $sDestPath & "lg.svg")
+	EndIf
+	If Not FileExists($sDestPath & "script.js") Then 
+		FileCopy(@ScriptDir & "\gallery\script.js", $sDestPath & "script.js")
+	EndIf
+	If Not FileExists($sDestPath & "style.css") Then 
+		FileCopy(@ScriptDir & "\gallery\style.css", $sDestPath & "style.css")
+	EndIf
 EndFunc
 
