@@ -22,17 +22,17 @@ Func ScrapersManager()
 	; Disable the tray clicks
 	TraySetClick(0)
 	
-	Global $guiScrapers = GUICreate("Scrapers Management",1700,1030,-1,-1,BitOr($WS_SIZEBOX,$WS_SYSMENU),-1)
+	Global $guiScrapers = GUICreate("Scrapers Management",1700,1030,-1,-1,BitOr($WS_SIZEBOX,$WS_SYSMENU),$WS_EX_OVERLAPPEDWINDOW)
 	GUISetIcon("helper2.ico")
 
 	
-	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$WS_EX_CLIENTEDGE, $LVS_EX_DOUBLEBUFFER))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,102)
 	; Website
-	_GUICtrlListView_SetColumnWidth($scraperList, 0, 400)
+	_GUICtrlListView_SetColumnWidth($scraperList, 0, 350)
 	; Scraper
-	_GUICtrlListView_SetColumnWidth($scraperList, 1, 400)
+	_GUICtrlListView_SetColumnWidth($scraperList, 1, 350)
 	; Scene
 	_GUICtrlListView_SetColumnWidth($scraperList, 2, 100)
 	_GUICtrlListView_JustifyColumn($scraperList, 2, 2)
@@ -96,7 +96,7 @@ Func ScrapersManager()
 		$aItemID[$i][0] = GUICtrlCreateListViewItem($aScraperArray[$i], $scraperList)
 		local $iPos = StringInStr($aScraperArray[$i], "|", 2, 6)
 		If StringMid($aScraperArray[$i], $iPos + 1, 3) = "Yes" Then 
-			GUICtrlSetBkColor($aItemID[$i][0], 0x00FF00)
+			GUICtrlSetBkColor($aItemID[$i][0], 0xADFF2F)
 		EndIf 
  		$aItemID[$i][1] = False ; Unchecked.
 	Next 
@@ -107,6 +107,7 @@ Func ScrapersManager()
 	; Now It's all ready. Wait for "Install" or "Remove"
 	Local $aFiles[0]
 
+	; GUISetStyle( BitOr($WS_SIZEBOX,$WS_SYSMENU), -1, $guiScrapers)
 	While True
 		; if click on tray icon, activate the current GUI
 		Local $nTrayMsg = TrayGetMsg()
@@ -427,14 +428,14 @@ Func SetScraperArray()
 		
 	Local $hFile = FileOpen($sScraperPath & "SCRAPERS-LIST.md")
 	If $hFile = -1 Then 
-		MsgBox(16,"Error open SCRAPERS-LIST.md","Error opening stash's scraper list file.",0)
+		MsgBox(16,"Error opening SCRAPERS-LIST.md","Error opening stash's scraper list file.",0)
 		Return SetError(1)
 	EndIf
 	
 	; Skip all the lines until "---------"
 	While True 
 		$sLine = FileReadLine($hFile)
-		If stringleft($sLine, 10) = "----------" Then 
+		If stringleft($sLine, 8) = "--------" Then 
 			ExitLoop
 		ElseIf @error Then 
 			MsgBox(16,"Error reading SCRAPERS-LIST.md","Error reading stash's scraper list file.",0)
@@ -453,6 +454,9 @@ Func SetScraperArray()
 			MsgBox(16,"Error reading SCRAPERS-LIST lines","Error reading scraper list lines.",0)
 			Return SetError(1)
 		EndIf
+		
+		; If $sLine is empty or end of the table. The list is finished.
+		If $sLine = "" or stringleft($sLine, 8) = "--------" Then ExitLoop  
 		
 		Local $aData = StringSplit($sLine, "|")
 		; Replace the check mark with check symbol, :x: with x
