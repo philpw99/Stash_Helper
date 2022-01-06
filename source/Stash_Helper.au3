@@ -370,26 +370,46 @@ If Not $showWDConsole Then
 	$_WD_DEBUG = $_WD_DEBUG_None
 EndIf
 
-Switch $stashBrowser
-	Case "Firefox"
-		SetupFirefox()
-	Case "Chrome"
-		SetupChrome()
-	Case "Edge"
-		SetupEdge()
-	Case Else
-		$stashBrowser = "Edge"
-		SetupEdge()  ; Edge is more universally available.
-EndSwitch
+StartBrowser()
 
 ; Slow down a bit here, or the web driver is not ready.
-Sleep(1000)
+Sleep(500)
 
 Global $iConsolePID = _WD_Startup()
 If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
-If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+If @error <> $_WD_ERROR_Success Then
+	If @extended >= 500 Then
+		MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
+			& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
+		_WD_Shutdown()
+		; Not fit, need to update the driver.
+		Local $b64 = ( @CPUArch = "X64" )
+		Switch $stashBrowser
+			Case "Firefox"
+				$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
+			Case "Chrome"
+				$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
+			Case "Edge"
+				$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		EndSwitch
+
+		StartBrowser()
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+		
+		_WD_Startup()
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+
+		$sSession = _WD_CreateSession($sDesiredCapabilities)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+		
+	EndIf
+EndIf 
+
+
+
+
 
 ; c("Session ID:" & $sSession)
 
@@ -593,6 +613,20 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func StartBrowser()
+	Switch $stashBrowser
+		Case "Firefox"
+			SetupFirefox()
+		Case "Chrome"
+			SetupChrome()
+		Case "Edge"
+			SetupEdge()
+		Case Else
+			$stashBrowser = "Edge"
+			SetupEdge()  ; Edge is more universally available.
+	EndSwitch
+EndFunc
 
 Func ApplyCSS($str)
 	$str = StringReplace($str, @CRLF, "\\n", 0, 2)
@@ -1619,7 +1653,7 @@ Func SetupChrome()
 	If Not FileExists( @AppDataDir & "\Webdriver\" & "chromedriver.exe") Then
 		Local $bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default, True) ; Force update
 		If Not $bGood Then
-			MsgBox(48,"Error Getting Firefox Driver", _
+			MsgBox(48,"Error Getting Chrome Driver", _
 			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
 				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
 			Exit
