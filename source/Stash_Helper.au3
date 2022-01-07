@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.2.8"
+Global Const $currentVersion = "v2.2.9"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -93,7 +93,11 @@ If FileExists($sFileConfig) Then
 	EndIf
 EndIf
 
+; Get the browser type and profile type
 Global $stashBrowser = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser")
+Global $stashBrowserProfile = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "BrowserProfile")
+If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
+
 
 Global $showStashConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole")
 If @error Then $showStashConsole = 0
@@ -1645,9 +1649,35 @@ Func SetupFirefox()
 	_WD_Option('DriverClose', True)
 	_WD_Option('DriverParams', '--log trace')
 	_WD_Option('Port', 4444)
-
-	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
+	Switch $stashBrowserProfile
+		Case "Private"
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
+		Case "Default"
+			_WD_Option('DriverParams', '--marionette-port 2828')
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
+	EndSwitch
+	
 EndFunc   ;==>SetupGecko
+
+Func GetDefaultFFProfile()
+	Local $sDefault, $sProfilePath = ''
+
+	Local $sProfilesPath = StringReplace(@AppDataDir, '\', '/') & "/Mozilla/Firefox/"
+	Local $sFilename = $sProfilesPath & "profiles.ini"
+	Local $aSections = IniReadSectionNames ($sFilename)
+
+	If Not @error Then
+		For $i = 1 To $aSections[0]
+			$sDefault = IniRead($sFilename, $aSections[$i], 'Default', '0')
+			If $sDefault = '1' Then
+				$sProfilePath = $sProfilesPath & IniRead($sFilename, $aSections[$i], "Path", "")
+				ExitLoop
+			EndIf
+		Next
+	EndIf
+
+	Return $sProfilePath
+EndFunc
 
 Func SetupChrome()
 	If Not FileExists( @AppDataDir & "\Webdriver\" & "chromedriver.exe") Then
@@ -1664,8 +1694,12 @@ Func SetupChrome()
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\chrome.log")
-
-	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
+	Switch $stashBrowserProfile
+		Case "Private"
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
+		Case "Default"
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
+	EndSwitch 
 EndFunc   ;==>SetupChrome
 
 Func SetupEdge()
@@ -1685,8 +1719,12 @@ Func SetupEdge()
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\msedge.log")
-
-	$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
+	Switch $stashBrowserProfile
+		Case "Private"
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
+		Case "Default"
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"], "args": ["user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Microsoft\\Edge\\User Data\\", "profile-directory=Default"]}}}}'
+	EndSwitch 
 EndFunc   ;==>SetupEdge
 
 Func BrowserError($code)

@@ -8,9 +8,42 @@
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 $Settings = GUICreate("Settings",800,940,-1,-1,-1,-1)
-GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,566,96,-1,-1)
+GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,20,566,96,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
+GUICtrlCreateGroup("Preferred Browser",97,116,359,229,$BS_CENTER,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseFirefox = GUICtrlCreateRadio("Firefox",126,187,147,38,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseChrome = GUICtrlCreateRadio("Chrome",126,239,147,38,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseEdge = GUICtrlCreateRadio("MS Edge",126,287,147,38,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateLabel("Drivers",329,156,83,24,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+GUICtrlSetResizing(-1,802)
+$updateFirefox = GUICtrlCreateButton("Update",317,195,112,32,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+$updateChrome = GUICtrlCreateButton("Update",317,245,112,32,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+$updateEdge = GUICtrlCreateButton("Update",317,293,112,32,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+GUICtrlCreateGroup("Browser Profile",487,120,214,225,$BS_CENTER,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$choosePrivate = GUICtrlCreateRadio("Private Profile",505,187,174,20,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseDefault = GUICtrlCreateRadio("Default Profile",505,245,184,20,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$showStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
+$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
 GUICtrlCreateLabel("Stash-win.exe location:",67,436,299,37,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
@@ -19,36 +52,12 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 $btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Browse for the stash-win.exe")
-$chooseFirefox = GUICtrlCreateRadio("Firefox",166,187,147,38,$BS_AUTORADIOBUTTON,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlCreateGroup("Preferred Browser",97,136,444,205,$BS_CENTER,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chooseChrome = GUICtrlCreateRadio("Chrome",166,239,147,38,$BS_AUTORADIOBUTTON,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chooseEdge = GUICtrlCreateRadio("MS Edge",166,287,147,38,$BS_AUTORADIOBUTTON,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
-GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlSetTip(-1,"Save the settings.")
-$updateFirefox = GUICtrlCreateButton("Update",387,195,112,32,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-$updateChrome = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-$updateEdge = GUICtrlCreateButton("Update",387,293,112,32,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-GUICtrlCreateLabel("Drivers",407,157,83,24,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateLabel("Stash URL:",69,531,299,37,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-GUICtrlSetResizing(-1,802)
-$showStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
-$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
+$stashURLinput = GUICtrlCreateInput("",69,572,473,36,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
 GUICtrlCreateLabel("Alternative player location:",71,630,407,37,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
@@ -58,18 +67,23 @@ GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to p
 $btnBrowsePlayer = GUICtrlCreateButton("Browse",565,675,142,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
-$stashURLinput = GUICtrlCreateInput("",69,572,473,36,-1,$WS_EX_CLIENTEDGE)
-GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
-GUICtrlCreateLabel("Stash URL:",69,531,299,37,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+GUICtrlCreateLabel("Player Presets:",86,749,162,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+$chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
+GUICtrlSetState(-1,BitOr($GUI_CHECKED,$GUI_SHOW,$GUI_ENABLE))
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+$inputSlideShow = GUICtrlCreateInput("10",592,747,60,32,-1,$WS_EX_CLIENTEDGE)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
 $btnPlayerPot = GUICtrlCreateButton("PotPlayer",74,795,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
-GUICtrlCreateLabel("Player Presets:",86,749,162,30,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetBkColor(-1,"-2")
 $btnPlayerVLC = GUICtrlCreateButton("VLC",207,795,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
@@ -85,17 +99,9 @@ GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
 $btnPlayerKMP = GUICtrlCreateButton("KMP",340,842,133,40,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
-$chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
-GUICtrlSetState(-1,BitOr($GUI_CHECKED,$GUI_SHOW,$GUI_ENABLE))
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetBkColor(-1,"-2")
-$inputSlideShow = GUICtrlCreateInput("10",592,747,60,32,-1,$WS_EX_CLIENTEDGE)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetBkColor(-1,"-2")
+$btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Save the settings.")
 
 
 
@@ -136,13 +142,13 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x0008220C]
+[0x00081FA6]
 type=label
 handle=432
 locked=0
 resize=
 x=100
-y=40
+y=20
 width=566
 height=96
 func=
@@ -165,7 +171,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001220E]
+[0x00011FA8]
 type=label
 handle=433
 locked=0
@@ -189,12 +195,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=2
+order=14
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012210]
+[0x00011FAA]
 type=input
 handle=434
 locked=0
@@ -218,12 +224,12 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=3
+order=15
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012212]
+[0x00011FAC]
 type=button
 handle=435
 locked=0
@@ -247,17 +253,17 @@ style=
 exstyle=
 bgcolour=
 code=
-order=4
+order=16
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012214]
+[0x00011FAE]
 type=radio
 handle=436
 locked=0
 resize=
-x=166
+x=126
 y=187
 width=147
 height=38
@@ -272,24 +278,24 @@ textcolour=0x000000
 id=$chooseFirefox
 text=Firefox
 state=$GUI_SHOW+$GUI_ENABLE
-style=$BS_AUTORADIOBUTTON
+style=
 exstyle=
 bgcolour=
 code=
-order=5
+order=2
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012216]
+[0x00011FB0]
 type=group
 handle=437
 locked=0
 resize=
 x=97
-y=136
-width=444
-height=205
+y=116
+width=359
+height=229
 func=
 font=Tahoma
 fontsize=10
@@ -305,17 +311,17 @@ style=$BS_CENTER
 exstyle=
 bgcolour=
 code=
-order=6
+order=1
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012218]
+[0x00011FB2]
 type=radio
 handle=438
 locked=0
 resize=
-x=166
+x=126
 y=239
 width=147
 height=38
@@ -330,7 +336,7 @@ textcolour=0x000000
 id=$chooseChrome
 text=Chrome
 state=$GUI_SHOW+$GUI_ENABLE
-style=$BS_AUTORADIOBUTTON
+style=
 exstyle=
 bgcolour=
 code=
@@ -338,13 +344,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=7
-[0x0001221A]
+order=3
+[0x00011FB4]
 type=radio
 handle=439
 locked=0
 resize=
-x=166
+x=126
 y=287
 width=147
 height=38
@@ -359,7 +365,7 @@ textcolour=0x000000
 id=$chooseEdge
 text=MS Edge
 state=$GUI_SHOW+$GUI_ENABLE
-style=$BS_AUTORADIOBUTTON
+style=
 exstyle=
 bgcolour=
 code=
@@ -367,8 +373,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=8
-[0x0001221C]
+order=4
+[0x00011FB6]
 type=button
 handle=440
 locked=0
@@ -392,17 +398,17 @@ style=
 exstyle=
 bgcolour=
 code=
-order=9
+order=33
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001221E]
+[0x00011FB8]
 type=button
 handle=441
 locked=0
 resize=
-x=387
+x=317
 y=195
 width=112
 height=32
@@ -421,17 +427,17 @@ style=
 exstyle=
 bgcolour=
 code=
-order=10
+order=6
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012220]
+[0x00011FBA]
 type=button
 handle=442
 locked=0
 resize=
-x=387
+x=317
 y=245
 width=112
 height=32
@@ -454,13 +460,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=11
-[0x00012222]
+order=7
+[0x00011FBC]
 type=button
 handle=443
 locked=0
 resize=
-x=387
+x=317
 y=293
 width=112
 height=32
@@ -483,14 +489,14 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=12
-[0x00012224]
+order=8
+[0x00011FBE]
 type=label
 handle=444
 locked=0
 resize=802
-x=407
-y=157
+x=329
+y=156
 width=83
 height=24
 func=
@@ -508,12 +514,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=13
+order=5
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012226]
+[0x00011FC0]
 type=checkbox
 handle=445
 locked=0
@@ -537,12 +543,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=14
+order=12
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012228]
+[0x00011FC2]
 type=checkbox
 handle=446
 locked=0
@@ -570,8 +576,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=15
-[0x0001222A]
+order=13
+[0x00011FC4]
 type=label
 handle=447
 locked=0
@@ -599,8 +605,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=16
-[0x0001222C]
+order=19
+[0x00011FC6]
 type=input
 handle=448
 locked=0
@@ -628,8 +634,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=17
-[0x0001222E]
+order=20
+[0x00011FC8]
 type=button
 handle=449
 locked=0
@@ -657,8 +663,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=18
-[0x00012230]
+order=21
+[0x00011FCA]
 type=input
 handle=450
 locked=0
@@ -686,8 +692,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=19
-[0x00012232]
+order=18
+[0x00011FCC]
 type=label
 handle=451
 locked=0
@@ -715,8 +721,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=20
-[0x00012234]
+order=17
+[0x00011FCE]
 type=button
 handle=452
 locked=0
@@ -740,12 +746,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=21
+order=27
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012236]
+[0x00011FD0]
 type=label
 handle=453
 locked=0
@@ -774,7 +780,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012238]
+[0x00011FD2]
 type=button
 handle=454
 locked=0
@@ -802,8 +808,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=23
-[0x0001223A]
+order=28
+[0x00011FD4]
 type=button
 handle=455
 locked=0
@@ -831,8 +837,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=24
-[0x0001223C]
+order=29
+[0x00011FD6]
 type=button
 handle=456
 locked=0
@@ -860,8 +866,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=25
-[0x0001223E]
+order=30
+[0x00011FD8]
 type=button
 handle=457
 locked=0
@@ -889,8 +895,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=26
-[0x00012240]
+order=31
+[0x00011FDA]
 type=button
 handle=458
 locked=0
@@ -918,8 +924,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=27
-[0x00012242]
+order=32
+[0x00011FDC]
 type=checkbox
 handle=459
 locked=0
@@ -943,12 +949,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=28
+order=23
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x003C18E2]
+[0x00011FDE]
 type=label
 handle=460
 locked=0
@@ -972,14 +978,14 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=29
+order=24
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000B2288]
+[0x00011FE0]
 type=input
-handle=469
+handle=461
 locked=0
 resize=
 x=592
@@ -1001,14 +1007,14 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=30
+order=25
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00321AE4]
+[0x00011FE2]
 type=label
-handle=461
+handle=462
 locked=0
 resize=
 x=668
@@ -1030,7 +1036,94 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=31
+order=26
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000F1FF8]
+type=radio
+handle=471
+locked=0
+resize=
+x=505
+y=187
+width=174
+height=20
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$choosePrivate
+text=Private Profile
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=10
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00141FF2]
+type=radio
+handle=472
+locked=0
+resize=
+x=505
+y=245
+width=184
+height=20
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chooseDefault
+text=Default Profile
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=11
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000F205A]
+type=group
+handle=463
+locked=0
+resize=
+x=487
+y=120
+width=214
+height=225
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Browser Profile
+state=$GUI_SHOW+$GUI_ENABLE
+style=$BS_CENTER
+exstyle=
+bgcolour=
+code=
+order=9
 tabpage=-1
 iconindex=
 iconlarge=0

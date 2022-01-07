@@ -4,46 +4,83 @@
 #Include <GuiButton.au3>
 #include <EditConstants.au3>
 
+
+Func ChooseBrowser($sBrowser)
+	Global $radioChooseFirefox, $radioChooseChrome, $radioChooseEdge
+	Switch $sBrowser
+		
+		Case "Firefox"
+			GUICtrlSetState($radioChooseFirefox, $GUI_CHECKED)
+		Case "Chrome"
+			GUICtrlSetState($radioChooseChrome, $GUI_CHECKED)
+		Case "Edge"
+			GUICtrlSetState($radioChooseEdge, $GUI_CHECKED)
+	EndSwitch
+EndFunc
+
+Func ChooseProfile($sProfile)
+	Global $radioChoosePrivate, $radioChooseDefault
+	Switch $sProfile
+		Case "Private"
+			GUICtrlSetState($radioChoosePrivate, $GUI_CHECKED)
+		Case "Default"	
+			GUICtrlSetState($radioChooseDefault, $GUI_CHECKED)
+	EndSwitch
+EndFunc 
+
 Func ShowSettings()
-	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation
-	Local $sBrowser, $bRestartRequired = False 
+
+	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation, $stashBrowserProfile
+	Local $sBrowser, $sProfile, $bRestartRequired = False 
 	Local $guiSettings = GUICreate("Settings",800,940,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	; Disable the tray clicks
 	TraySetClick(0)
 	
-	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,40,566,96,-1,-1)
+	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,20,566,96,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 	
-	GUICtrlCreateGroup("Preferred Browser",97,136,444,205,$BS_CENTER,-1)
+	GUICtrlCreateGroup("Preferred Browser",97,116,359,229,$BS_CENTER,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	GUICtrlCreateLabel("Drivers",407,157,83,24,-1,-1)
+	GUICtrlCreateLabel("Drivers",329,156,83,24,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $radioChooseFirefox = GUICtrlCreateRadio("Firefox",166,187,147,38,$BS_AUTORADIOBUTTON,-1)
+	; Choose browser radios and update buttons
+	Global  $radioChooseFirefox = GUICtrlCreateRadio("Firefox",126,187,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	
-	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",387,195,112,32,-1,-1)
+	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",317,195,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when Firefox is not under control any more.")
 	
-	Local $radioChooseChrome = GUICtrlCreateRadio("Chrome",166,237,147,38,$BS_AUTORADIOBUTTON,-1)
+	Global $radioChooseChrome = GUICtrlCreateRadio("Chrome",126,239,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	Local $btnUpdateChrome = GUICtrlCreateButton("Update",387,245,112,32,-1,-1)
+	Local  $btnUpdateChrome = GUICtrlCreateButton("Update",317,245,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when Chrome is not under control any more.")
 	
-	Local $radioChooseEdge = GUICtrlCreateRadio("MS Edge",166,287,147,38,$BS_AUTORADIOBUTTON,-1)
+	Global $radioChooseEdge = GUICtrlCreateRadio("MS Edge",126,287,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	Local $btnUpdateEdge = GUICtrlCreateButton("Update",387,293,112,32,-1,-1)
+	Local $btnUpdateEdge = GUICtrlCreateButton("Update",317,293,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when MS Edge is not under control any more.")
 	
+	; Profile choosing radios
+	GUICtrlCreateGroup("Browser Profile",487,120,214,225,$BS_CENTER,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	Global $radioChoosePrivate = GUICtrlCreateRadio("Private Profile",505,187,174,20,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",505,245,184,20,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	
+	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group
+
+	; Image show seconds.
 	GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
@@ -54,14 +91,9 @@ Func ShowSettings()
 	GUICtrlSetBkColor(-1,"-2")
 	
 	; Set the radio selection from current settings.
-	Switch $stashBrowser
-		Case "Firefox"
-			GUICtrlSetState($radioChooseFirefox, $GUI_CHECKED)
-		Case "Chrome"
-			GUICtrlSetState($radioChooseChrome, $GUI_CHECKED)
-		Case "Edge"
-			GUICtrlSetState($radioChooseEdge, $GUI_CHECKED)
-	EndSwitch
+	ChooseBrowser($stashBrowser)
+	If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
+	ChooseProfile($stashBrowserProfile)
 
 	Local $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
 	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
@@ -190,6 +222,7 @@ Func ShowSettings()
 					$iSlideShowSeconds = 10
 				EndIf
 				
+				; Set the browser choice
 				Select 
 					Case GUICtrlRead($radioChooseFirefox) = $GUI_CHECKED
 						$sBrowser = "Firefox"
@@ -198,10 +231,22 @@ Func ShowSettings()
 					Case GUICtrlRead($radioChooseEdge) = $GUI_CHECKED
 						$sBrowser = "Edge"
 				EndSelect
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
 				If $sBrowser <> $stashBrowser Then $bRestartRequired = True
+				
+				; Set the profile choice
+				Select 
+					Case GUICtrlRead($radioChoosePrivate) = $GUI_CHECKED
+						$sProfile = "Private"
+					Case GUICtrlRead($radioChooseDefault) = $GUI_CHECKED
+						$sProfile = "Default"
+				EndSelect
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "BrowserProfile", "REG_SZ", $sProfile)
+				If $sProfile <> $stashBrowserProfile Then $bRestartRequired = True
+				
+				; Save other settings.
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", _ 
 					GUICtrlRead($inputStashWinLocation))
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
 				Local $iShow = (GUICtrlRead($chkShowStash) = $GUI_CHECKED) ? 1 : 0
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole", "REG_DWORD", $iShow)
 				$iShow = (GUICtrlRead($chkShowWebDriver) = $GUI_CHECKED) ? 1 : 0
