@@ -8,7 +8,6 @@
 Func ChooseBrowser($sBrowser)
 	Global $radioChooseFirefox, $radioChooseChrome, $radioChooseEdge
 	Switch $sBrowser
-		
 		Case "Firefox"
 			GUICtrlSetState($radioChooseFirefox, $GUI_CHECKED)
 		Case "Chrome"
@@ -27,10 +26,26 @@ Func ChooseProfile($sProfile)
 			GUICtrlSetState($radioChooseDefault, $GUI_CHECKED)
 	EndSwitch
 EndFunc 
+	
+Func ChooseType($sType)
+	Global $radioLocal, $radioRemote, $inputStashWinLocation, $btnBrowseStash, $chkShowStash
+	Switch $sType
+		Case "Local"
+			GUICtrlSetState($radioLocal, $GUI_CHECKED)
+			GUICtrlSetState($inputStashWinLocation, $GUI_ENABLE)
+			GUICtrlSetState($btnBrowseStash, $GUI_ENABLE)
+			GUICtrlSetState($chkShowStash, $GUI_ENABLE)
+		Case "Remote"
+			GUICtrlSetState($radioRemote, $GUI_CHECKED)
+			GUICtrlSetState($inputStashWinLocation, $GUI_DISABLE)
+			GUICtrlSetState($btnBrowseStash, $GUI_DISABLE)
+			GUICtrlSetState($chkShowStash, $GUI_DISABLE)
+	EndSwitch
+EndFunc
 
 Func ShowSettings()
 
-	; Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation, $stashBrowserProfile
+	Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation, $stashBrowserProfile
 	Local $sBrowser, $sProfile, $bRestartRequired = False 
 	Local $guiSettings = GUICreate("Settings",800,940,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
@@ -77,7 +92,17 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",505,245,184,20,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	
+
+	; Stash type choosing radios
+	GUICtrlCreateGroup("Stash Type",72,355,277,90,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	Global $radioLocal = GUICtrlCreateRadio("Local",90,400,85,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Stash will run by launching stash-win.exe locally.")
+	Global $radioRemote = GUICtrlCreateRadio("Remote",220,400,116,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Stash will run in a remote computer. Stash help will access it by using Stash URL.")
+
 	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group
 
 	; Image show seconds.
@@ -90,32 +115,27 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 	
-	; Set the radio selection from current settings.
-	ChooseBrowser($stashBrowser)
-	If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
-	ChooseProfile($stashBrowserProfile)
-
-	Local $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
+	Global $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",391,366,258,34,-1,-1)
 	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
-	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
+	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",391,407,304,34,-1,-1)
 	If $showWDConsole = 1 Then GUICtrlSetState($chkShowWebDriver, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
-	GUICtrlCreateLabel("Stash-win.exe location:",66,436,299,37,-1,-1)
+	GUICtrlCreateLabel("Stash-win.exe location:",67,446,299,33,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $inputStashWinLocation = GUICtrlCreateInput($stashFilePath,66,487,473,36,-1,$WS_EX_CLIENTEDGE)
+	Global $inputStashWinLocation = GUICtrlCreateInput($stashFilePath,66,487,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	
-	Local $btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
+	global $btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	GUICtrlCreateLabel("Stash URL:",68,531,299,37,-1,-1)
+	GUICtrlCreateLabel("Stash URL:",67,541,299,33,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
@@ -174,6 +194,13 @@ Func ShowSettings()
 
 	Local $btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+	; Set the radio selection from current settings.
+	ChooseBrowser($stashBrowser)
+	If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
+	ChooseProfile($stashBrowserProfile)
+	If $stashType = "" Then $stashType = "Local"
+	ChooseType($stashType)
 	
 	GUISetState(@SW_SHOW, $guiSettings)
 	
@@ -202,6 +229,10 @@ Func ShowSettings()
 				If Not @error Then
 					GUICtrlSetData($inputMediaPlayerLocation, $sFile)
 				EndIf
+			Case $radioLocal
+				ChooseType("Local")
+			Case $radioRemote
+				ChooseType("Remote")
 			Case $btnDone
 				$sMediaPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
 				If $sMediaPlayerLocation <> "" Then 
@@ -244,6 +275,16 @@ Func ShowSettings()
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "BrowserProfile", "REG_SZ", $sProfile)
 				If $sProfile <> $stashBrowserProfile Then $bRestartRequired = True
 				
+				; Set the stash type choice
+				Select 
+					Case GUICtrlRead($radioLocal) = $GUI_CHECKED
+						$sType = "Local"
+					Case GUICtrlRead($radioRemote) = $GUI_CHECKED
+						$sType = "Remote"
+				EndSelect
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashType", "REG_SZ", $sType)
+				if $stashType <> $sType Then $bRestartRequired = True 
+
 				; Save other settings.
 				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", _ 
 					GUICtrlRead($inputStashWinLocation))

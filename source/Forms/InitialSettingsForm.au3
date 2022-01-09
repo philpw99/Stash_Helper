@@ -13,33 +13,53 @@ Func InitialSettingsForm()
 	Local $Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	
-	Local $tab = GUICtrlCreatetab(41,70,1232,661,-1,-1)
-	GuiCtrlSetState(-1,2048)
-	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	Local $tab = GUICtrlCreatetab(41,70,1201,673,-1,-1)
 
 	; Tab 1
 	GUICtrlCreateTabItem("  Start  ")
 
-	GUICtrlCreateLabel("Welcome to my little GUI helper for Stash!",191,158,908,62,-1,-1)
+	GUICtrlCreateLabel("Welcome to my little GUI helper for Stash!",191,117,908,62,-1,-1)
 	GUICtrlSetFont(-1,20,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	GUICtrlCreateLabel("StashApp is a great program to manage your porn collection. This little helper will make it easier to run in Windows."&@crlf&"Please start it by tell me where 'stash-win.exe' is.",167,244,937,111,-1,-1)
+	GUICtrlCreateLabel("StashApp is a great program to manage your porn collection. This little helper will make it easier to run in Windows.", _
+		166,193,937,75,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $stashPath = GUICtrlCreateInput("",280,391,610,41,-1,$WS_EX_CLIENTEDGE)
+	; Group for choosing local or remote
+	GUICtrlCreateGroup("Please start it by tell me which type of Stash you are running",139,280,1028,326,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	
+	GUICtrlCreateLabel("Location:",279,418,101,28,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	
+	Local $radioLocal = GUICtrlCreateRadio("Local Stash by running stash-win.exe.",219,359,501,42,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"0xFFFFFF")
+
+	Local $stashPath = GUICtrlCreateInput("",409,409,560,40,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE))
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+	GUICtrlSetTip(-1,"Please type in the location of stash-win.exe, e.g. c:\stash\stash-win.exe")
+	
+	Local $btnBrowse = GUICtrlCreateButton("Browse",982,408,131,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	Local $btnBrowse = GUICtrlCreateButton("Browse",910,391,170,41,-1,-1)
+	Local $radioRemote = GUICtrlCreateRadio("Remote Stash",219,474,501,51,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
-	GUICtrlCreateLabel("If you don't have it yet, you can download it here.",283,470,615,49,-1,-1)
-	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"0xFFFFFF")
+
+	GUICtrlCreateLabel("Stash URL:",279,539,120,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $btnWebsite = GUICtrlCreateButton("Website",910,470,170,41,-1,-1)
-	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	$inputStashURL = GUICtrlCreateInput("",409,529,560,40,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Please type in the remote URL of Stash, e.g. http://192.168.1.10:9999")
+
+	; GUICtrlCreateTabItem("")
 
 	; Tab 2
 	GUICtrlCreateTabItem(" Choose Browser ")
@@ -47,22 +67,27 @@ Func InitialSettingsForm()
 	GUICtrlCreateLabel("Now choose your favorite browser to launch StashApp.",361,150,616,104,-1,-1)
 	GUICtrlSetFont(-1,16,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
+	
+	GUICtrlCreateGroup("Browser Choice",157,267,1014,314,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"0xFFFFFF")
 
-	Local $chooseFirefox = GUICtrlCreateRadio("Firefox",201,286,157,48,$BS_AUTORADIOBUTTON,-1)
+
+	Local $chooseFirefox = GUICtrlCreateRadio("Firefox",200,325,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	Local $chooseChrome = GUICtrlCreateRadio("Chrome",201,348,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseChrome = GUICtrlCreateRadio("Chrome",200,387,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	Local $chooseEdge = GUICtrlCreateRadio("MS Edge",201,415,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseEdge = GUICtrlCreateRadio("MS Edge",200,454,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	Local $browserDetails = GUICtrlCreateLabel("",451,300,656,163,-1,-1)
+	Local $browserDetails = GUICtrlCreateLabel("",450,339,656,163,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 	; The frame for the details
-	GUICtrlCreateLabel("",406,270,741,235,$SS_GRAYFRAME,-1) 
-	GUICtrlSetBkColor(-1,"-2")
+	; GUICtrlCreateLabel("",406,270,741,235,$SS_GRAYFRAME,-1) 
+	; GUICtrlSetBkColor(-1,"-2")
 
 	; Tab 3
 	GUICtrlCreateTabItem("  Launch!  ")
@@ -80,9 +105,9 @@ Func InitialSettingsForm()
 	Local $btnNext = GUICtrlCreateButton("Next",960,630,211,57,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_DISABLE))
+	
 	; Back to tab 0
 	_GUICtrlTab_SetCurFocus($tab,0)
-
 
 	; Now run the rest
 	GUISetState(@SW_SHOW, $Initial_Settings)
@@ -105,8 +130,15 @@ Func InitialSettingsForm()
 					Case 1 ; Tab Browser
 						_GUICtrlTab_SetCurFocus($tab, 2)
 					Case 2 ; Tab Launch
-						If $bPathReady And $bBrowserReady Then 
-							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", $stashFilePath)
+						If $bPathReady And $bBrowserReady Then
+							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashType", "REG_SZ", $stashType)
+							If $stashType = "Local" Then 
+								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", $stashFilePath)
+							Else
+								If StringRight($stashURL, 1) <> "/" Then $stashURL &= "/"
+								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+							EndIf
+							; Set the browser choice
 							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
 							$bSettingDone = True
 
@@ -114,8 +146,6 @@ Func InitialSettingsForm()
 						EndIf
 				EndSwitch
 				
-			Case $btnWebsite
-				ShellExecute("https://github.com/stashapp/stash/releases")
 			Case $GUI_EVENT_CLOSE
 				Exit 
 		EndSwitch
@@ -125,16 +155,34 @@ Func InitialSettingsForm()
 			; Check every second.
 			Switch _GUICtrlTab_GetCurFocus($tab)
 				Case 0	; Currently at Tab 0, Start
-					GUICtrlSetData($btnNext, "Next")
-					$stashFilePath = GUICtrlRead($stashPath)
-					If StringLower(StringRight($stashFilePath, 13)) = "stash-win.exe" _ 
-						And FileExists($stashFilePath) Then 
-						GUICtrlSetState($btnNext, $GUI_ENABLE)
-						$bPathReady = True 
-					Else
-						GUICtrlSetState($btnNext, $GUI_DISABLE)
-						$bPathReady = False 
-					EndIf
+					; Maybe the button now is "Launch"
+					If GUICtrlRead($btnNext) <> "Next" Then GUICtrlSetData($btnNext, "Next")
+					
+					If GUICtrlRead($radioLocal) = $GUI_CHECKED Then
+						; Chose local
+						$stashFilePath = GUICtrlRead($stashPath)
+						$stashType = "Local"
+						If StringLower(StringRight($stashFilePath, 13)) = "stash-win.exe" And FileExists($stashFilePath) Then
+							; the input is valid
+							GUICtrlSetState($btnNext, $GUI_ENABLE)
+							$bPathReady = True 
+						Else
+							GUICtrlSetState($btnNext, $GUI_DISABLE)
+							$bPathReady = False 
+						EndIf
+					ElseIf GUICtrlRead($radioRemote) = $GUI_CHECKED Then 
+						; Chose remote
+						$stashType = "Remote"
+						$stashURL = GUICtrlRead($inputStashURL)
+						If stringlower(stringleft($stashURL,4)) = "http" Then 
+							; Just the minimal check passed
+							GUICtrlSetState($btnNext, $GUI_ENABLE)
+							$bPathReady = True 
+						Else
+							GUICtrlSetState($btnNext, $GUI_DISABLE)
+							$bPathReady = False 
+						EndIf
+					EndIf 
 				Case 1 ; Tab choose browser
 					GUICtrlSetData($btnNext, "Next")
 					Select 

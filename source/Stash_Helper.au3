@@ -14,10 +14,10 @@
 #include <wd_core.au3>
 #include <wd_helper.au3>
 #include <Array.au3>
+#include <Inet.au3>
 
 ; opt("MustDeclareVars", 1)
 
-#include <Forms\InitialSettingsForm.au3>
 #include "DTC.au3"
 #include "URL_Encode.au3"
 #include "TrayMenuEx.au3"
@@ -35,7 +35,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.2.9"
+Global Const $currentVersion = "v2.3.0"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -64,33 +64,47 @@ Opt("TrayAutoPause", 0)  ; No pause in tray
 ; Remove the trailing (x86) for 64bit windows
 Global $sProgramFilesDir = ( @OSArch = "X64" ) ? StringReplace(@ProgramFilesDir, " (x86)", "", 1, 2) : @ProgramFilesDir
 
-Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
-If @error Or Not FileExists($stashFilePath) Then
+; Either "Local" or "Remote"
+Global $stashType = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashType")
+Global $stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
+
+#include <Forms\InitialSettingsForm.au3>
+
+If $stashURL = "" Or $stashType = "" Then
 	; First time run this program. Need to set the settings.
 	InitialSettingsForm()
 EndIf
 
+; Have to decleare the following, otherwise the setting form will fail.
+Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
 Global $stashPath = stringleft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1))
-
-; Now determine where to get the settings: working directory or %userprofile%\.stash
-Global $sFileConfig = $stashPath & "config.yml"
-If Not FileExists($sFileConfig) Then
-	$stashPath = @UserProfileDir & "\.stash\"
-	$sFileConfig = $stashPath & "config.yml"
-	If not FileExists($sFileConfig) Then 
- 		MsgBox(0, "No Config file", "There is no config.yml in either current working directory or .stash directory yet." & @CRLF _
- 			& "Please finish setup and generate a config.yml file then run the Stash Helper again.")
- 	EndIf
-EndIf
-
+; Show the local stash console or not
+Global $showStashConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole")
+If @error Then $showStashConsole = 0
 ; For v0.11 and above. Disable the browser from autostart
 Global $sNoBrowser = ""
-If FileExists($sFileConfig) Then
-	Local $sConfigContent = FileRead($sFileConfig)
-	; If exist this setting, then it's v0.11 and above
-	If StringInStr($sConfigContent, "nobrowser:", 2) <> 0 Then
-		$sNoBrowser = " --nobrowser"
+
+If $stashType = "Local" Then
+
+	; Now determine where to get the settings: working directory or %userprofile%\.stash
+	Global $sFileConfig = $stashPath & "config.yml"
+	If Not FileExists($sFileConfig) Then
+		$stashPath = @UserProfileDir & "\.stash\"
+		$sFileConfig = $stashPath & "config.yml"
+		If not FileExists($sFileConfig) Then
+			MsgBox(0, "No Config file", "There is no config.yml in either current working directory or .stash directory yet." & @CRLF _
+				& "Please finish setup and generate a config.yml file then run the Stash Helper again.")
+		EndIf
 	EndIf
+
+	If FileExists($sFileConfig) Then
+		Local $sConfigContent = FileRead($sFileConfig)
+		; If exist this setting, then it's v0.11 and above
+		If StringInStr($sConfigContent, "nobrowser:", 2) <> 0 Then
+			$sNoBrowser = " --nobrowser"
+		EndIf
+	EndIf
+
 EndIf
 
 ; Get the browser type and profile type
@@ -98,9 +112,7 @@ Global $stashBrowser = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "Brows
 Global $stashBrowserProfile = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "BrowserProfile")
 If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
 
-
-Global $showStashConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole")
-If @error Then $showStashConsole = 0
+; show the webdriver console or not
 Global $showWDConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole")
 if @error Then $showWDConsole = 0
 
@@ -109,6 +121,7 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
 
 Global $iSlideShowSeconds = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds")
+
 if @error Then
 	$iSlideShowSeconds = 10
 	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds", "REG_DWORD", 10)
@@ -132,13 +145,17 @@ If @error Then MsgExit("Error Creating global $minfo object.")
 #include <Forms\ManagePlayListForm.au3>
 ; Seems special scraper is no longer needed when visible CDP works much better.
 
-
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
 Global $iStashPID
-$stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
 
 If $stashURL = "" Then
+	If $stashType = "Remote" Then
+		; Shouldn't be in this situation. Reset.
+		MsgBox(0, "Error in settings", "Invalid Stash URL, have to reset the settings. Restart and set it again.")
+		RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", "")
+		Exit
+	EndIf
 	; Never have $stashURL before. Run it for the first time.
 	$iStashPID = ProcessExists("stash-win.exe")
 	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
@@ -176,39 +193,63 @@ If $stashURL = "" Then
 		Sleep(100)
 	Wend
 Else
-	; StashURL already saved.
-	Local $aStr = StringRegExp($stashURL, "\:\/\/(.*)\:(\d+)", $STR_REGEXPARRAYMATCH )
-	Local $sHost = $aStr[0], $sPort = $aStr[1]
-	If $sHost = "localhost" Then
-		$iStashPID = ProcessExists("stash-win.exe")
-		If $iStashPID = 0 Then
-			; Not running.
-			If $showStashConsole Then
-				$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+	; StashURL already saved. Launch it only when it's local.
+	If $stashType = "Local" Then
+		Local $aStr = StringRegExp($stashURL, "\:\/\/(.*)\:(\d+)", $STR_REGEXPARRAYMATCH )
+		Local $sHost = $aStr[0], $sPort = $aStr[1]
+		If $sHost = "localhost" or $sHost = "127.0.0.1" Then
+			; All below is just to get the right PID for stash, in case two stashes are running at the same time.
+			$iStashPID = ProcessExists("stash-win.exe")
+			If $iStashPID = 0 Then
+				; Not running. Launch it.
+				If $showStashConsole Then
+					$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+				Else
+					$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+				EndIf
 			Else
-				$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+				; Already running. Get the PID which is listening to that port
+				Local $iPid = Run(@ComSpec & ' /C netstat -ano|find "0.0.0.0:' & $sPort & '"',"",@SW_HIDE, $STDOUT_CHILD )
+				ProcessWaitClose($iPid)
+				Local $sReadOut = StdoutRead($iPid)
+				; Get the PID
+				$aStr = StringRegExp($sReadOut, "LISTENING\s+(\d+)", $STR_REGEXPARRAYMATCH)
+				If @error Then
+					; bad or no match
+					$iStashPID = 0
+				Else
+					; Good match
+					$iStashPID = Int( $aStr[0] )
+				EndIf
 			EndIf
 		Else
-			; Already running. Get the PID which is listening to that port
-			Local $iPid = Run(@ComSpec & ' /C netstat -ano|find "0.0.0.0:' & $sPort & '"',"",@SW_HIDE, $STDOUT_CHILD )
-			ProcessWaitClose($iPid)
-			Local $sReadOut = StdoutRead($iPid)
-			; Get the PID
-			$aStr = StringRegExp($sReadOut, "LISTENING\s+(\d+)", $STR_REGEXPARRAYMATCH)
-			If @error Then
-				; bad or no match
-				$iStashPID = 0
-			Else
-				; Good match
-				$iStashPID = Int( $aStr[0] )
-			EndIf
+			$iStashPID = 0 ; No closing in the end.
 		EndIf
-	Else
-		$iStashPID = 0 ; No closing in the end.
 	EndIf
 EndIf
 
-; This must run after $stashURL
+; This must run after $stashURL is set
+
+; Test the StashURL
+$sResult = _INetGetSource($stashURL)
+If @error Then
+	$reply = MsgBox(20,"Stash is Not Running","Something is wrong with Stash. It appears to be not running." _
+		 & @CRLF & "Here is the URL:" & @CRLF & $stashURL _
+		 & @CRLF & "Do you want to set the Stash URL yourself?",0)
+	switch $reply
+		case 6 ;YES
+			$stashURL = InputBox("Stash URL Manual input", "Please type the stash URL below", $stashURL)
+			If Not @error Then
+				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+				MsgBox(0, "Setting written", "Setting is saved. You need to restart Stash Helper.")
+			EndIf
+			ExitScript()
+		case 7 ;NO
+		;Your code here...
+		ExitScript()
+	endswitch
+EndIf
+
 #include "URLtoQuery.au3"
 #include "CurrentImagesViewer.au3"
 
@@ -240,7 +281,7 @@ If Not @error Then
 					; A new version is waiting.
 					Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
 					; c ("Latest Version:" & $sLatestVersionURL)
-					If UBound($aMatchStr) = 1 Then 
+					If UBound($aMatchStr) = 1 Then
 						Local $sNewVersion = $aMatchStr[0]
 						Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
 							& " Do you want to update the current stash to the new one?" & @CRLF _
@@ -249,25 +290,29 @@ If Not @error Then
 							& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
 						switch $hAskUpgrade
 							case 6 ;YES, update.
-								ProcessClose($iStashPID)
-								InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
-								If Not @error Then
-									$stashVersion = ""
-									; Download successful.
-									FileDelete($stashFilePath)
-									FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
-									; Run it now.
-									If $showStashConsole Then
-										$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
-									Else
-										$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+								If $stashType = "Remote" Then
+									MsgBox(0, "Not local Stash", "The stash is not running locally. Cannot update it.")
+								Elseif $stashType = "Local" Then
+									ProcessClose($iStashPID)
+									InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
+									If Not @error Then
+										$stashVersion = ""
+										; Download successful.
+										FileDelete($stashFilePath)
+										FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
+										; Run it now.
+										If $showStashConsole Then
+											$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+										Else
+											$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+										EndIf
 									EndIf
 								EndIf
 							case 7 ;NO, ignore.
 								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
 							case 2 ;CANCEL
 						endswitch
-					EndIf 
+					EndIf
 				EndIf
 			EndIf ; End of if $oResult is object.
 		EndIf ; End of Query latest version no error
@@ -276,6 +321,8 @@ Else
 	; Error getting version
 	c("Version result:" & $sResult)
 EndIf
+
+
 
 If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
@@ -317,12 +364,15 @@ _TrayMenuAddImage($hIcons[20], 14)
 Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 15
 ; GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
 _TrayMenuAddImage($hIcons[8], 15)
+
 Global $trayScan = TrayCreateItem("Scan New Files") 	; 16
 _TrayMenuAddImage($hIcons[14], 16)
 ; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
+
 Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 17
 _TrayMenuAddImage($hIcons[15], 17)
 ; GUICtrlSetTip(-1,"Create a movie from current scene.")
+
 Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 18
 _TrayMenuAddImage($hIcons[18], 18)
 
@@ -388,7 +438,7 @@ If @error <> $_WD_ERROR_Success Then
 		MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
 			& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
 		_WD_Shutdown()
-		; Not fit, need to update the driver.
+		; Not fit, need to update the driver and try it once again.
 		Local $b64 = ( @CPUArch = "X64" )
 		Switch $stashBrowser
 			Case "Firefox"
@@ -401,18 +451,15 @@ If @error <> $_WD_ERROR_Success Then
 
 		StartBrowser()
 		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
-		
+
 		_WD_Startup()
 		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
 		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
-		
+
 	EndIf
-EndIf 
-
-
-
+EndIf
 
 
 ; c("Session ID:" & $sSession)
@@ -423,7 +470,7 @@ Global $sBrowserHandle
 
 #Region Tray Menu Handling
 
-; Create all the sub menu for scenes, movies, studio...etc
+; Create all the bookmark sub menu for scenes, movies, studio...etc
 CreateSubMenu()
 
 TraySetState($TRAY_ICONSTATE_SHOW)
@@ -457,8 +504,6 @@ While True
 			ShowSettings()
 		Case $trayScrapers
 			ScrapersManager()
-;~ 		Case $trayScrapeSpecial
-;~ 			ScrapeSpecial()
  		Case $customScenes
 			CustomList("Scenes", $traySceneLinks)
 		Case $customImages
@@ -562,8 +607,8 @@ While True
 						MsgBox(0, "Need to enable custom css feature.", 'You need to enable custom css in "Settings->Interface->Custom CSS" first.' )
 						ContinueLoop
 					EndIf
-					Local $sFile = $stashPath & "custom.css"
-					Local $sCSS =  FileRead($sFile)
+
+					Local $sCSS =  GetCSSstring()
 					If @error Then $sCSS = ""
 
 					If $aCSSItems[$i][$CSS_ENABLE] = 1 Then
@@ -576,12 +621,6 @@ While True
 							; Only do it when the numbers are valid
 							$iPos2 += StringLen($sSearchEnd)
 							$sCSS = StringLeft($sCSS, $iPos1-1) & StringMid($sCSS, $iPos2)
-							; Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
-							;If $hFile = -1 Then
-							;	MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
-							;	ContinueLoop
-							;EndIf
-							;FileWrite($hFile, $sCSS)
 						EndIf
 						ApplyCSS($sCSS)
 						$aCSSItems[$i][$CSS_ENABLE] = 0
@@ -593,12 +632,6 @@ While True
 						; Add the crlf to the end if not there yet.
 						If StringRight($sCSS, 1) <> @LF Then $sCSS &= @LF
 						$sCSS &= $sStart & @LF & $aCSSItems[$i][$CSS_CONTENT] & @LF & $sEnd
-						;Local $hFile = FileOpen($sFile, $FO_OVERWRITE )
-						;If $hFile = -1 Then
-						;	MsgBox(0, "error writing to file", "Error occur when trying to write to custom.css")
-						;	ContinueLoop
-						;EndIf
-						;FileWrite($hFile, $sCSS)
 						ApplyCSS($sCSS)
 						$aCSSItems[$i][$CSS_ENABLE] = 1
 						TrayItemSetState($aCSSItems[$i][$CSS_HANDLE], $TRAY_CHECKED)
@@ -692,13 +725,13 @@ Func InitCSSArray(ByRef $a)
 		& "#jwplayer-container > div:first-child { height: 100%;}" )
 
 	AddCSStoArray($a, "Performer - Show Entire Performer's Image", ".performer.image { background-size: contain !important;}" )
-	
+
 	AddCSStoArray($a, "Performer - Larger Image for desktop", _
 		".performer-image-container{ flex: 0 0 50%; max-width: 50%;}" & @LF _
 		& ".col-md-8 {flex: 0 0 50%; max-width: 50%;}" )
 
 	AddCSStoArray($a, "Performer - Larger Images in performers list", ".performer-card-image{ height: 45rem; min-width: 20rem;}" )
-	
+
 	AddCSStoArray($a, "Performer - Move Edit Buttons to the Top", _
 		"form#performer-edit {display: flex; flex-direction: column;}" & @LF _
 		& "#performer-edit > .row { order: 1;}" & @LF _
@@ -737,10 +770,9 @@ Func InitCSSArray(ByRef $a)
 		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
 		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }" )
 
-	; Read the custom.css and set the CSS_Enable value
-	Local $sFile = $stashPath & "custom.css"
-	Local $sCSS =  FileRead($sFile)
-	If @error Then $sCSS = ""
+	$sCSS = GetCSSstring()
+	If @error Then Return SetError(1)
+
 	; Use /* Start:$a[xx][0] */ as the starting point
 	; /* End:$a[xx][0] */ as the ending point
 	For $i = 0 To UBound($a) -1
@@ -748,6 +780,27 @@ Func InitCSSArray(ByRef $a)
 		$a[$i][$CSS_ENABLE] = (StringInStr($sCSS, $sSearch, 2) <> 0) ? 1 : 0
 	Next
 
+EndFunc
+
+Func GetCSSstring()
+	; It will read the custom.css from graphql
+	Local $sQuery = '{configuration{interface{css}}}'
+	local $sResult = Query2($sQuery)
+	If @error Then Return SetError(1)
+
+	Local $oCSS = Json_Decode($sResult)
+	If Not IsObj($oCSS) Then
+		MsgBox(0, "Error in CSS", "Error getting CSS string from settings.")
+		Return SetError(1)
+	EndIf
+
+	Local $sCSS =  Json_ObjGet($oCSS, "data.configuration.interface.css")
+	If Not IsString($sCSS) Then
+		$sCSS = ""
+	Else
+		$sCSS = StringReplace($sCSS, "\n", @CRLF)
+	EndIf
+	Return $sCSS
 EndFunc
 
 Func AddCSStoArray(ByRef $a, $title, $content )
@@ -771,6 +824,9 @@ Func AlreadyRunning()
 EndFunc
 
 Func OpenMediaFolder()
+	If $stashType = "Remote" Then
+		Return MsgBox(0, "Not supported", "Since this is a remote stash, this function is not supported.")
+	EndIf
 	$sResult = GetCurrentTabCategoryAndNumber()
 	If @error Then Return SetError(1)
 	; Return string is like "scenes-11" or "scenes"
@@ -1232,7 +1288,7 @@ EndFunc
 Func AddImageToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findImage(id:' & $sID & '){title,path}}"}'
+	$sQuery = '{"query":"{findImage(id:' & $sID & '){title,path,paths{image} }}"}'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1248,14 +1304,18 @@ Func AddImageToList($sID)
 	ReDim $aPlayList[$i+1][3]
 	$aPlayList[$i][$LIST_TITLE] = "Image: " & $oData.Item("title")
 	$aPlayList[$i][$LIST_DURATION] = $iSlideShowSeconds
-	$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+	If $stashType = "Local" Then
+		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+	ElseIf $stashType = "Remote" Then
+		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("image")
+	EndIf
 	Return 1  ; Once scene added to the list
 EndFunc
 
 Func AddGalleryToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findGallery(id:' & $sID & '){title,image_count,path,images{path}}}"}'
+	$sQuery = '{"query":"{findGallery(id:' & $sID & '){title,image_count,path,images{path, paths{image} }}}"}'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1284,7 +1344,11 @@ Func AddGalleryToList($sID)
 		ReDim $aPlayList[$i+1][3]
 		$aPlayList[$i][$LIST_TITLE] = "Gallery: " & $oData.Item("title") & " Image: " & $iCount
 		$aPlayList[$i][$LIST_DURATION] = $iSlideShowSeconds
-		$aPlayList[$i][$LIST_FILE] = FixPath($oImage.Item("path"))
+		If $stashType = "Local" Then
+			$aPlayList[$i][$LIST_FILE] = FixPath($oImage.Item("path"))
+		ElseIf $stashType = "Remote" Then
+			$aPlayList[$i][$LIST_FILE] = $oImage.Item("paths").Item("image")
+		EndIf
 	Next
 	Return $iCount  ; Total image count.
 EndFunc
@@ -1347,7 +1411,7 @@ Func AddMovieToList($sID)
 	For $i = 0 to $iCount-1
 		Local $nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
 		; Now add this scene to the  play list
-		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration} }}"}'
+		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration},paths{stream} }}"}'
 		$sResult = Query($sQuery)
 		If @error Then Return SetError(1)
 
@@ -1362,7 +1426,11 @@ Func AddMovieToList($sID)
 		ReDim $aPlayList[$j+1][3]
 		$aPlayList[$j][$LIST_TITLE] = "Movie: " & $oMovieData.Item("name") & " - Scene " & ($i+1)
 		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )
-		$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))
+		If $stashType = "Local" Then
+			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))
+		ElseIf $stashType = "Remote" Then
+			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream")
+		EndIf
 	Next
 	Return $iCount
 EndFunc
@@ -1371,7 +1439,7 @@ EndFunc
 Func AddSceneToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,path,file{duration}}}"}'
+	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,path,file{duration},paths{stream}}}"}'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1387,7 +1455,11 @@ Func AddSceneToList($sID)
 	ReDim $aPlayList[$i+1][3]
 	$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("title")
 	$aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("file").Item("duration") )
-	$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+	If $stashType = "Local" Then
+		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+	ElseIf $stashType = "Remote" Then
+		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("stream")
+	EndIf
 	Return 1  ; Once scene added to the list
 EndFunc
 
@@ -1500,7 +1572,7 @@ EndFunc
 
 Func PlayMovieInCurrentTab($nMovie)
 	; Use graphql to get the scenes in movies
-	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path}}}"}' )
+	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path,paths{stream}}}}"}' )
 	If @error Then Return
 	Local $oData = Json_Decode($sResult)
 	If Not IsObj($oResult) Then
@@ -1515,7 +1587,13 @@ Func PlayMovieInCurrentTab($nMovie)
 			; Do nothing.
 		Case 1
 			; Just play it.
-			Play( $aScenes[0].Item("path") )
+			If $stashType = "Local" Then
+				; Play the local file
+				Play( $aScenes[0].Item("path") )
+			ElseIf $stashType = "Remote" Then
+				; Play the stream.
+				Play( $aScenes[0].Item("paths").Item("stream") )
+			EndIf
 		Case Else
 			; write a temp m3u file
 			Local $hFile = FileOpen(@TempDir & "\StashMovie.m3u", $FO_OVERWRITE )
@@ -1528,7 +1606,11 @@ Func PlayMovieInCurrentTab($nMovie)
 
 			For $i = 0 to UBound($aScenes) - 1
 				FileWriteLine($hFile, "#EXTINF:-1,")
-				FileWriteLine($hFile, $aScenes[$i].Item("path") )
+				If $stashType = "Local" Then
+					FileWriteLine($hFile, $aScenes[$i].Item("path") )
+				Elseif $stashType ="Remote" Then
+					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") )
+				EndIf
 			Next
 			FileClose($hFile)
 
@@ -1539,8 +1621,12 @@ EndFunc
 
 Func Play($sFile)
 	; Use external player to play the file
-	Local $sPath = StringLeft($sFile, StringInStr($sFile, "\", -1) )
-	$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), Q($sPath), $SHEX_OPEN)
+	If $stashType = "Local" or stringright($sFile, 4) = ".m3u" Then
+		Local $sPath = StringLeft($sFile, StringInStr($sFile, "\", -1) )
+		$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), Q($sPath), $SHEX_OPEN)
+	ElseIf $stashType = "Remote" Then
+		$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), "", $SHEX_OPEN)
+	EndIf
 	If $iMediaPlayerPID = -1 Then $iMediaPlayerPID = 0
 EndFunc
 
@@ -1603,25 +1689,57 @@ Func PlayCurrentScene()
 
 	Local $aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
 	c("scene id:" & $aMatch[0])
-	$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
-	c("scene query:" & $sQuery)
 
-	; This will query the graphql and get the path info
-	$sResult = Query( $sQuery )
-	If @error  Then Return SetError(1)
+	If $stashType = "Local" Then
+		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
+		c("scene query:" & $sQuery)
 
-	Local $oData = Json_Decode($sResult)
-	If Not IsObj($oResult) Then
-		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
-		Return SetError(1)
+		; This will query the graphql and get the path info
+		$sResult = Query( $sQuery )
+		If @error  Then Return SetError(1)
+
+		Local $oData = Json_Decode($sResult)
+		If Not IsObj($oResult) Then
+			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+			Return SetError(1)
+		EndIf
+		If Not Json_IsObject($oData) Then
+			MsgBox(0, "Data error.", "The data return from stash has errors.")
+			Return
+		EndIf
+		; Get the scenes file path and play
+		$sFile = Json_ObjGet($oData, "data.findScene.path")
+		If Not IsString($sFile) Then
+			MsgBox(0, "Data error.", "Error getting the scene file/path.")
+			Return SetError(1)
+		EndIf
+	ElseIf $stashType = "Remote" Then
+		; Get the scene's stream as the "file"
+		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){paths{stream}}}"}'
+		c("scene query:" & $sQuery)
+
+		; This will query the graphql and get the path info
+		$sResult = Query( $sQuery )
+		If @error  Then Return SetError(1)
+
+		Local $oData = Json_Decode($sResult)
+		If Not IsObj($oResult) Then
+			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+			Return SetError(1)
+		EndIf
+		If Not Json_IsObject($oData) Then
+			MsgBox(0, "Data error.", "The data return from stash has errors.")
+			Return
+		EndIf
+		; Get the scenes file path and play
+		$sFile = Json_ObjGet($oData, "data.findScene.paths.stream")
+		If Not IsString($sFile) Then
+			MsgBox(0, "Data error.", "Error getting the scene stream.")
+			Return SetError(1)
+		EndIf
 	EndIf
-	If Not Json_IsObject($oData) Then
-		MsgBox(0, "Data error.", "The data return from stash has errors.")
-		Return
-	EndIf
-	; Get the scenes file path and play
-	$sFile = Json_ObjGet($oData, "data.findScene.path")
 	Play( $sFile )
+
 EndFunc
 
 Func CloseSession()
@@ -1656,7 +1774,7 @@ Func SetupFirefox()
 			_WD_Option('DriverParams', '--marionette-port 2828')
 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
 	EndSwitch
-	
+
 EndFunc   ;==>SetupGecko
 
 Func GetDefaultFFProfile()
@@ -1699,7 +1817,7 @@ Func SetupChrome()
 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
 		Case "Default"
 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
-	EndSwitch 
+	EndSwitch
 EndFunc   ;==>SetupChrome
 
 Func SetupEdge()
@@ -1724,7 +1842,7 @@ Func SetupEdge()
 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
 		Case "Default"
 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"], "args": ["user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Microsoft\\Edge\\User Data\\", "profile-directory=Default"]}}}}'
-	EndSwitch 
+	EndSwitch
 EndFunc   ;==>SetupEdge
 
 Func BrowserError($code)

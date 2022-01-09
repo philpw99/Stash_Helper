@@ -38,13 +38,21 @@ $choosePrivate = GUICtrlCreateRadio("Private Profile",505,187,174,20,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $chooseDefault = GUICtrlCreateRadio("Default Profile",505,245,184,20,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$showStash = GUICtrlCreateCheckbox("Show Stash Console",168,353,258,34,-1,-1)
+GUICtrlCreateGroup("Stash Type",72,355,277,90,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$radioLocal = GUICtrlCreateRadio("Local",90,400,85,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Stash will run by launching stash-win.exe locally.")
+$radioRemote = GUICtrlCreateRadio("Remote",220,400,116,30,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Stash will run in a remote computer. Stash help will access it by using Stash URL.")
+$showStash = GUICtrlCreateCheckbox("Show Stash Console",391,366,258,34,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
-$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",168,394,304,34,-1,-1)
+$showWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",391,407,304,34,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
-GUICtrlCreateLabel("Stash-win.exe location:",67,436,299,37,-1,-1)
+GUICtrlCreateLabel("Stash-win.exe location:",67,446,299,33,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
 $stashWinLocation = GUICtrlCreateInput("",67,487,473,36,-1,$WS_EX_CLIENTEDGE)
@@ -52,7 +60,7 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 $btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Browse for the stash-win.exe")
-GUICtrlCreateLabel("Stash URL:",69,531,299,37,-1,-1)
+GUICtrlCreateLabel("Stash URL:",69,541,299,33,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
 $stashURLinput = GUICtrlCreateInput("",69,572,473,36,-1,$WS_EX_CLIENTEDGE)
@@ -142,7 +150,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00081FA6]
+[0x003D1FD2]
 type=label
 handle=432
 locked=0
@@ -171,15 +179,15 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FA8]
+[0x00402122]
 type=label
 handle=433
 locked=0
 resize=
 x=67
-y=436
+y=446
 width=299
-height=37
+height=33
 func=
 font=Palatino Linotype
 fontsize=10
@@ -195,12 +203,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=14
+order=17
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FAA]
+[0x006B061C]
 type=input
 handle=434
 locked=0
@@ -224,12 +232,12 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=15
+order=18
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FAC]
+[0x00641D3C]
 type=button
 handle=435
 locked=0
@@ -253,12 +261,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=16
+order=19
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FAE]
+[0x0055065C]
 type=radio
 handle=436
 locked=0
@@ -287,7 +295,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FB0]
+[0x0032213C]
 type=group
 handle=437
 locked=0
@@ -316,7 +324,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FB2]
+[0x00132196]
 type=radio
 handle=438
 locked=0
@@ -345,7 +353,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=3
-[0x00011FB4]
+[0x00071E2E]
 type=radio
 handle=439
 locked=0
@@ -374,7 +382,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x00011FB6]
+[0x00071E30]
 type=button
 handle=440
 locked=0
@@ -398,12 +406,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=33
+order=36
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FB8]
+[0x00071E32]
 type=button
 handle=441
 locked=0
@@ -432,7 +440,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FBA]
+[0x00172044]
 type=button
 handle=442
 locked=0
@@ -461,7 +469,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x00011FBC]
+[0x00071E34]
 type=button
 handle=443
 locked=0
@@ -490,7 +498,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x00011FBE]
+[0x00071E36]
 type=label
 handle=444
 locked=0
@@ -519,13 +527,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FC0]
+[0x00081E38]
 type=checkbox
 handle=445
 locked=0
 resize=
-x=168
-y=353
+x=391
+y=366
 width=258
 height=34
 func=
@@ -543,18 +551,18 @@ style=
 exstyle=
 bgcolour=
 code=
-order=12
+order=15
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FC2]
+[0x00091E3A]
 type=checkbox
 handle=446
 locked=0
 resize=
-x=168
-y=394
+x=391
+y=407
 width=304
 height=34
 func=
@@ -576,8 +584,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=13
-[0x00011FC4]
+order=16
+[0x00081E3C]
 type=label
 handle=447
 locked=0
@@ -605,8 +613,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=19
-[0x00011FC6]
+order=22
+[0x00071E3E]
 type=input
 handle=448
 locked=0
@@ -634,8 +642,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=20
-[0x00011FC8]
+order=23
+[0x000E1E4A]
 type=button
 handle=449
 locked=0
@@ -663,8 +671,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=21
-[0x00011FCA]
+order=24
+[0x00071D44]
 type=input
 handle=450
 locked=0
@@ -692,16 +700,16 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=18
-[0x00011FCC]
+order=21
+[0x00101D42]
 type=label
 handle=451
 locked=0
 resize=
 x=69
-y=531
+y=541
 width=299
-height=37
+height=33
 func=
 font=Palatino Linotype
 fontsize=10
@@ -721,8 +729,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=17
-[0x00011FCE]
+order=20
+[0x000B19AE]
 type=button
 handle=452
 locked=0
@@ -746,12 +754,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=27
+order=30
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FD0]
+[0x000A1E6C]
 type=label
 handle=453
 locked=0
@@ -775,12 +783,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=22
+order=25
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FD2]
+[0x00091D6E]
 type=button
 handle=454
 locked=0
@@ -808,8 +816,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=28
-[0x00011FD4]
+order=31
+[0x00081D5A]
 type=button
 handle=455
 locked=0
@@ -837,8 +845,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=29
-[0x00011FD6]
+order=32
+[0x00091D5C]
 type=button
 handle=456
 locked=0
@@ -866,8 +874,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=30
-[0x00011FD8]
+order=33
+[0x000B1D5E]
 type=button
 handle=457
 locked=0
@@ -895,8 +903,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=31
-[0x00011FDA]
+order=34
+[0x000A1D60]
 type=button
 handle=458
 locked=0
@@ -924,8 +932,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=32
-[0x00011FDC]
+order=35
+[0x000E1E42]
 type=checkbox
 handle=459
 locked=0
@@ -949,12 +957,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=23
+order=26
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FDE]
+[0x00071D66]
 type=label
 handle=460
 locked=0
@@ -978,12 +986,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=24
+order=27
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FE0]
+[0x000F1C90]
 type=input
 handle=461
 locked=0
@@ -1007,12 +1015,12 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=25
+order=28
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00011FE2]
+[0x00101CB2]
 type=label
 handle=462
 locked=0
@@ -1036,14 +1044,14 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=26
+order=29
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000F1FF8]
+[0x00451F06]
 type=radio
-handle=471
+handle=463
 locked=0
 resize=
 x=505
@@ -1070,9 +1078,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00141FF2]
+[0x001E210A]
 type=radio
-handle=472
+handle=464
 locked=0
 resize=
 x=505
@@ -1099,9 +1107,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000F205A]
+[0x00152048]
 type=group
-handle=463
+handle=465
 locked=0
 resize=
 x=487
@@ -1124,6 +1132,93 @@ exstyle=
 bgcolour=
 code=
 order=9
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000521FA]
+type=radio
+handle=466
+locked=0
+resize=
+x=90
+y=400
+width=85
+height=30
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Stash will run by launching stash-win.exe locally.
+bgimage=
+textcolour=0x000000
+id=$radioLocal
+text=Local
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=13
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x003D20F0]
+type=group
+handle=467
+locked=0
+resize=
+x=72
+y=355
+width=277
+height=90
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Stash Type
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=12
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000A1E2C]
+type=radio
+handle=468
+locked=0
+resize=
+x=220
+y=400
+width=116
+height=30
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Stash will run in a remote computer. Stash help will access it by using Stash URL.
+bgimage=
+textcolour=0x000000
+id=$radioRemote
+text=Remote
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=14
 tabpage=-1
 iconindex=
 iconlarge=0

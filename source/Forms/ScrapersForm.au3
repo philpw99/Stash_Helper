@@ -13,6 +13,10 @@ Global $sScraperPath, $aScraperArray[0], $aScraperFiles[0]
 Local $sScraperBaseURL = "https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/scrapers/"
 
 Func ScrapersManager()
+	If $stashType = "Remote" Then 
+		Return MsgBox(0, "Not Supported", "Scrapers manager only works for local Stash. Change it to local in settings.")
+	EndIf
+	
 	$sScraperPath = GetScraperPath()
 	If @error Then Return SetError(1)
 	
