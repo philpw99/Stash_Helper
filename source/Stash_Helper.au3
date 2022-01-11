@@ -1,3 +1,6 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Outfile_type=a3x
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;*****************************************
 ;Stash_Helper.au3 by Philip Wang
 ;Created with ISN AutoIt Studio v. 1.13
@@ -35,7 +38,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.0"
+Global Const $currentVersion = "v2.3.1"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -231,7 +234,7 @@ EndIf
 ; This must run after $stashURL is set
 
 ; Test the StashURL
-$sResult = _INetGetSource($stashURL)
+$sRet = InetRead($stashURL, 3)
 If @error Then
 	$reply = MsgBox(20,"Stash is Not Running","Something is wrong with Stash. It appears to be not running." _
 		 & @CRLF & "Here is the URL:" & @CRLF & $stashURL _

@@ -89,8 +89,10 @@ Func ShowSettings()
 	GUICtrlCreateGroup("Browser Profile",487,120,214,225,$BS_CENTER,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	Global $radioChoosePrivate = GUICtrlCreateRadio("Private Profile",505,187,174,20,-1,-1)
+	GUICtrlSetTip(-1,"Stash will run in the browser with a private profile. Your browser's history will be safe.")
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",505,245,184,20,-1,-1)
+	GUICtrlSetTip(-1,"Stash will run in the browser's default user profile. Your bookmarks and add-ons will be available.")
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
 	; Stash type choosing radios
@@ -109,12 +111,14 @@ Func ShowSettings()
 	GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetTip(-1,"When send a images list to the media player, how many seconds between each picture? Some players will ignore this." )
 	Local $inputSlideShow = GUICtrlCreateInput(string($iSlideShowSeconds),592,747,60,32,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetTip(-1,"In the m3u for images sent to the media player, how many seconds delay between each picture?" )
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
-	
+
 	Global $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",391,366,258,34,-1,-1)
 	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
@@ -143,7 +147,7 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
 
-	GUICtrlCreateLabel("Alternative player location:",68,630,407,37,-1,-1)
+	GUICtrlCreateLabel("Alternative player location:",68,635,407,37,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
@@ -179,9 +183,9 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
 
-	Local $btnPlayerKMP = GUICtrlCreateButton("KMP",340,842,133,40,-1,-1)
+	Local $btnPlayerDeo = GUICtrlCreateButton("DeoVR",340,842,133,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
+	GUICtrlSetTip(-1,"DeoVR the easy and free VR video player. Default SteamVR location.")
 
 	Local $chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
 	If @OSArch = "X64" Then
@@ -393,12 +397,9 @@ Func ShowSettings()
 					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\Kodi\Kodi.exe")
 				EndIf 
 
-			Case $btnPlayerKMP
-				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
-					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\the kmplayer\kmplayer.exe")
-				Else 
-					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\the kmplayer\kmplayer.exe")
-				EndIf 
+			Case $btnPlayerDeo
+				; For SteamVR
+				GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\Steam\steamapps\common\DeoVR Video Player\DeoVR.exe")
 
 			Case $GUI_EVENT_CLOSE
 				ExitLoop
