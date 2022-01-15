@@ -3,7 +3,7 @@ Func ManagePlayList()
 	
 	Global $guiManagePlayList = GUICreate("Manage Play List",1034,1037,-1,-1,$WS_SIZEBOX,-1)
 	Global $lvPlayList = GUICtrlCreatelistview("#|Title|Duration|File/Path",30,60,959,864,-1,$WS_EX_CLIENTEDGE + $LVS_EX_FULLROWSELECT + $LVS_EX_GRIDLINES)
-	_GUICtrlListView_SetTextBkColor($lvPlayList, $CLR_CREAM )
+	_GUICtrlListView_SetTextBkColor($lvPlayList, 0xF0FBFF )
 	GUICtrlSetResizing(-1,102)
 	_GUICtrlListView_SetColumnWidth($lvPlayList, 0, 40)	 	; #
 	_GUICtrlListView_SetColumnWidth($lvPlayList, 1, 300)	; Title

@@ -1,5 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Outfile_type=a3x
+#AutoIt3Wrapper_Outfile=C:\Users\Philip\Documents\GitHub\Stash_Helper\source\Stash_Helper.a3x
+#AutoIt3Wrapper_UseX64=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;*****************************************
 ;Stash_Helper.au3 by Philip Wang
@@ -38,7 +40,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.1"
+Global Const $currentVersion = "v2.3.2"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -723,9 +725,7 @@ Func InitCSSArray(ByRef $a)
 		".wall-item:hover .wall-item-container {transform: none;} " & @LF _
 		& ".wall-item:before { opacity: 0 !important;}" )
 
-	AddCSStoArray($a, "Scene - Hide the Scene Scrubber", _
-		".scrubber-wrapper { display: none;}" & @LF _
-		& "#jwplayer-container > div:first-child { height: 100%;}" )
+	AddCSStoArray($a, "Scene - Hide the Scene Scrubber", ".scrubber-wrapper { display: none;}" )
 
 	AddCSStoArray($a, "Performer - Show Entire Performer's Image", ".performer.image { background-size: contain !important;}" )
 
@@ -1432,7 +1432,9 @@ Func AddMovieToList($sID)
 		If $stashType = "Local" Then
 			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))
 		ElseIf $stashType = "Remote" Then
-			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream")
+			$sPath = $oSceneData.Item("path")
+			$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream") & $sExt
 		EndIf
 	Next
 	Return $iCount
@@ -1461,7 +1463,9 @@ Func AddSceneToList($sID)
 	If $stashType = "Local" Then
 		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
 	ElseIf $stashType = "Remote" Then
-		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("stream")
+		$sPath = $oData.Item("path")
+		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("stream") & $sExt
 	EndIf
 	Return 1  ; Once scene added to the list
 EndFunc
@@ -1594,8 +1598,11 @@ Func PlayMovieInCurrentTab($nMovie)
 				; Play the local file
 				Play( $aScenes[0].Item("path") )
 			ElseIf $stashType = "Remote" Then
-				; Play the stream.
-				Play( $aScenes[0].Item("paths").Item("stream") )
+				; Add the stream its extension
+				$sPath = $aScenes[0].Item("path")
+				$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+				; Play the stream with extension
+				Play( $aScenes[0].Item("paths").Item("stream") & $sExt )
 			EndIf
 		Case Else
 			; write a temp m3u file
@@ -1612,7 +1619,9 @@ Func PlayMovieInCurrentTab($nMovie)
 				If $stashType = "Local" Then
 					FileWriteLine($hFile, $aScenes[$i].Item("path") )
 				Elseif $stashType ="Remote" Then
-					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") )
+					$sPath = $aScenes[$i].Item("path")
+					$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") & $sExt )
 				EndIf
 			Next
 			FileClose($hFile)
@@ -1630,7 +1639,7 @@ Func Play($sFile)
 	ElseIf $stashType = "Remote" Then
 		$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), "", $SHEX_OPEN)
 	EndIf
-	If $iMediaPlayerPID = -1 Then $iMediaPlayerPID = 0
+	If $iMediaPlayerPID = -1 Then $iMediaPlayerPID = 0  ; error getting pid
 EndFunc
 
 Func QueryResultError($sResult)
@@ -1718,7 +1727,7 @@ Func PlayCurrentScene()
 		EndIf
 	ElseIf $stashType = "Remote" Then
 		; Get the scene's stream as the "file"
-		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){paths{stream}}}"}'
+		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path, paths{stream}}}"}'
 		c("scene query:" & $sQuery)
 
 		; This will query the graphql and get the path info
@@ -1740,6 +1749,15 @@ Func PlayCurrentScene()
 			MsgBox(0, "Data error.", "Error getting the scene stream.")
 			Return SetError(1)
 		EndIf
+		; Get the full file name
+		$sPath =  Json_ObjGet($oData, "data.findScene.path")
+		If Not IsString($sPath) Then
+			MsgBox(0, "Data error.", "Error getting the scene path.")
+			Return SetError(1)
+		EndIf 
+		; Get the ".mp4" or ".mkv"
+		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+		$sFile &= $sExt
 	EndIf
 	Play( $sFile )
 
