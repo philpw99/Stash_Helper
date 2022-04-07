@@ -40,7 +40,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.2"
+Global Const $currentVersion = "v2.3.3"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -282,7 +282,7 @@ If Not @error Then
 				Local $sLatestVersionURL = $oLatestVersion.Item("url")
 				Local $sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
 				; c( "Latest Version Hash:" & $sLatestVersionHash & " VersionHash:" & $stashVersionHash & " latestVersionURL:" & $sLatestVersionURL)
-				If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash Then
+				If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash And $stashType = "Local" Then
 					; A new version is waiting.
 					Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
 					; c ("Latest Version:" & $sLatestVersionURL)
@@ -356,53 +356,58 @@ Global $trayMenuBookmark = TrayCreateItem("Bookmark    Ctrl-Alt-B") ; 10
 _TrayMenuAddImage($hIcons[17], 10)
 TrayCreateItem("")										; 11
 
-Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;12
+;~ Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;12
+;~ ; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
+;~ _TrayMenuAddImage($hIcons[12], 12)
+;~ Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;13
+;~ ; GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
+;~ _TrayMenuAddImage($hIcons[13], 13)
+
+;~ Global $trayPlayImages = TrayCreateItem("Play Current Gallery/Images"); 14
+;~ _TrayMenuAddImage($hIcons[20], 14)
+
+Global $trayPlayTab = TrayCreateItem("Play Current Scene/Movie/Images/Gallery  Alt-P") ;12
 ; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[12], 12)
-Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;13
-; GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
-_TrayMenuAddImage($hIcons[13], 13)
 
-Global $trayPlayImages = TrayCreateItem("Play Current Gallery/Images"); 14
-_TrayMenuAddImage($hIcons[20], 14)
 
-Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 15
+Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 13
 ; GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
-_TrayMenuAddImage($hIcons[8], 15)
+_TrayMenuAddImage($hIcons[8], 13)
 
-Global $trayScan = TrayCreateItem("Scan New Files") 	; 16
-_TrayMenuAddImage($hIcons[14], 16)
+Global $trayScan = TrayCreateItem("Scan New Files") 	; 14
+_TrayMenuAddImage($hIcons[14], 14)
 ; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
 
-Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 17
-_TrayMenuAddImage($hIcons[15], 17)
+Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 15
+_TrayMenuAddImage($hIcons[15], 15)
 ; GUICtrlSetTip(-1,"Create a movie from current scene.")
 
-Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 18
-_TrayMenuAddImage($hIcons[18], 18)
+Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 16
+_TrayMenuAddImage($hIcons[18], 16)
 
-Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 19
-_TrayMenuAddImage($hIcons[19], 19)
+Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 17
+_TrayMenuAddImage($hIcons[19], 17)
 Global $aCSSItems[0][4]
 ; Enums for the array row.
 Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 ; Create the css menu with a function.
 CreateCSSMenu()
 
-Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 20
-_TrayMenuAddImage($hIcons[16], 20)
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 18
+_TrayMenuAddImage($hIcons[16], 18)
 Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List         Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
-TrayCreateItem("")										; 21
-Global $traySettings = TrayCreateItem("Settings")		; 22
-_TrayMenuAddImage($hIcons[9], 22)
-Global $trayAbout = TrayCreateItem("About")				; 23
-_TrayMenuAddImage($hIcons[10], 23)
-Global $trayExit = TrayCreateItem("Exit")				; 24
-_TrayMenuAddImage($hIcons[11], 24)
+TrayCreateItem("")										; 19
+Global $traySettings = TrayCreateItem("Settings")		; 20
+_TrayMenuAddImage($hIcons[9], 20)
+Global $trayAbout = TrayCreateItem("About")				; 21
+_TrayMenuAddImage($hIcons[10], 21)
+Global $trayExit = TrayCreateItem("Exit")				; 22
+_TrayMenuAddImage($hIcons[11], 22)
 
 ; Sub menu items for tools
 
@@ -494,6 +499,8 @@ HotKeySet("^!p", "SendPlayerList")
 ; Ctrl+Alt+B to bookmark the current browser tab.
 HotKeySet("^!b", "BookmarkCurrentTab")
 HotKeySet("^!o", "OpenMediaFolder")
+; Alt+P to play the media in the current tab.
+HotKeySet("!p", "PlayCurrentTab")
 
 ; Looping to get message
 While True
@@ -525,12 +532,14 @@ While True
 			CustomList("Studios", $trayStudioLinks)
 		Case $customTags
 			CustomList("Tags", $trayTagLinks)
-		Case $trayPlayScene
-			PlayScene()
-		Case $trayPlayMovie
-			PlayMovie()
-		Case $trayPlayImages
-			CurrentImagesViewer()
+;~ 		Case $trayPlayScene
+;~ 			PlayScene()
+;~ 		Case $trayPlayMovie
+;~ 			PlayMovie()
+;~ 		Case $trayPlayImages
+;~ 			CurrentImagesViewer()
+ 		Case $trayPlayTab
+ 			PlayCurrentTab()
 		Case $trayScan
 			ScanFiles()
 		Case $trayMovie2Scene
@@ -1432,10 +1441,12 @@ Func AddMovieToList($sID)
 		If $stashType = "Local" Then
 			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))
 		ElseIf $stashType = "Remote" Then
-			$sPath = $oSceneData.Item("path")
-			$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream") & $sExt
-		EndIf
+			; disable for now. stash has very poor performance after adding extension
+;~ 			$sPath = $oSceneData.Item("path")
+;~ 			$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+;~ 			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream") & $sExt
+			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream")
+ 		EndIf
 	Next
 	Return $iCount
 EndFunc
@@ -1463,9 +1474,10 @@ Func AddSceneToList($sID)
 	If $stashType = "Local" Then
 		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
 	ElseIf $stashType = "Remote" Then
-		$sPath = $oData.Item("path")
-		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("stream") & $sExt
+;~ 		$sPath = $oData.Item("path")
+;~ 		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+;~ 		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("stream") & $sExt
+		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("stream")
 	EndIf
 	Return 1  ; Once scene added to the list
 EndFunc
@@ -1599,10 +1611,11 @@ Func PlayMovieInCurrentTab($nMovie)
 				Play( $aScenes[0].Item("path") )
 			ElseIf $stashType = "Remote" Then
 				; Add the stream its extension
-				$sPath = $aScenes[0].Item("path")
-				$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-				; Play the stream with extension
-				Play( $aScenes[0].Item("paths").Item("stream") & $sExt )
+;~ 				$sPath = $aScenes[0].Item("path")
+;~ 				$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+;~ 				; Play the stream with extension
+;~ 				Play( $aScenes[0].Item("paths").Item("stream") & $sExt )
+				Play( $aScenes[0].Item("paths").Item("stream") )
 			EndIf
 		Case Else
 			; write a temp m3u file
@@ -1619,9 +1632,10 @@ Func PlayMovieInCurrentTab($nMovie)
 				If $stashType = "Local" Then
 					FileWriteLine($hFile, $aScenes[$i].Item("path") )
 				Elseif $stashType ="Remote" Then
-					$sPath = $aScenes[$i].Item("path")
-					$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") & $sExt )
+;~ 					$sPath = $aScenes[$i].Item("path")
+;~ 					$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+;~ 					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") & $sExt )
+					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") )
 				EndIf
 			Next
 			FileClose($hFile)
@@ -1695,11 +1709,32 @@ Func PlayScene()
 	PlayCurrentScene()
 EndFunc
 
+Func PlayCurrentTab()
+	; Play the current tab's media. Can be scene/movie/galery
+	Local $sURL = GetURL()
+	If @error Then  Return SetError(1)
+
+	If StringInStr($sURL, "/scenes/") Then
+		PlayCurrentScene()
+	ElseIf StringInStr($sURL, "/movies/") Then
+		Local $nMovie = GetNumber($sURL, "movies")
+		PlayMovieInCurrentTab($nMovie)
+	ElseIf StringInStr($sURL, "/images") Or StringInStr($sURL, "/galleries/") Then
+		CurrentImagesViewer()
+	Else
+		MsgBox(0, "Not support", "Sorry, this operation only supports current movie/scene/images/gallery.")
+	EndIf
+
+EndFunc
+
+
 Func PlayCurrentScene()
 	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
 	Local $aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
+	If @error Then Return SetError(@error)
+
 	c("scene id:" & $aMatch[0])
 
 	If $stashType = "Local" Then
@@ -1750,14 +1785,14 @@ Func PlayCurrentScene()
 			Return SetError(1)
 		EndIf
 		; Get the full file name
-		$sPath =  Json_ObjGet($oData, "data.findScene.path")
-		If Not IsString($sPath) Then
-			MsgBox(0, "Data error.", "Error getting the scene path.")
-			Return SetError(1)
-		EndIf 
-		; Get the ".mp4" or ".mkv"
-		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-		$sFile &= $sExt
+;~ 		$sPath =  Json_ObjGet($oData, "data.findScene.path")
+;~ 		If Not IsString($sPath) Then
+;~ 			MsgBox(0, "Data error.", "Error getting the scene path.")
+;~ 			Return SetError(1)
+;~ 		EndIf
+;~ 		; Get the ".mp4" or ".mkv", disable for huge performance impact on stash
+;~ 		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
+;~ 		$sFile &= $sExt
 	EndIf
 	Play( $sFile )
 
