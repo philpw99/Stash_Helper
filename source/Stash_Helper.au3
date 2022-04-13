@@ -40,7 +40,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.3"
+Global Const $currentVersion = "v2.3.4"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -79,6 +79,18 @@ If $stashURL = "" Or $stashType = "" Then
 	; First time run this program. Need to set the settings.
 	InitialSettingsForm()
 EndIf
+
+; Now crack the StashURL for host and port.
+
+Global $aStashURL =  _WinHttpCrackUrl($stashURL)
+;                  |$array[0] - scheme name
+;                  |$array[1] - internet protocol scheme
+;                  |$array[2] - host name
+;                  |$array[3] - port number
+;                  |$array[4] - user name
+;                  |$array[5] - password
+;                  |$array[6] - URL path  Note: relative path. Default is "/"
+;                  |$array[7] - extra information
 
 ; Have to decleare the following, otherwise the setting form will fail.
 Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
@@ -326,8 +338,6 @@ Else
 	; Error getting version
 	c("Version result:" & $sResult)
 EndIf
-
-
 
 If $stashVersion <> "" Then
 	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
@@ -781,9 +791,11 @@ Func InitCSSArray(ByRef $a)
 		& ".scene-card-video {filter: blur(13px);}" & @LF _
 		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
 		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }" )
+	
+	
 
 	$sCSS = GetCSSstring()
-	If @error Then Return SetError(1)
+	If @error Then Return SetError(2)
 
 	; Use /* Start:$a[xx][0] */ as the starting point
 	; /* End:$a[xx][0] */ as the ending point
@@ -796,13 +808,14 @@ EndFunc
 
 Func GetCSSstring()
 	; It will read the custom.css from graphql
+	
 	Local $sQuery = '{configuration{interface{css}}}'
-	local $sResult = Query2($sQuery)
+	local $sResult = Query2($sQuery, True )  ; Surpress error messages.
 	If @error Then Return SetError(1)
 
 	Local $oCSS = Json_Decode($sResult)
 	If Not IsObj($oCSS) Then
-		MsgBox(0, "Error in CSS", "Error getting CSS string from settings.")
+		; MsgBox(0, "Error in CSS", "Error getting CSS string from settings.")
 		Return SetError(1)
 	EndIf
 
@@ -1033,6 +1046,30 @@ Func GetURL()
 			$sResult = _WD_Action($sSession, "url")
 	EndSwitch
 	Return _URLDecode($sResult)
+EndFunc
+
+Func GetTitle()
+	Local $aHandles =  _WD_Window($sSession, 'Handles')
+	Switch  UBound($aHandles)
+		case 0
+			; No wd windows opened.
+			MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
+			Return SetError(1)
+		case 1
+			Local $sResult = _WD_Action($sSession, "title")
+			If @error <> $_WD_ERROR_Success Then
+				; Set the last tab as the current browser tab
+				Local $sHandle =  $aHandles[UBound($aHandles)-1]
+				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
+				$sResult = _WD_Action($sSession, "title")
+			EndIf
+		case Else
+			; Multi-tab situation. No good solution here.
+			Local $sHandle =  $aHandles[0]
+			_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
+			$sResult = _WD_Action($sSession, "title")
+	EndSwitch
+	Return $sResult
 EndFunc
 
 Func BookmarkCurrentTab()
@@ -1661,22 +1698,20 @@ Func QueryResultError($sResult)
 	Return StringLeft($sResult,10) = '{"errors":'
 EndFunc
 
-Func Query2($sQuery)
+Func Query2($sQuery, $bIgnoreError = False )
 	; This one will wrap the {"query":" "} around $sQuery. Easier to program.
 	c("QueryString:" & '{"query":"'& $sQuery& '"}')
-	$sResult = Query('{"query":"'& $sQuery& '"}')
+	$sResult = Query('{"query":"'& $sQuery& '"}', $bIgnoreError)
 	If @error Then Return SetError(1, 0, $sResult)
 	Return $sResult
 EndFunc
 
-Func Query($sQuery)
+Func Query($sQuery, $bIgnoreError = False )
 	; Use Stash's graphql to get results or do something
 	Local $hOpen = _WinHttpOpen()
-	Local $aMatch = StringRegExp( $stashURL, "http:\/\/(.+):(\d+)",1)
-	; c("match[0]:" & $aMatch[0] & " match1:" & $aMatch[1])
-	Local $hConnect = _WinHttpConnect($hOpen, $aMatch[0], Int($aMatch[1]))
+	Local $hConnect = _WinHttpConnect($hOpen, $aStashURL[2], $aStashURL[3])
 	If $hConnect = 0 Then
-		MsgBox(0, "error connect",  "error connecting to stash server.")
+		If Not $bIgnoreError Then MsgBox(0, "error connect",  "error connecting to stash server.")
 		; Close handles
 		_WinHttpCloseHandle($hOpen)
 		Return SetError(1)
@@ -1688,10 +1723,10 @@ Func Query($sQuery)
 	_WinHttpCloseHandle($hConnect)
 	_WinHttpCloseHandle($hOpen)
 	If @error Then
-		MsgBox(0, "got data error",  "Error getting data from the stash server.")
+		If Not $bIgnoreError Then MsgBox(0, "got data error",  "Error getting data from the stash server.")
 		Return SetError(1)
 	ElseIf QueryResultError($result) Then
-		MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
+		If Not $bIgnoreError Then MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
 		Return SetError(1)
 	EndIf
 	Return $result
