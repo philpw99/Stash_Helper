@@ -791,8 +791,8 @@ Func InitCSSArray(ByRef $a)
 		& ".scene-card-video {filter: blur(13px);}" & @LF _
 		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
 		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }" )
-	
-	
+
+
 
 	$sCSS = GetCSSstring()
 	If @error Then Return SetError(2)
@@ -808,7 +808,7 @@ EndFunc
 
 Func GetCSSstring()
 	; It will read the custom.css from graphql
-	
+
 	Local $sQuery = '{configuration{interface{css}}}'
 	local $sResult = Query2($sQuery, True )  ; Surpress error messages.
 	If @error Then Return SetError(1)
@@ -1716,7 +1716,9 @@ Func Query($sQuery, $bIgnoreError = False )
 		_WinHttpCloseHandle($hOpen)
 		Return SetError(1)
 	EndIf
-	Local $result = _WinHttpSimpleRequest($hConnect, "POST", "/graphql", Default, _
+	Local $sPath = $aStashURL[6]	; Get the start relative path
+	If StringRight($sPath,1) = "/" Then $sPath = StringTrimRight($sPath,1)	; Remove the right slash
+	Local $result = _WinHttpSimpleRequest($hConnect, "POST", $sPath & "/graphql", Default, _
 		$sQuery, "Content-Type: application/json" )
 	; c("result:" & $result)
 	; Close handles
