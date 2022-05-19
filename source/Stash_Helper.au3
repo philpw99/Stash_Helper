@@ -40,7 +40,8 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.4"
+Global Const $currentVersion = "v2.3.5"
+Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -70,8 +71,8 @@ Opt("TrayAutoPause", 0)  ; No pause in tray
 Global $sProgramFilesDir = ( @OSArch = "X64" ) ? StringReplace(@ProgramFilesDir, " (x86)", "", 1, 2) : @ProgramFilesDir
 
 ; Either "Local" or "Remote"
-Global $stashType = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashType")
-Global $stashURL = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL")
+Global $stashType = RegRead($gsRegBase, "StashType")
+Global $stashURL = RegRead($gsRegBase, "StashURL")
 
 #include <Forms\InitialSettingsForm.au3>
 
@@ -93,10 +94,10 @@ Global $aStashURL =  _WinHttpCrackUrl($stashURL)
 ;                  |$array[7] - extra information
 
 ; Have to decleare the following, otherwise the setting form will fail.
-Global $stashFilePath = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath")
+Global $stashFilePath = RegRead($gsRegBase, "StashFilePath")
 Global $stashPath = stringleft($stashFilePath, StringInStr($stashFilePath, "\", 2, -1))
 ; Show the local stash console or not
-Global $showStashConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole")
+Global $showStashConsole = RegRead($gsRegBase, "ShowStashConsole")
 If @error Then $showStashConsole = 0
 ; For v0.11 and above. Disable the browser from autostart
 Global $sNoBrowser = ""
@@ -125,23 +126,23 @@ If $stashType = "Local" Then
 EndIf
 
 ; Get the browser type and profile type
-Global $stashBrowser = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser")
-Global $stashBrowserProfile = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "BrowserProfile")
+Global $stashBrowser = RegRead($gsRegBase, "Browser")
+Global $stashBrowserProfile = RegRead($gsRegBase, "BrowserProfile")
 If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
 
 ; show the webdriver console or not
-Global $showWDConsole = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole")
+Global $showWDConsole = RegRead($gsRegBase, "ShowWDConsole")
 if @error Then $showWDConsole = 0
 
 Global $sDesiredCapabilities, $sSession
 Global $stashVersion, $stashURL
-Global $sMediaPlayerLocation = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation")
+Global $sMediaPlayerLocation = RegRead($gsRegBase, "MediaPlayerLocation")
 
-Global $iSlideShowSeconds = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds")
+Global $iSlideShowSeconds = RegRead($gsRegBase, "SlideShowSeconds")
 
 if @error Then
 	$iSlideShowSeconds = 10
-	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "SlideShowSeconds", "REG_DWORD", 10)
+	RegWrite($gsRegBase, "SlideShowSeconds", "REG_DWORD", 10)
 EndIf
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
@@ -170,45 +171,18 @@ If $stashURL = "" Then
 	If $stashType = "Remote" Then
 		; Shouldn't be in this situation. Reset.
 		MsgBox(0, "Error in settings", "Invalid Stash URL, have to reset the settings. Restart and set it again.")
-		RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", "")
+		RegWrite($gsRegBase, "StashURL", "REG_SZ", "http://localhost:9999")
+		RegWrite($gsRegBase, "StashType", "REG_SZ", "Local")
 		Exit
 	EndIf
 	; Never have $stashURL before. Run it for the first time.
+	$stashURL = "http://localhost:9999/"
+	RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
+	RegWrite($gsRegBase, "StashType", "REG_SZ", "Local")
 	$iStashPID = ProcessExists("stash-win.exe")
 	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
 	; Run it for the first time. Merged.
 	$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE, $STDERR_MERGED)
-	Local $hTimer = TimerInit()
-	While True
-		Local $sLine = StdoutRead($iStashPID)
-		If @error Then
-			; Stash App is closed.
-			Exit
-		EndIf
-		If $sLine <> "" Then
-			c("*" & $sLine)
-		EndIf
-		Select
-			Case StringInStr($sLine, "stash version:", 2)
-				$stashVersion = StringMid($sLine, StringInStr($sLine, "stash version:", 2))
-				$stashVersion = StringStripWS($stashVersion, $STR_STRIPTRAILING)
-			Case StringInStr($sLine, "stash is running at ")
-				Local $iPos1 = StringInStr($sLine, "http", 2)
-				Local $iPos2 = StringInStr($sLine, " ", 2, 1, $iPos1 + 7)  ; Use space as the end.
-				$stashURL = StringMid($sLine, $iPos1, $iPos2 -$iPos1)
-				$stashURL = StringStripWS($stashURL, $STR_STRIPTRAILING)
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
-				ExitLoop
-		EndSelect
-		; 10 seconds max for this loop
-		If TimerDiff($hTimer)> 10000 Then
-			; Something is wrong.
-			MsgBox(48,"Error launching StashApp", _
-				"It takes too long to get StashApp ready. Something is wrong. Exiting.",20)
-			Exit
-		EndIf
-		Sleep(100)
-	Wend
 Else
 	; StashURL already saved. Launch it only when it's local.
 	If $stashType = "Local" Then
@@ -257,7 +231,7 @@ If @error Then
 		case 6 ;YES
 			$stashURL = InputBox("Stash URL Manual input", "Please type the stash URL below", $stashURL)
 			If Not @error Then
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+				RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
 				MsgBox(0, "Setting written", "Setting is saved. You need to restart Stash Helper.")
 			EndIf
 			ExitScript()
@@ -292,7 +266,7 @@ If Not @error Then
 				Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
 				Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
 				Local $sLatestVersionURL = $oLatestVersion.Item("url")
-				Local $sIgnoreHash = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash")
+				Local $sIgnoreHash = RegRead($gsRegBase, "IgnoreHash")
 				; c( "Latest Version Hash:" & $sLatestVersionHash & " VersionHash:" & $stashVersionHash & " latestVersionURL:" & $sLatestVersionURL)
 				If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash And $stashType = "Local" Then
 					; A new version is waiting.
@@ -326,7 +300,7 @@ If Not @error Then
 									EndIf
 								EndIf
 							case 7 ;NO, ignore.
-								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "IgnoreHash", "REG_SZ", $sLatestVersionHash)
+								RegWrite($gsRegBase, "IgnoreHash", "REG_SZ", $sLatestVersionHash)
 							case 2 ;CANCEL
 						endswitch
 					EndIf
@@ -450,7 +424,24 @@ StartBrowser()
 Sleep(500)
 
 Global $iConsolePID = _WD_Startup()
-If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+If @error <> $_WD_ERROR_Success Then
+		MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
+			& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
+		_WD_Shutdown()
+		; Not fit, need to update the driver and try it once again.
+		Local $b64 = ( @CPUArch = "X64" )
+		Switch $stashBrowser
+			Case "Firefox"
+				$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
+			Case "Chrome"
+				$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
+			Case "Edge"
+				$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		EndSwitch
+		
+	$iConsolePID = _WD_Startup()
+	if @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
+EndIf
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then
@@ -470,13 +461,13 @@ If @error <> $_WD_ERROR_Success Then
 		EndSwitch
 
 		StartBrowser()
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
 
 		_WD_Startup()
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
 
 	EndIf
 EndIf
@@ -1170,7 +1161,7 @@ Func SaveMenuItems($sCategory, ByRef $aArray)
 	For $i = 1 to $iMaxSubItems-1
 		$str &= "@@@" & String($i+1) & "|" & $aArray[$i][$ITEM_TITLE] & "|" & $aArray[$i][$ITEM_LINK]
 	Next
-	RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", $sCat & "List", "REG_SZ", $str)
+	RegWrite($gsRegBase, $sCat & "List", "REG_SZ", $str)
 EndFunc
 
 Func AddBookmarkToArray($sTitle, $sLink, ByRef $aArray )
@@ -1560,7 +1551,7 @@ EndFunc
 Func ScanFiles()
 	; Scan new files in Stash
 	Query('{"query": "mutation { metadataScan ( input: { useFileMetadata: true } ) } "}')
-	OpenURL("http://localhost:9999/settings?tab=tasks")
+	OpenURL( $stashURL & "settings?tab=tasks" )
 	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.", 10)
 EndFunc
 
@@ -1938,9 +1929,9 @@ Func SetupEdge()
 	EndSwitch
 EndFunc   ;==>SetupEdge
 
-Func BrowserError($code)
+Func BrowserError($code, $sLine)
 	MsgBox(48,"Oops !","Something wrong with the browser's driver. Cannot continue." _
-		 & @CRLF & "WinHTTP status code:" & $code,0)
+		 & @CRLF & "WinHTTP status code:" & $code & @CRLF & "Script Line:" & $sLine)
 	If $sSession Then _WD_DeleteSession($sSession)
 	_WD_Shutdown()
 	ExitScript()
@@ -1975,7 +1966,7 @@ Func CreateSubMenu()
 	; Load the data from Registry
 
 	; Scene data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ScenesList")
+	Local $sData = RegRead($gsRegBase, "ScenesList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($traySceneLinks,0, 0, "All Scenes", $stashURL & "scenes")
@@ -1986,7 +1977,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Image data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "ImagesList")
+	Local $sData = RegRead($gsRegBase, "ImagesList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayImageLinks,0, 0, "All Images", $stashURL & "images")
@@ -1995,7 +1986,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Movie data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MoviesList")
+	Local $sData = RegRead($gsRegBase, "MoviesList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayMovieLinks,0 , 0, "All Movies", $stashURL & "movies")
@@ -2004,7 +1995,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Marker data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "MarkersList")
+	Local $sData = RegRead($gsRegBase, "MarkersList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayMarkerLinks,0, 0, "All Markers", $stashURL & "markers")
@@ -2013,7 +2004,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Gallery data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "GalleriesList")
+	Local $sData = RegRead($gsRegBase, "GalleriesList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayGalleryLinks,0, 0, "All Galleries", $stashURL & "galleries")
@@ -2022,7 +2013,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Performer data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "PerformersList")
+	Local $sData = RegRead($gsRegBase, "PerformersList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayPerformerLinks,0, 0, "All Performers", $stashURL & "performers")
@@ -2031,7 +2022,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Studio data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "StudiosList")
+	Local $sData = RegRead($gsRegBase, "StudiosList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayStudioLinks,0, 0, "All Studios", $stashURL & "studios")
@@ -2040,7 +2031,7 @@ Func CreateSubMenu()
 	EndIf
 
 	; Tag data
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", "TagsList")
+	Local $sData = RegRead($gsRegBase, "TagsList")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($trayTagLinks,0, 0, "All Tags", $stashURL & "tags")
@@ -2171,7 +2162,7 @@ Func ReloadSubMenu($sCategory, ByRef $aArray)
 		EndIf
 	Next
 	; Load data from registry.
-	Local $sData = RegRead("HKEY_CURRENT_USER\Software\Stash_Helper", $sCat & "List")
+	Local $sData = RegRead($gsRegBase, $sCat & "List")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($aArray,0, 0, "All " & $sCat, $stashURL & $sCategory)

@@ -131,15 +131,17 @@ Func InitialSettingsForm()
 						_GUICtrlTab_SetCurFocus($tab, 2)
 					Case 2 ; Tab Launch
 						If $bPathReady And $bBrowserReady Then
-							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashType", "REG_SZ", $stashType)
+							RegWrite($gsRegBase, "StashType", "REG_SZ", $stashType)
 							If $stashType = "Local" Then 
-								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", $stashFilePath)
-							Else
+								RegWrite($gsRegBase, "StashFilePath", "REG_SZ", $stashFilePath)
+								$stashURL = "http://localhost:9999/"
+								RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
+							Else; Remote
 								If StringRight($stashURL, 1) <> "/" Then $stashURL &= "/"
-								RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+								RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
 							EndIf
 							; Set the browser choice
-							RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
+							RegWrite($gsRegBase, "Browser", "REG_SZ", $sBrowser)
 							$bSettingDone = True
 
 							ExitLoop 
