@@ -8,7 +8,7 @@
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 $Settings = GUICreate("Settings",800,940,-1,-1,-1,-1)
-GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,20,566,96,-1,-1)
+GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",98,22,190,24,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
 GUICtrlCreateGroup("Preferred Browser",97,116,359,229,$BS_CENTER,-1)
@@ -110,6 +110,8 @@ GUICtrlSetTip(-1,"K-Multimedia Player from Pandora TV.")
 $btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Save the settings.")
+GUICtrlCreateCheckbox("Enable",301,22,92,20,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 
 
 
@@ -150,15 +152,15 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x003D1FD2]
+[0x0009248C]
 type=label
-handle=432
+handle=433
 locked=0
 resize=
-x=100
-y=20
-width=566
-height=96
+x=98
+y=22
+width=190
+height=24
 func=
 font=Palatino Linotype
 fontsize=10
@@ -168,7 +170,7 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=
-text=Boss Coming Key: Ctrl + Enter[BREAK]Hit this key combination will immediately close the Stash browser.
+text=Boss Coming Key: Ctrl + Enter
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -179,9 +181,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00402122]
+[0x0002248A]
 type=label
-handle=433
+handle=434
 locked=0
 resize=
 x=67
@@ -208,9 +210,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x006B061C]
+[0x00022488]
 type=input
-handle=434
+handle=435
 locked=0
 resize=
 x=67
@@ -237,9 +239,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00641D3C]
+[0x00022486]
 type=button
-handle=435
+handle=436
 locked=0
 resize=
 x=566
@@ -266,9 +268,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0055065C]
+[0x00022484]
 type=radio
-handle=436
+handle=437
 locked=0
 resize=
 x=126
@@ -295,9 +297,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0032213C]
+[0x00022482]
 type=group
-handle=437
+handle=438
 locked=0
 resize=
 x=97
@@ -324,9 +326,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00132196]
+[0x00022480]
 type=radio
-handle=438
+handle=439
 locked=0
 resize=
 x=126
@@ -353,9 +355,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=3
-[0x00071E2E]
+[0x0002247E]
 type=radio
-handle=439
+handle=440
 locked=0
 resize=
 x=126
@@ -382,9 +384,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x00071E30]
+[0x0002247C]
 type=button
-handle=440
+handle=441
 locked=0
 resize=
 x=541
@@ -411,9 +413,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00071E32]
+[0x0002247A]
 type=button
-handle=441
+handle=442
 locked=0
 resize=
 x=317
@@ -440,9 +442,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00172044]
+[0x00022478]
 type=button
-handle=442
+handle=443
 locked=0
 resize=
 x=317
@@ -469,9 +471,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x00071E34]
+[0x00022476]
 type=button
-handle=443
+handle=444
 locked=0
 resize=
 x=317
@@ -498,9 +500,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x00071E36]
+[0x00022474]
 type=label
-handle=444
+handle=445
 locked=0
 resize=802
 x=329
@@ -527,9 +529,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00081E38]
+[0x00022472]
 type=checkbox
-handle=445
+handle=446
 locked=0
 resize=
 x=391
@@ -556,9 +558,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00091E3A]
+[0x0002246A]
 type=checkbox
-handle=446
+handle=447
 locked=0
 resize=
 x=391
@@ -585,9 +587,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=16
-[0x00081E3C]
+[0x00022468]
 type=label
-handle=447
+handle=448
 locked=0
 resize=
 x=71
@@ -614,9 +616,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=22
-[0x00071E3E]
+[0x00022466]
 type=input
-handle=448
+handle=449
 locked=0
 resize=
 x=71
@@ -643,9 +645,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=23
-[0x000E1E4A]
+[0x00022464]
 type=button
-handle=449
+handle=450
 locked=0
 resize=
 x=565
@@ -672,9 +674,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=24
-[0x00071D44]
+[0x00022462]
 type=input
-handle=450
+handle=451
 locked=0
 resize=
 x=69
@@ -701,9 +703,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=21
-[0x00101D42]
+[0x00022460]
 type=label
-handle=451
+handle=452
 locked=0
 resize=
 x=69
@@ -730,9 +732,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=20
-[0x000B19AE]
+[0x0002245E]
 type=button
-handle=452
+handle=453
 locked=0
 resize=
 x=74
@@ -759,9 +761,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000A1E6C]
+[0x0002245C]
 type=label
-handle=453
+handle=454
 locked=0
 resize=
 x=86
@@ -788,9 +790,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00091D6E]
+[0x0002245A]
 type=button
-handle=454
+handle=455
 locked=0
 resize=
 x=207
@@ -817,9 +819,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=31
-[0x00081D5A]
+[0x00022458]
 type=button
-handle=455
+handle=456
 locked=0
 resize=
 x=340
@@ -846,9 +848,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=32
-[0x00091D5C]
+[0x00022456]
 type=button
-handle=456
+handle=457
 locked=0
 resize=
 x=74
@@ -875,9 +877,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=33
-[0x000B1D5E]
+[0x00022454]
 type=button
-handle=457
+handle=458
 locked=0
 resize=
 x=207
@@ -904,9 +906,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=34
-[0x000A1D60]
+[0x00022452]
 type=button
-handle=458
+handle=459
 locked=0
 resize=
 x=340
@@ -933,9 +935,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=35
-[0x000E1E42]
+[0x00092450]
 type=checkbox
-handle=459
+handle=460
 locked=0
 resize=
 x=288
@@ -962,9 +964,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00071D66]
+[0x00042330]
 type=label
-handle=460
+handle=461
 locked=0
 resize=
 x=407
@@ -991,9 +993,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000F1C90]
+[0x00042392]
 type=input
-handle=461
+handle=462
 locked=0
 resize=
 x=592
@@ -1020,9 +1022,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00101CB2]
+[0x000320A2]
 type=label
-handle=462
+handle=463
 locked=0
 resize=
 x=668
@@ -1049,9 +1051,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00451F06]
+[0x002424EC]
 type=radio
-handle=463
+handle=464
 locked=0
 resize=
 x=505
@@ -1078,9 +1080,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x001E210A]
+[0x000A24B0]
 type=radio
-handle=464
+handle=465
 locked=0
 resize=
 x=505
@@ -1107,9 +1109,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00152048]
+[0x000624B6]
 type=group
-handle=465
+handle=466
 locked=0
 resize=
 x=487
@@ -1136,9 +1138,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000521FA]
+[0x002124DE]
 type=radio
-handle=466
+handle=467
 locked=0
 resize=
 x=90
@@ -1165,9 +1167,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x003D20F0]
+[0x000724E6]
 type=group
-handle=467
+handle=468
 locked=0
 resize=
 x=72
@@ -1194,9 +1196,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000A1E2C]
+[0x000824B2]
 type=radio
-handle=468
+handle=469
 locked=0
 resize=
 x=220
@@ -1219,6 +1221,35 @@ exstyle=
 bgcolour=
 code=
 order=14
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x002424CE]
+type=checkbox
+handle=470
+locked=0
+resize=
+x=301
+y=22
+width=92
+height=20
+func=
+font=Palatino Linotype
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Enable
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=38
 tabpage=-1
 iconindex=
 iconlarge=0

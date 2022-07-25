@@ -242,16 +242,18 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	; c ("ScreenShot:" & $mInfo.Item("ScreenShot") )
 
 	; Now the info is ready.
-	Local $sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & $mInfo.Item("Title") & '\",' & _
-		($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date") & '\",' ) & _
-		($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& $mInfo.Item("Details") & '\",' ) & _
+	Local $sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & JsonEscape( $mInfo.Item("Title") ) & '\",' & _
+		($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date")  & '\",' ) & _
+		($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& JsonEscape( $mInfo.Item("Details") ) & '\",' ) & _
 		($mInfo.Item("URL") = Null ? "" : 'url: \"' & $mInfo.Item("URL") & '\",' ) & _
 		($mInfo.Item("StudioID") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
 		($mInfo.Item("ScreenShot") = Null ? "" : 'front_image:\"' & $mInfo.Item("ScreenShot") & '\",' )& _
 		($mInfo.Item("Duration") = 0 ? "" : 'duration: ' & $mInfo.Item("Duration") ) & _
 		'}){id} }"}'
 	
-	; c( "create movie query:" & $sQuery)
+	; ClipPut( $sQuery)
+	; c( "movie query in the clipboard.")
+	
 	; OK, now create a new movie base on the above.
 	Local $sResult = Query($sQuery)
 	If @error Then Return SetError(1)
@@ -272,8 +274,8 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	_WD_Action($sSession, 'refresh')
 	Sleep(1000)
 	OpenURL($stashURL & "movies/" & $mInfo.Item("MovieID") )
-	Sleep(2000)
-	Alert("Movie created.")
+	; Sleep(2000)
+	; Alert("Movie created.")
 	
 EndFunc
 

@@ -52,9 +52,15 @@ Func ShowSettings()
 	; Disable the tray clicks
 	TraySetClick(0)
 	
-	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter"&@crlf&"Hit this key combination will immediately close the Stash browser.",100,20,566,96,-1,-1)
+	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",98,22,190,29,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
+	
+	$chkBossKey = GUICtrlCreateCheckbox( "Enable", 301, 22,  92, 20, -1, -1 )
+	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+	If $giBossKey = 1 Then 
+		GUICtrlSetState( $chkBossKey, $GUI_CHECKED)
+	EndIf
 	
 	GUICtrlCreateGroup("Preferred Browser",97,116,359,229,$BS_CENTER,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
@@ -237,6 +243,8 @@ Func ShowSettings()
 				ChooseType("Local")
 			Case $radioRemote
 				ChooseType("Remote")
+			Case $chkBossKey
+				
 			Case $btnDone
 				$sMediaPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
 				If $sMediaPlayerLocation <> "" Then 
@@ -247,11 +255,11 @@ Func ShowSettings()
 					EndIf
 				EndIf 
 				; Either write an empty string, or a valid location.
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "MediaPlayerLocation", "REG_SZ", $sMediaPlayerLocation)
+				RegWrite($gsRegBase, "MediaPlayerLocation", "REG_SZ", $sMediaPlayerLocation)
 				
 				$iSlideShowSeconds = Floor(GUICtrlRead($inputSlideShow))
 				If $iSlideShowSeconds > 0 Then 
-					RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper","SlideShowSeconds", "REG_DWORD", $iSlideShowSeconds)
+					RegWrite($gsRegBase,"SlideShowSeconds", "REG_DWORD", $iSlideShowSeconds)
 				Else
 					; Reset to the right value.
 					$iSlideShowSeconds = 10
@@ -266,7 +274,7 @@ Func ShowSettings()
 					Case GUICtrlRead($radioChooseEdge) = $GUI_CHECKED
 						$sBrowser = "Edge"
 				EndSelect
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "Browser", "REG_SZ", $sBrowser)
+				RegWrite($gsRegBase, "Browser", "REG_SZ", $sBrowser)
 				If $sBrowser <> $stashBrowser Then $bRestartRequired = True
 				
 				; Set the profile choice
@@ -276,7 +284,7 @@ Func ShowSettings()
 					Case GUICtrlRead($radioChooseDefault) = $GUI_CHECKED
 						$sProfile = "Default"
 				EndSelect
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "BrowserProfile", "REG_SZ", $sProfile)
+				RegWrite($gsRegBase, "BrowserProfile", "REG_SZ", $sProfile)
 				If $sProfile <> $stashBrowserProfile Then $bRestartRequired = True
 				
 				; Set the stash type choice
@@ -286,19 +294,31 @@ Func ShowSettings()
 					Case GUICtrlRead($radioRemote) = $GUI_CHECKED
 						$sType = "Remote"
 				EndSelect
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashType", "REG_SZ", $sType)
+				RegWrite($gsRegBase, "StashType", "REG_SZ", $sType)
 				if $stashType <> $sType Then $bRestartRequired = True 
 
 				; Save other settings.
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashFilePath", "REG_SZ", _ 
+				RegWrite($gsRegBase, "StashFilePath", "REG_SZ", _ 
 					GUICtrlRead($inputStashWinLocation))
 				Local $iShow = (GUICtrlRead($chkShowStash) = $GUI_CHECKED) ? 1 : 0
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowStashConsole", "REG_DWORD", $iShow)
+				RegWrite($gsRegBase, "ShowStashConsole", "REG_DWORD", $iShow)
 				$iShow = (GUICtrlRead($chkShowWebDriver) = $GUI_CHECKED) ? 1 : 0
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "ShowWDConsole", "REG_DWORD", $iShow)
+				RegWrite($gsRegBase, "ShowWDConsole", "REG_DWORD", $iShow)
 				
 				$stashURL = GUICtrlRead($inputStashURL)
-				RegWrite("HKEY_CURRENT_USER\Software\Stash_Helper", "StashURL", "REG_SZ", $stashURL)
+				RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
+				
+				; Boss key enable/disable
+				If guictrlread($chkBossKey) = $GUI_CHECKED Then 
+					RegWrite( $gsRegBase, "BossKeyEnable", "REG_DWORD", 1)
+					$giBossKey = 1
+					HotKeySet("^{ENTER}", "CloseSession")
+				Else 
+					RegWrite( $gsRegBase, "BossKeyEnable", "REG_DWORD", 0)
+					$giBossKey = 0
+					HotKeySet("^{ENTER}")
+				EndIf
+				
 				Local $sMessage =  $bRestartRequired ? "You need to restart the program for the new settings to take effect, though." : "Settings are in effect now."
 				MsgBox(64,"Setting saved.", $sMessage,0)
 				ExitLoop

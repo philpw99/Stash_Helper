@@ -40,7 +40,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.5"
+Global Const $currentVersion = "v2.3.7"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
@@ -139,7 +139,6 @@ Global $stashVersion, $stashURL
 Global $sMediaPlayerLocation = RegRead($gsRegBase, "MediaPlayerLocation")
 
 Global $iSlideShowSeconds = RegRead($gsRegBase, "SlideShowSeconds")
-
 if @error Then
 	$iSlideShowSeconds = 10
 	RegWrite($gsRegBase, "SlideShowSeconds", "REG_DWORD", 10)
@@ -154,6 +153,14 @@ Next
 ; For SceneToMovieForm.
 Global $mInfo = ObjCreate("Scripting.Dictionary")
 If @error Then MsgExit("Error Creating global $minfo object.")
+
+; Get global $giBossKey
+Global $giBossKey= RegRead($gsRegBase, "BossKeyEnable")
+If @error Then 
+	; Default to be enabled.
+	RegWrite( $gsRegBase, "BossKeyEnable", "REG_DWORD", 1)
+	$giBossKey =  1
+EndIf
 
 ; All forms.
 #include <Forms\SettingsForm.au3>
@@ -487,8 +494,10 @@ CreateSubMenu()
 TraySetState($TRAY_ICONSTATE_SHOW)
 ; Launch the web page
 OpenURL($stashURL)
+
 ; Ctrl + Enter to close all web sessions and media player
-HotKeySet("^{ENTER}", "CloseSession")
+If  $giBossKey =  1 Then HotKeySet("^{ENTER}", "CloseSession")
+
 ; Ctrl+Alt+A to add scene/movie to the playlist.
 HotKeySet("^!a", "AddItemToList")
 ; Ctrl+Alt+C to clear the playlist.
@@ -665,6 +674,50 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func JsonEscape( $str )
+	; This function will escape special characters in $str for Json
+    ; Backspace to be replaced with \b
+    ; Form feed to be replaced with \f
+    ; Newline to be replaced with \n
+    ; Carriage return to be replaced with \r
+    ; Tab to be replaced with \t
+    ; Double quote to be replaced with \"
+    ; Backslash to be replaced with \\
+	;
+	; The flag follows BinaryToString conversion.
+	; Flag 1 $SB_ANSI (1) = binary data is ANSI (default)
+    ; Flag 2 $SB_UTF16LE (2) = binary data is UTF16 Little Endian
+    ; Flag 3 $SB_UTF16BE (3) = binary data is UTF16 Big Endian
+    ; Flag 4 $SB_UTF8 (4) = binary data is UTF8
+	
+	Local $sNewStr = ""
+	
+	For $i = 1 to StringLen( $str )	; Loop through all the chars
+		$c = StringMid( $str, $i, 1)
+		Switch $c
+			Case Chr(8)
+				$sNewStr &= "\b"
+			Case Chr(9)
+				$sNewStr &= "\t"
+			Case Chr(10)
+				$sNewStr &= "\n"
+			Case Chr(12)
+				$sNewStr &= "\f"
+			Case Chr(13)
+				$sNewStr &= "\r"
+			Case '"'
+				$sNewStr &= "'"
+			Case Chr(92)	; Back slash
+				$sNewStr &= "\\"
+			Case Else 
+				$sNewStr &= $c
+		EndSwitch
+	Next
+
+	Return $sNewStr
+
+EndFunc
 
 Func StartBrowser()
 	Switch $stashBrowser

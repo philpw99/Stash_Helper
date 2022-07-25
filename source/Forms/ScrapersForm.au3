@@ -85,10 +85,12 @@ Func ScrapersManager()
 	GUICtrlSetTip(-1,"Update the installed scrapers.")
 	GUICtrlSetResizing(-1,804)
 
-	GUISetState(@SW_SHOW)
 
-	; Set busy cursor.
 	$old_cursor = MouseGetCursor()
+
+	GUISetState(@SW_SHOW)
+	
+	; Set busy cursor.
 	GUISetCursor(15, 1, $guiScrapers)
 	; Set both $aScraperArray and $aScraperFiles
 	SetScraperArray() 
@@ -393,12 +395,19 @@ Func FetchScraper($sFile)
 		Return SetError(1)
 	EndIf
 	; Success, now open it and see it.
-	$sFile = FileRead($sScraperPath & $sFile)
-	If StringInStr($sFile, "- python", 2) <>0 And StringInStr($sFile, "action: script") <> 0  Then
+	$sFileText = FileRead($sScraperPath & $sFile)
+	If  StringInStr($sFileText, ".py", 2) <> 0 And StringInStr($sFileText, "action: script", 2 ) <> 0  Then
+		; c( "this is a python scraper")
 		; Python script. Need to download the py file
-		Local $sPyFile = Stringleft($sFile, stringinstr($sFile, ".", 2, -1) -1) & ".py"
-		; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
-		InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
+		; Local $sPyFile = Stringleft($sFile, stringinstr($sFile, ".", 2, -1) -1) & ".py"
+		Local $aPyFiles = StringRegExp( $sFileText, "(?<=-\s).+\.py", 3)
+		If @error Or UBound($aPyFiles) =  0 then Return 
+
+		$aPyFiles =  _ArrayUnique( $aPyFiles, 0, 0, 0, 0) ; remove all duplicates. No count in [0]
+		For $sPy In $aPyFiles
+			; c("download py: " & $sScraperBaseURL & $sPy & @CRLF & "To:" & $sScraperPath & $sPy )
+			InetGet( $sScraperBaseURL & $sPy, $sScraperPath & $sPy)
+		Next 
 		Return 
 	EndIf
 EndFunc
