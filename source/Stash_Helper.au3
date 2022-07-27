@@ -5,7 +5,7 @@
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;*****************************************
 ;Stash_Helper.au3 by Philip Wang
-;Created with ISN AutoIt Studio v. 1.13
+;Created with ISN AutoIt Studio v. 1.14
 ;*****************************************
 #include <FileConstants.au3>
 #include <TrayConstants.au3>
@@ -15,12 +15,13 @@
 #include <WindowsConstants.au3>
 #Include <GuiButton.au3>
 #include <GuiTab.au3>
+#include <GuiListBox.au3>
 #include <EditConstants.au3>
 #include <wd_core.au3>
 #include <wd_helper.au3>
 #include <Array.au3>
 #include <Inet.au3>
-
+#Include <GDIPlus.au3>
 ; opt("MustDeclareVars", 1)
 
 #include "DTC.au3"
@@ -40,7 +41,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.7"
+Global Const $currentVersion = "v2.3.8"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
@@ -168,6 +169,7 @@ EndIf
 #include <Forms\ScrapersForm.au3>
 #include <Forms\SceneToMovieForm.au3>
 #include <Forms\ManagePlayListForm.au3>
+#include <Forms\MergePerformers.au3>
 ; Seems special scraper is no longer needed when visible CDP works much better.
 
 ; Now this is running in the tray
@@ -325,79 +327,106 @@ If $stashVersion <> "" Then
 EndIf
 
 TrayCreateItem("Stash Helper " & $currentVersion ) ; 0
-TrayCreateItem("")										; 1
-
+TrayCreateItem("")
+								; 1
+Local $iTrayIconCount = 2
 Global $trayMenuScenes = TrayCreateMenu("Scenes")		; 2
-_TrayMenuAddImage($hIcons[0], 2)
+_TrayMenuAddImage($hIcons[0], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuImages = TrayCreateMenu("Images")		; 3
-_TrayMenuAddImage($hIcons[1], 3)
+_TrayMenuAddImage($hIcons[1], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuMovies = TrayCreateMenu("Movies")		; 4
-_TrayMenuAddImage($hIcons[2], 4)
+_TrayMenuAddImage($hIcons[2], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuMarkers = TrayCreateMenu("Markers")		; 5
-_TrayMenuAddImage($hIcons[3], 5)
+_TrayMenuAddImage($hIcons[3], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuGalleries = TrayCreateMenu("Galleries")	; 6
-_TrayMenuAddImage($hIcons[4], 6)
+_TrayMenuAddImage($hIcons[4], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuPeformers = TrayCreateMenu("Performers"); 7
-_TrayMenuAddImage($hIcons[5], 7)
+_TrayMenuAddImage($hIcons[5], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuStudios = TrayCreateMenu("Studios")		; 8
-_TrayMenuAddImage($hIcons[6], 8)
+_TrayMenuAddImage($hIcons[6], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuTags = TrayCreateMenu("Tags")			; 9
-_TrayMenuAddImage($hIcons[7], 9)
+_TrayMenuAddImage($hIcons[7], $iTrayIconCount)
+
+$iTrayIconCount += 1
 Global $trayMenuBookmark = TrayCreateItem("Bookmark    Ctrl-Alt-B") ; 10
-_TrayMenuAddImage($hIcons[17], 10)
+_TrayMenuAddImage($hIcons[17], $iTrayIconCount)
+
+$iTrayIconCount += 1
 TrayCreateItem("")										; 11
 
-;~ Global $trayPlayScene = TrayCreateItem("Play Current Scene") ;12
-;~ ; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
-;~ _TrayMenuAddImage($hIcons[12], 12)
-;~ Global $trayPlayMovie = TrayCreateItem("Play Current Movie") ;13
-;~ ; GUICtrlSetTip(-1, "Play the current movie with external media player specified in the settings.")
-;~ _TrayMenuAddImage($hIcons[13], 13)
-
-;~ Global $trayPlayImages = TrayCreateItem("Play Current Gallery/Images"); 14
-;~ _TrayMenuAddImage($hIcons[20], 14)
-
+$iTrayIconCount += 1
 Global $trayPlayTab = TrayCreateItem("Play Current Scene/Movie/Images/Gallery  Alt-P") ;12
 ; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
-_TrayMenuAddImage($hIcons[12], 12)
+_TrayMenuAddImage($hIcons[12], $iTrayIconCount)
 
-
+$iTrayIconCount += 1
 Global $trayScrapers = TrayCreateItem("Scrapers Manager"); 13
 ; GUICtrlSetTip(-1,"Install or remove website scrapers used by Stash.")
-_TrayMenuAddImage($hIcons[8], 13)
+_TrayMenuAddImage($hIcons[8], $iTrayIconCount)
 
+$iTrayIconCount += 1
 Global $trayScan = TrayCreateItem("Scan New Files") 	; 14
-_TrayMenuAddImage($hIcons[14], 14)
+_TrayMenuAddImage($hIcons[14], $iTrayIconCount)
 ; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
 
+$iTrayIconCount += 1
 Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 15
-_TrayMenuAddImage($hIcons[15], 15)
+_TrayMenuAddImage($hIcons[15], $iTrayIconCount)
 ; GUICtrlSetTip(-1,"Create a movie from current scene.")
 
-Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 16
-_TrayMenuAddImage($hIcons[18], 16)
+$iTrayIconCount += 1
+Global $trayMergePerformers = TrayCreateItem("Merge 2 Performers")		; 16
+_TrayMenuAddImage($hIcons[5], $iTrayIconCount)
 
-Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 17
-_TrayMenuAddImage($hIcons[19], 17)
+$iTrayIconCount += 1
+Global $trayOpenFolder =  TrayCreateItem("Open Media Folder   Ctrl-Alt-O") ; 17
+_TrayMenuAddImage($hIcons[18], $iTrayIconCount)
+
+$iTrayIconCount += 1
+Global $trayMenuCSS = TrayCreateMenu("CSS Magic") ; 18
+_TrayMenuAddImage($hIcons[19], $iTrayIconCount)
+
 Global $aCSSItems[0][4]
 ; Enums for the array row.
 Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 ; Create the css menu with a function.
 CreateCSSMenu()
 
-Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 18
+$iTrayIconCount += 1
+Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
 _TrayMenuAddImage($hIcons[16], 18)
 Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List         Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
-TrayCreateItem("")										; 19
-Global $traySettings = TrayCreateItem("Settings")		; 20
+$iTrayIconCount += 1
+TrayCreateItem("")										; 20
+
+$iTrayIconCount += 1
+Global $traySettings = TrayCreateItem("Settings")		; 21
 _TrayMenuAddImage($hIcons[9], 20)
-Global $trayAbout = TrayCreateItem("About")				; 21
+
+$iTrayIconCount += 1
+Global $trayAbout = TrayCreateItem("About")				; 22
 _TrayMenuAddImage($hIcons[10], 21)
-Global $trayExit = TrayCreateItem("Exit")				; 22
+
+$iTrayIconCount += 1
+Global $trayExit = TrayCreateItem("Exit")				; 23
 _TrayMenuAddImage($hIcons[11], 22)
 
 ; Sub menu items for tools
@@ -542,18 +571,14 @@ While True
 			CustomList("Studios", $trayStudioLinks)
 		Case $customTags
 			CustomList("Tags", $trayTagLinks)
-;~ 		Case $trayPlayScene
-;~ 			PlayScene()
-;~ 		Case $trayPlayMovie
-;~ 			PlayMovie()
-;~ 		Case $trayPlayImages
-;~ 			CurrentImagesViewer()
  		Case $trayPlayTab
  			PlayCurrentTab()
 		Case $trayScan
 			ScanFiles()
 		Case $trayMovie2Scene
 			Scene2Movie()
+		Case $trayMergePerformers
+			MergePerformers()
 		Case $trayAddItemToList
 			AddItemToList()
 		Case $trayClearList
@@ -674,6 +699,28 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func IsEmpty( $item )
+	Switch VarGetType($item)
+		Case "String"
+			if $item = "" or $item = Null  Then Return True 
+		Case "Array"
+			if UBound($item) = 0 Then Return True 
+		Case "Binary"
+			If $item = Null Or StringLen( $item) = 0 Then Return True 
+		Case "Object"
+			If UBound($item.Items) = 0 Then Return True
+		Case Else
+			If $item = Null Then return true
+	EndSwitch
+	Return False 
+EndFunc
+
+
+Func AddToList($sList, $sItem, $sep = "|" )
+	; Add items to a list separated by "|" for listview or listbox
+	Return $sList = "" ? $sItem : $sList & $sep & $sItem
+EndFunc
 
 Func JsonEscape( $str )
 	; This function will escape special characters in $str for Json
@@ -1744,11 +1791,21 @@ EndFunc
 
 Func Query2($sQuery, $bIgnoreError = False )
 	; This one will wrap the {"query":" "} around $sQuery. Easier to program.
-	c("QueryString:" & '{"query":"'& $sQuery& '"}')
-	$sResult = Query('{"query":"'& $sQuery& '"}', $bIgnoreError)
+ 	c("QueryString:" & '{"query":"'& $sQuery& '"}')
+ 	$sResult = Query('{"query":"'& $sQuery& '"}', $bIgnoreError)
 	If @error Then Return SetError(1, 0, $sResult)
 	Return $sResult
 EndFunc
+
+Func QueryMutation($sQuery, $bIgnoreError = False )
+	; This one will wrap the {"mutation":" "} around $sQuery. Easier to program.
+	
+	c("QueryString:" & '{"query": "mutation' & $sQuery & '"}'  )
+	$sResult = Query('{"query": "mutation' & $sQuery & '"}' , $bIgnoreError)
+	If @error Then Return SetError(1, 0, $sResult)
+	Return $sResult
+EndFunc
+
 
 Func Query($sQuery, $bIgnoreError = False )
 	; Use Stash's graphql to get results or do something
@@ -1762,8 +1819,11 @@ Func Query($sQuery, $bIgnoreError = False )
 	EndIf
 	Local $sPath = $aStashURL[6]	; Get the start relative path
 	If StringRight($sPath,1) = "/" Then $sPath = StringTrimRight($sPath,1)	; Remove the right slash
-	Local $result = _WinHttpSimpleRequest($hConnect, "POST", $sPath & "/graphql", Default, _
-		$sQuery, "Content-Type: application/json" )
+	; Have to use binary way to communicate, otherwise Japanese and Chinese words will have errors!
+	Local $BinQuery = StringToBinary($sQuery, $SB_UTF8)
+	Local $BinResult = _WinHttpSimpleRequest($hConnect, "POST", $sPath & "/graphql", Default, _
+		$BinQuery, "Content-Type: application/json", Default, 2 )  ; Last one is iMode: Reading UTF-8 Text
+	Local $result = BinaryToString( $BinResult, $SB_UTF8)
 	; c("result:" & $result)
 	; Close handles
 	_WinHttpCloseHandle($hConnect)
@@ -2323,6 +2383,11 @@ EndFunc
 Func Q($str)
 	; Double quote the $str
 	Return '"' & $str & '"'
+EndFunc
+
+Func Q2($str)
+	; Double slash quote the str
+	Return '\"' & $str & '\"'
 EndFunc
 
 Func ExitScript()
