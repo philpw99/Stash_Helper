@@ -4,6 +4,10 @@ Though Stash is powerful. It comes with just a console window and not super easy
 ## Features of SH
 <table>
   <tr>
+   <td><img src="https://user-images.githubusercontent.com/22040708/181331368-2a10e5d2-5d24-4c83-a81c-5c944565257c.png" /></td>
+    <td>(New) Merge 2 performers' information to reduce performer duplications.</td>
+  </tr>
+  <tr>
    <td><img src="https://user-images.githubusercontent.com/22040708/147078458-74833489-8460-4ba0-bd8b-4ded7263db94.png" /></td>
     <td>(New) Light Gallery photos browsing. Watching images and galleries, well, like a gallery. Just click on "Play Current Images/Galleries".</td>
   </tr>
