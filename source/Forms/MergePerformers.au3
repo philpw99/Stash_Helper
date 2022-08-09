@@ -120,12 +120,21 @@ Func MergePerformers()
 					SetPerformerScenes( $sID1, $sID2, $sP1SceneList )
 				EndIf
 
-				
-				MsgBox(64,"Transfer Done","Now info from " & $sP1 & " is transfered to " & $sP2 & "," _ 
+				$hMsgDone = MsgBox(262436,"Transfer Done", "Now info from " & $sP1 & " is transfered to " & $sP2 & ", and " _ 
 					& @CRLF & $sP1 & " is now an alias of " & $sP2 & @CRLF _ 
 					& "and all the " & $sP1 & "'s scenes and movies are updated and added " & $sP2 & " to them as well." & @CRLF _ 
-					& "Right now " & $sP1 & " is unchanged, but you can delete it to make it final.", 0)
-
+					& "Right now " & $sP1 & " is unchanged, but do you want to delete this performer to make it final?",0)
+				If $hMsgDone = $IDYES Then 
+					; Delete Performer 1
+					$sQuery = '{performerDestroy(input:{id:' & $sID1 & '})}'
+					QueryMutation( $sQuery )
+					If @error Then 
+						c("Error in deleting the performer id:" & $sID1)
+						ContinueLoop
+					Else
+						TrayTip("Done.", "Performer " & $sP1 & " deleted.", 5, $TIP_NOSOUND )
+					EndIf
+				EndIf 
 				ExitLoop
 				
 			Case $GUI_EVENT_CLOSE, $btnCancel
