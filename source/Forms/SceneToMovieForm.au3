@@ -79,9 +79,11 @@ Func Scene2Movie()
 		Switch $nMsg
 			Case $btnOK
 				CreateSingleMovie($lvValues, $chkCover)
+				RefreshAllTabs()
 				ExitLoop
 			Case $btnBatchCreate
 				BatchCreate($lvValues, $chkCover)
+				RefreshAllTabs()
 				ExitLoop
 			Case $btnBatchCreateStudio
 				If $mInfo.Item("StudioID") = Null Then 
@@ -90,6 +92,7 @@ Func Scene2Movie()
 				EndIf
 				; Add aditional filter.
 				BatchCreate($lvValues, $chkCover, ",studios:{value:"& $mInfo.Item("StudioID") & ", modifier:INCLUDES}")
+				RefreshAllTabs()
 			Case $GUI_EVENT_RESIZED
 				GUICtrlSetImage($imgCover, $sTempPicFile)
 			Case $GUI_EVENT_CLOSE, $btnCancel

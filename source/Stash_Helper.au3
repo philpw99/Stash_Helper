@@ -786,9 +786,10 @@ Func ApplyCSS($str)
 	If StringLeft($str, 3) = "\\n" Then
 		$str = StringMid($str, 4)
 	EndIf
-	$sQuery = 'mutation{configureInterface(input:{css:\"' & $str & '\" cssEnabled: true }){css}}'
-	Query2($sQuery)
+	$sQuery = '{configureInterface(input:{css:\"' & $str & '\" cssEnabled: true }){css}}'
+	QueryMutation($sQuery)
 	if @error then return SetError(1)
+	RefreshAllTabs()
 EndFunc
 
 Func CreateCSSMenu()
@@ -1053,15 +1054,9 @@ EndFunc
 
 Func ReloadScrapers()
 	; Get the current handle.
-	$sQuery = '{"query":"mutation{reloadScrapers}"}'
-	$sResult = Query($sQuery)
+	$sResult = QueryMutation('{reloadScrapers}')
 	If @error Then Return SetError(1)
-
-	Local $sHandle = _WD_Window($sSession, "Window")
-	If $sHandle <> "" Then
-		; Valid session. Reload the content.
-		_WD_Action($sSession, "refresh")
-	EndIf
+	RefreshAllTabs()
 	; This message should be sent by the func caller.
 	; MsgBox(0, "Scraper Reloaded.", "Successfully reloaded the scrapers.", 10)
 EndFunc
@@ -1116,6 +1111,12 @@ EndFunc
 
 Func GetURL()
 	; Probably it's close or no windows at all.
+	Local $sCurrentTab = _WD_Window($sSession, 'Window')
+	If @error <> $_WD_ERROR_Success Then 
+		; No current tab
+		$sCurrentTab = ""
+	EndIf
+	
 	Local $aHandles =  _WD_Window($sSession, 'Handles')
 	Switch  UBound($aHandles)
 		case 0
@@ -1131,9 +1132,10 @@ Func GetURL()
 				$sResult = _WD_Action($sSession, "url")
 			EndIf
 		case Else
-			; Multi-tab situation. No good solution here.
-			Local $sHandle =  $aHandles[0]
-			_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
+			; Multi-tab situation. if no current tab, then get the first tab.
+			If $sCurrentTab = "" Then 
+				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle[0] & '"}')
+			EndIf 
 			$sResult = _WD_Action($sSession, "url")
 	EndSwitch
 	Return _URLDecode($sResult)
@@ -1650,7 +1652,12 @@ EndFunc
 
 Func ScanFiles()
 	; Scan new files in Stash
-	Query('{"query": "mutation { metadataScan ( input: { useFileMetadata: true } ) } "}')
+	QueryMutation('{metadataScan(input:{ useFileMetadata:true})}')
+	If @error Then 
+		MsgBox(0, "Error", "Error sending the scan command.")
+		Return SetError(1)
+	EndIf
+	
 	OpenURL( $stashURL & "settings?tab=tasks" )
 	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.", 10)
 EndFunc
@@ -1678,6 +1685,29 @@ Func CheckMediaPlayer()
 	ElseIf Not FileExists($sMediaPlayerLocation) Then
 		MsgBox(48,"Media player missing.","The external media player in the 'Settings' is not valid.",0)
 		Return SetError(1)
+	EndIf
+EndFunc
+
+Func RefreshAllTabs()
+	; This will refresh all tabs. Useful after mutations.
+	Local $sCurrentTab = _WD_Window($sSession, "Window")	; Current Tab handle
+	If @error <> $_WD_ERROR_Success Then $sCurrentTab = ""
+		
+	Local $aHandles = _WD_WINDOW($sSession, "Handles")
+	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then
+		; MsgBox(48,"Error in browser.","Error retrieving browser handles.",0)
+		Return SetError(1)
+	EndIf
+	
+	Local $iTabCount = UBound($aHandles)
+	For $i = 0 To $iTabCount-1
+		; Switch to this tab
+		_WD_Window($sSession, "Switch", '{"handle":"' & $aHandles[$i] & '"}' )
+		_WD_Action($sSession, "refresh")
+	Next
+	; Switch back to the current tab
+	If $sCurrentTab <> "" Then 
+		_WD_Window($sSession, "Switch", '{"handle":"' & $sCurrentTab & '"}' )
 	EndIf
 EndFunc
 
@@ -2052,15 +2082,21 @@ EndFunc
 
 Func OpenURL($url)
 	; Probably it's close or no windows at all.
+	Local $sCurrentTab = _WD_Window($sSession, 'Window')
+	If @error <> $_WD_ERROR_Success Then 
+		$sCurrentTab = ""
+	EndIf
+	
 	Local $aHandles =  _WD_Window($sSession, 'Handles')
-	If UBound($aHandles) = 0 Then
+	Local $iCount = UBound($aHandles)
+	If $iCount = 0 Then
 			; No browser at all, open a new session.
 			$sSession = _WD_CreateSession($sDesiredCapabilities)
 			_WD_Navigate($sSession, $url)
 			$sBrowserHandle = _WD_Window($sSession, "Window")
 	Else
 			; The session is still alive. Switch to the last handle to make sure that's the current one
-			$sBrowserHandle = $aHandles[UBound($aHandles)-1]
+			$sBrowserHandle = ( $sCurrentTab = "" ? $sCurrentTab : $aHandles[$iCount-1] )
 			_WD_Window($sSession, "switch", '{"handle":"' & $sBrowserHandle & '"}' )
 			_WD_Navigate($sSession, $url)
 	EndIf
