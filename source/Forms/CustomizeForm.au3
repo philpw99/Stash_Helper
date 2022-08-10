@@ -47,6 +47,7 @@ Func CustomList($sCategory, ByRef $aCategory)
 	GUICtrlSetTip(-1,"Delete the highlighted row.")
 	
 	Local $aList[$iMaxSubItems]
+	
 	For $i = 0 to $iMaxSubItems -1
 		; Popular all numbers anyway
 		$aList[$i] = String($i + 1)

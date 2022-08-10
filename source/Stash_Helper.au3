@@ -58,6 +58,7 @@ Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wa
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 Global Const $iMaxSubItems = 20
 Global $iMediaPlayerPID = 0
+
 ; For Play list
 Global Enum $LIST_TITLE, $LIST_DURATION, $LIST_FILE
 Global $aPlayList[0][3]
@@ -2117,8 +2118,8 @@ Func CreateSubMenu()
 	; Scene data
 	Local $sData = RegRead($gsRegBase, "ScenesList")
 	If @error Then
-		; No data yet. Set the first item in array
-		SetMenuItem($traySceneLinks,0, 0, "All Scenes", $stashURL & "scenes")
+		; Empty. All Scenes only.
+		SetMenuItem($traySceneLinks,0, 0, "All Scenes", $stashURL & "scenes")	
 	Else
 		; Setting all the data
 		; Data is like "0|All Movies|http://localhost...@crlf 1|Second Item|http:..."
@@ -2126,27 +2127,26 @@ Func CreateSubMenu()
 	EndIf
 
 	; Image data
+	
 	Local $sData = RegRead($gsRegBase, "ImagesList")
 	If @error Then
-		; No data yet. Set the first item in array
 		SetMenuItem($trayImageLinks,0, 0, "All Images", $stashURL & "images")
-	Else
+	Else 
 		DataToArray($sData, $trayImageLinks)
 	EndIf
 
 	; Movie data
+	
 	Local $sData = RegRead($gsRegBase, "MoviesList")
 	If @error Then
-		; No data yet. Set the first item in array
 		SetMenuItem($trayMovieLinks,0 , 0, "All Movies", $stashURL & "movies")
-	Else
+	Else 
 		DataToArray($sData, $trayMovieLinks)
 	EndIf
 
 	; Marker data
 	Local $sData = RegRead($gsRegBase, "MarkersList")
 	If @error Then
-		; No data yet. Set the first item in array
 		SetMenuItem($trayMarkerLinks,0, 0, "All Markers", $stashURL & "markers")
 	Else
 		DataToArray($sData, $trayMarkerLinks)
@@ -2155,34 +2155,30 @@ Func CreateSubMenu()
 	; Gallery data
 	Local $sData = RegRead($gsRegBase, "GalleriesList")
 	If @error Then
-		; No data yet. Set the first item in array
 		SetMenuItem($trayGalleryLinks,0, 0, "All Galleries", $stashURL & "galleries")
-	Else
+	Else 
 		DataToArray($sData, $trayGalleryLinks)
 	EndIf
 
 	; Performer data
 	Local $sData = RegRead($gsRegBase, "PerformersList")
 	If @error Then
-		; No data yet. Set the first item in array
 		SetMenuItem($trayPerformerLinks,0, 0, "All Performers", $stashURL & "performers")
-	Else
+	Else 
 		DataToArray($sData, $trayPerformerLinks)
 	EndIf
 
 	; Studio data
 	Local $sData = RegRead($gsRegBase, "StudiosList")
 	If @error Then
-		; No data yet. Set the first item in array
 		SetMenuItem($trayStudioLinks,0, 0, "All Studios", $stashURL & "studios")
-	Else
+	Else 
 		DataToArray($sData, $trayStudioLinks)
 	EndIf
 
 	; Tag data
 	Local $sData = RegRead($gsRegBase, "TagsList")
-	If @error Then
-		; No data yet. Set the first item in array
+	If Not @error Then
 		SetMenuItem($trayTagLinks,0, 0, "All Tags", $stashURL & "tags")
 	Else
 		DataToArray($sData, $trayTagLinks)
@@ -2255,6 +2251,7 @@ Func ReloadMenu($sCategory)
 	; DeleteAllSubMenu()
 	; Recreate all sub-menu items
 	; CreateSubMenu()
+	$sCategory = StringLower($sCategory)
 	Switch $sCategory
 		Case "scenes"
 			TrayItemDelete($customScenes)
@@ -2309,24 +2306,51 @@ Func ReloadSubMenu($sCategory, ByRef $aArray)
 		If $aArray[$i][$ITEM_HANDLE] <> Null Then
 			TrayItemDelete($aArray[$i][$ITEM_HANDLE])
 		EndIf
+		$aArray[$i][$ITEM_TITLE] = ""
 	Next
+
 	; Load data from registry.
 	Local $sData = RegRead($gsRegBase, $sCat & "List")
 	If @error Then
 		; No data yet. Set the first item in array
 		SetMenuItem($aArray,0, 0, "All " & $sCat, $stashURL & $sCategory)
 	Else
-		; Setting all the data
-		; Data is like "0|All Movies|http://localhost...@crlf 1|Second Item|http:..."
+		; Setting all the data after "All Movies/Scenes..."
+		; Data is like "0|All Movies|http://localhost...@@@1|Second Item|http:..."
 		DataToArray($sData, $aArray)
 	EndIf
 	; Now $aArray is like [1][null][Title1][Link1],[2][null][title2][link2]...
 		; Populate the scenes sub menu
+	
 	For $i = 0 To UBound($aArray) -1
 		If $aArray[$i][$ITEM_TITLE] <> "" Then
-			$aArray[$i][$ITEM_HANDLE] = TrayCreateItem($aArray[$i][$ITEM_TITLE], Execute("$trayMenu" & $sCat))
+			$aArray[$i][$ITEM_HANDLE] = TrayCreateItem($aArray[$i][$ITEM_TITLE], GetMenuHandle($sCategory) )
 		EndIf
 	Next
+
+EndFunc
+
+Func GetMenuHandle($sCategory)
+	Switch StringLower( $sCategory)
+		Case "scenes"
+			Return $trayMenuScenes
+		Case "images"
+			Return  $trayMenuImages
+		Case "movies"
+			Return  $trayMenuMovies
+		Case "markers"
+			Return $trayMenuMarkers
+		Case "galleries"
+			Return  $trayMenuGalleries
+		Case "performers"
+			Return  $trayMenuPeformers
+		Case "studios"
+			Return  $trayMenuStudios
+		Case "tags"
+			Return  $trayMenuTags
+		Case Else 
+			Return SetError(1)
+	EndSwitch
 
 EndFunc
 
@@ -2398,15 +2422,28 @@ Func DeleteAllSubMenu()
 EndFunc
 
 Func DataToArray($sData, ByRef $aLink)
-	; Data is like "0|All Movies|http://localhost...@crlf 1|Second Item|http:..."
+	; Data is like "1|All Movies|http://localhost...@@@2|Second Item|http:..."
 	; Data in $aLink will be changed.
 	Local $aLines = StringSplit($sData, "@@@", $STR_ENTIRESPLIT + $STR_NOCOUNT)
-	Local $aItem
-	For $i = 0 To UBound($aLines)-1
-		; c("Line:" & $aLines[$i])
-		$aItem = StringSplit($aLines[$i], "|", $STR_NOCOUNT)
-		$aLink[$i][$ITEM_TITLE] = $aItem[$ITEM_TITLE]
-		$aLink[$i][$ITEM_LINK] = $aItem[$ITEM_LINK]
+	If @error Then Return SetError(1)
+	
+	For $i = 0 To $iMaxSubItems-1
+		If $i < UBound($aLines) Then 
+			; c("Line:" & $aLines[$i])
+			Local $aItem = StringSplit($aLines[$i], "|", $STR_NOCOUNT)
+			If UBound($aItem) = 3 Then 
+				$aLink[$i][$ITEM_TITLE] = $aItem[$ITEM_TITLE]
+				$aLink[$i][$ITEM_LINK] = $aItem[$ITEM_LINK]
+			Else
+				$aLink[$i][$ITEM_TITLE] = ""
+				$aLink[$i][$ITEM_LINK] = ""
+			EndIf 
+		Else
+			; Clean up the data no longer used
+			$aLink[$i][$ITEM_HANDLE] = Null 
+			$aLink[$i][$ITEM_TITLE] = ""
+			$aLink[$i][$ITEM_LINK] = ""
+		EndIf 
 	Next
 EndFunc
 
