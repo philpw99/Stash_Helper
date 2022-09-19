@@ -41,7 +41,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.9"
+Global Const $currentVersion = "v2.3.10"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
@@ -145,6 +145,10 @@ if @error Then
 	$iSlideShowSeconds = 10
 	RegWrite($gsRegBase, "SlideShowSeconds", "REG_DWORD", 10)
 EndIf
+
+; Specify browser exe location.
+Global $gsBrowserLocation = RegRead($gsRegBase, "BrowserLocation")
+If @error Then $gsBrowserLocation = ""
 
 Local $sIconPath = @ScriptDir & "\images\icons\"
 Local $hIcons[21]	; 20 (0-19) bmps  for the tray menus
@@ -1997,10 +2001,25 @@ Func SetupFirefox()
 	_WD_Option('Port', 4444)
 	Switch $stashBrowserProfile
 		Case "Private"
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
+			if $gsBrowserLocation <> "" Then 
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true,' _
+					& '"moz:firefoxOptions":{"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '"}' _
+					& '}}}'
+			Else
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
+			EndIf
+			
 		Case "Default"
 			_WD_Option('DriverParams', '--marionette-port 2828')
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
+			
+			If $gsBrowserLocation <> "" Then 
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {' _
+				& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '",' _
+				& '"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
+			Else
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
+			EndIf
+			
 	EndSwitch
 
 EndFunc   ;==>SetupGecko
@@ -2042,9 +2061,23 @@ Func SetupChrome()
 	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\chrome.log")
 	Switch $stashBrowserProfile
 		Case "Private"
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
+			If $gsBrowserLocation <> "" Then 
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
+					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
+					& '"excludeSwitches": [ "enable-automation"]}}}}'
+			Else
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
+			EndIf
+			
 		Case "Default"
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
+			If $gsBrowserLocation <> "" Then 
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
+					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
+					& '"excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
+			Else
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
+			EndIf
+			
 	EndSwitch
 EndFunc   ;==>SetupChrome
 

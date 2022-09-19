@@ -46,163 +46,177 @@ EndFunc
 Func ShowSettings()
 
 	Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation, $stashBrowserProfile
-	Local $sBrowser, $sProfile, $bRestartRequired = False 
-	Local $guiSettings = GUICreate("Settings",800,940,-1,-1,-1,-1)
+	Local $sBrowser, $sProfile, $bRestartRequired = False, $sBrowserLocation = "unchanged"
+	Local $guiSettings = GUICreate("Settings",770,962,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	; Disable the tray clicks
 	TraySetClick(0)
-	
-	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",98,22,190,29,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
-	GUICtrlSetBkColor(-1,"-2")
-	
-	$chkBossKey = GUICtrlCreateCheckbox( "Enable", 301, 22,  92, 20, -1, -1 )
-	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
-	If $giBossKey = 1 Then 
-		GUICtrlSetState( $chkBossKey, $GUI_CHECKED)
-	EndIf
-	
-	GUICtrlCreateGroup("Preferred Browser",97,116,359,229,$BS_CENTER,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-
-	GUICtrlCreateLabel("Drivers",329,156,83,24,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetBkColor(-1,"-2")
-
-	; Choose browser radios and update buttons
-	Global  $radioChooseFirefox = GUICtrlCreateRadio("Firefox",126,187,147,38,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	
-	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",317,195,112,32,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Update this web driver only when Firefox is not under control any more.")
-	
-	Global $radioChooseChrome = GUICtrlCreateRadio("Chrome",126,239,147,38,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-
-	Local  $btnUpdateChrome = GUICtrlCreateButton("Update",317,245,112,32,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Update this web driver only when Chrome is not under control any more.")
-	
-	Global $radioChooseEdge = GUICtrlCreateRadio("MS Edge",126,287,147,38,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-
-	Local $btnUpdateEdge = GUICtrlCreateButton("Update",317,293,112,32,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Update this web driver only when MS Edge is not under control any more.")
-	
-	; Profile choosing radios
-	GUICtrlCreateGroup("Browser Profile",487,120,214,225,$BS_CENTER,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	Global $radioChoosePrivate = GUICtrlCreateRadio("Private Profile",505,187,174,20,-1,-1)
-	GUICtrlSetTip(-1,"Stash will run in the browser with a private profile. Your browser's history will be safe.")
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",505,245,184,20,-1,-1)
-	GUICtrlSetTip(-1,"Stash will run in the browser's default user profile. Your bookmarks and add-ons will be available.")
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
 	; Stash type choosing radios
-	GUICtrlCreateGroup("Stash Type",72,355,277,90,-1,-1)
+	GUICtrlCreateGroup("Stash Type",33,23,277,90,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	Global $radioLocal = GUICtrlCreateRadio("Local",90,400,85,30,-1,-1)
+	Global $radioLocal = GUICtrlCreateRadio("Local",51,68,85,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Stash will run by launching stash-win.exe locally.")
-	Global $radioRemote = GUICtrlCreateRadio("Remote",220,400,116,30,-1,-1)
+	Global $radioRemote = GUICtrlCreateRadio("Remote",181,68,116,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Stash will run in a remote computer. Stash help will access it by using Stash URL.")
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group
-
-	; Image show seconds.
-	GUICtrlCreateLabel("Image Slideshow",407,749,180,30,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetBkColor(-1,"-2")
-	GUICtrlSetTip(-1,"When send a images list to the media player, how many seconds between each picture? Some players will ignore this." )
-	Local $inputSlideShow = GUICtrlCreateInput(string($iSlideShowSeconds),592,747,60,32,-1,$WS_EX_CLIENTEDGE)
-	GUICtrlSetTip(-1,"In the m3u for images sent to the media player, how many seconds delay between each picture?" )
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlCreateLabel("seconds",668,747,83,30,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetBkColor(-1,"-2")
-
-	Global $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",391,366,258,34,-1,-1)
+	
+	Global $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",354,33,258,34,-1,-1)
 	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
-	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",391,407,304,34,-1,-1)
+	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",354,74,304,34,-1,-1)
 	If $showWDConsole = 1 Then GUICtrlSetState($chkShowWebDriver, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
-	GUICtrlCreateLabel("Stash-win.exe location:",67,446,299,33,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+	; Group for choosing browser
+	GUICtrlCreateGroup("Preferred Browser",31,133,417,273,$BS_CENTER,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+
+	GUICtrlCreateLabel("Drivers",292,174,83,24,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Global $inputStashWinLocation = GUICtrlCreateInput($stashFilePath,66,487,473,36,-1,$WS_EX_CLIENTEDGE)
+	; Choose browser radios and update buttons
+	Global  $radioChooseFirefox = GUICtrlCreateRadio("Firefox",84,204,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	
-	global $btnBrowseStash = GUICtrlCreateButton("Browse",566,481,142,42,-1,-1)
-	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",280,213,112,32,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Update this web driver only when Firefox is not under control any more.")
+	
+	Global $radioChooseChrome = GUICtrlCreateRadio("Chrome",84,256,147,38,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	GUICtrlCreateLabel("Stash URL:",67,541,299,33,-1,-1)
+	Local  $btnUpdateChrome = GUICtrlCreateButton("Update",280,263,112,32,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Update this web driver only when Chrome is not under control any more.")
+	
+	Global $radioChooseEdge = GUICtrlCreateRadio("MS Edge",84,304,147,38,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+
+	Local $btnUpdateEdge = GUICtrlCreateButton("Update",280,311,112,32,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Update this web driver only when MS Edge is not under control any more.")
+	
+	; Button to specify browser exe location.
+	$btnExeLocation = GUICtrlCreateButton("Browser EXE Location ...",84,356,308,38,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	If $gsBrowserLocation <> "" Then 
+		GUICtrlSetTip(-1,"Currently location: " & $gsBrowserLocation & @CRLF & "Leave it empty to use default location.")
+	Else
+		GUICtrlSetTip(-1,"Currently location: empty" & @CRLF & "Leave it empty to use default location.")
+	EndIf
+	
+	; Profile choosing radios
+	GUICtrlCreateGroup("Browser Profile",486,137,248,269,$BS_CENTER,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	Global $radioChoosePrivate = GUICtrlCreateRadio("Private Profile",504,214,174,20,-1,-1)
+	GUICtrlSetTip(-1,"Stash will run in the browser with a private profile. Your browser's history will be safe.")
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",504,272,184,20,-1,-1)
+	GUICtrlSetTip(-1,"Stash will run in the browser's default user profile. Your bookmarks and add-ons will be available.")
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+
+	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group Browser Profile
+
+	GUICtrlCreateLabel("Stash-win.exe location:",34,431,299,33,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $inputStashURL = GUICtrlCreateInput($stashURL,68,572,473,36,-1,$WS_EX_CLIENTEDGE)
+	Global $inputStashWinLocation = GUICtrlCreateInput($stashFilePath,34,472,473,36,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	
+	global $btnBrowseStash = GUICtrlCreateButton("Browse",533,472,142,36,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+	GUICtrlCreateLabel("Stash URL:",36,526,299,33,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"-2")
+
+	Local $inputStashURL = GUICtrlCreateInput($stashURL,36,557,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Default is 'http://localhost:9999/'")
+	
+	; Group Media player
+	GUICtrlCreateGroup("Media Player",20,610,714,225,$BS_CENTER,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	GUICtrlCreateLabel("Alternative player location:",68,635,407,37,-1,-1)
+
+	GUICtrlCreateLabel("Player location:",38,641,173,35,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $inputMediaPlayerLocation = GUICtrlCreateInput($sMediaPlayerLocation,68,681,473,36,-1,$WS_EX_CLIENTEDGE)
+	Local $inputMediaPlayerLocation = GUICtrlCreateInput($sMediaPlayerLocation,38,676,473,36,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Use an alternative media player like VLC, potplayer...etc to player the scene file.")
 
-	Local $btnBrowsePlayer = GUICtrlCreateButton("Browse",566,675,142,42,-1,-1)
+	Local $btnBrowsePlayer = GUICtrlCreateButton("Browse",532,676,142,36,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Browse for the .exe file for the media player.")
 
-	GUICtrlCreateLabel("Player Presets:",68,749,162,30,-1,-1)
+	GUICtrlCreateLabel("Player Presets:",53,743,162,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 
-	Local $btnPlayerPot = GUICtrlCreateButton("PotPlayer",74,795,133,40,-1,-1)
+	Local $chk64Bit = GUICtrlCreateCheckbox("64 Bit",255,734,99,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
-
-	Local $btnPlayerVLC = GUICtrlCreateButton("VLC",207,795,133,40,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
-
-	Local $btnPlayerMPC = GUICtrlCreateButton("MPC",340,795,133,40,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Media Player Classic from  mpc-hc.org")
-
-	Local $btnPlayerGOM = GUICtrlCreateButton("GOM",74,842,133,40,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"GOM Player from player.gomlab.com")
-
-	Local $btnPlayerKodi = GUICtrlCreateButton("Kodi",207,842,133,40,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Kodi from XBMC Foundation")
-
-	Local $btnPlayerDeo = GUICtrlCreateButton("DeoVR",340,842,133,40,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"DeoVR the easy and free VR video player. Default SteamVR location.")
-
-	Local $chk64Bit = GUICtrlCreateCheckbox("64 Bit",288,749,99,38,-1,-1)
 	If @OSArch = "X64" Then
 		GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE, $GUI_CHECKED))
 	Else 
 		GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE))
 	EndIf
 
+	; Image show seconds.
+	GUICtrlCreateLabel("Image Slideshow",374,734,180,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetTip(-1,"When send a images list to the media player, how many seconds between each picture? Some players will ignore this." )
+	Local $inputSlideShow = GUICtrlCreateInput(string($iSlideShowSeconds),559,732,60,32,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetTip(-1,"In the m3u for images sent to the media player, how many seconds delay between each picture?" )
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlCreateLabel("seconds",635,732,83,30,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
 
-	Local $btnDone = GUICtrlCreateButton("Done",541,819,173,63,-1,-1)
+	Local $btnPlayerPot = GUICtrlCreateButton("PotPlayer",41,780,119,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"PotPlayer from potplayer.daum.net")
+
+	Local $btnPlayerVLC = GUICtrlCreateButton("VLC",164,780,119,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"VLC Media Player by VideoLAN")
+
+	Local $btnPlayerMPC = GUICtrlCreateButton("MPC",287,780,119,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Media Player Classic from  mpc-hc.org")
+
+	Local $btnPlayerGOM = GUICtrlCreateButton("GOM",411,780,119,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"GOM Player from player.gomlab.com")
+
+	Local $btnPlayerDeo = GUICtrlCreateButton("DeoVR",530,780,119,40,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"DeoVR the easy and free VR video player. Default SteamVR location.")
+
+	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group media player
+
+	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",25,852,333,38,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"-2")
+	
+	$chkBossKey = GUICtrlCreateCheckbox( "Enable", 373, 862, 92, 20, -1, -1 )
+	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+	If $giBossKey = 1 Then 
+		GUICtrlSetState( $chkBossKey, $GUI_CHECKED)
+	EndIf
+
+	Local $btnDone = GUICtrlCreateButton("Done",546,850,173,63,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
 	; Set the radio selection from current settings.
@@ -239,11 +253,17 @@ Func ShowSettings()
 				If Not @error Then
 					GUICtrlSetData($inputMediaPlayerLocation, $sFile)
 				EndIf
+				
 			Case $radioLocal
 				ChooseType("Local")
 			Case $radioRemote
 				ChooseType("Remote")
+				
 			Case $chkBossKey
+				
+			Case $radioChooseFirefox, $radioChooseChrome, $radioChooseEdge
+				$sBrowserLocation = ""	; Reset it to default location.
+				GUICtrlSetTip($btnExeLocation,"Currently location: empty" & @CRLF & "Leave it empty to use default location.")
 				
 			Case $btnDone
 				$sMediaPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
@@ -319,9 +339,17 @@ Func ShowSettings()
 					HotKeySet("^{ENTER}")
 				EndIf
 				
+				; Default browser location
+				If $sBrowserLocation <> "unchanged" Then 
+					$gsBrowserLocation = $sBrowserLocation
+					RegWrite($gsRegBase, "BrowserLocation", "REG_SZ", $gsBrowserLocation )
+					$bRestartRequired = True 
+				EndIf
+				
 				Local $sMessage =  $bRestartRequired ? "You need to restart the program for the new settings to take effect, though." : "Settings are in effect now."
 				MsgBox(64,"Setting saved.", $sMessage,0)
 				ExitLoop
+				
 			Case $btnUpdateFirefox
 				If $stashBrowser = "Firefox" Then 
 					_WD_DeleteSession($sSession)
@@ -362,6 +390,7 @@ Func ShowSettings()
 					$sSession = _WD_CreateSession($sDesiredCapabilities)
 					OpenURL($stashURL)
 				EndIf 
+					
 			Case $btnUpdateEdge
 				If $stashBrowser = "Edge" Then 
 					_WD_DeleteSession($sSession)
@@ -382,6 +411,22 @@ Func ShowSettings()
 					$sSession = _WD_CreateSession($sDesiredCapabilities)
 					OpenURL($stashURL)
 				EndIf 
+			
+			Case $btnExeLocation
+				If GUICtrlRead( $radioChooseEdge) = $GUI_CHECKED Then 
+					MsgBox( 0, "Cannot set exe for Edge", "Sorry. Cannot find a way to change default exe for Microsoft Edge.")
+					ContinueLoop 
+				EndIf
+				
+				Local $sExePath = FileOpenDialog( "Choose the Browser Exe file", @ProgramFilesDir & "\", "Exe Files (*.exe)", $FD_FILEMUSTEXIST )
+				If @error Then 
+					$sBrowserLocation = "unchanged"
+					MsgBox( $MB_SYSTEMMODAL, "Cancelled", "No file was selected.")
+				Else
+					$sBrowserLocation = $sExePath
+					GUICtrlSetTip($btnExeLocation, "Currently location: " & $sBrowserLocation & @CRLF & "Leave it empty to use default location.")
+				EndIf
+				
 			Case $btnPlayerPot
 				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
 					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\DAUM\PotPlayer\PotPlayerMini64.exe")
@@ -410,13 +455,6 @@ Func ShowSettings()
 					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\GRETECH\GOMPlayer\GOM.exe")
 				EndIf 
 					
-			Case $btnPlayerKodi
-				If GUICtrlRead($chk64Bit) = $GUI_CHECKED Then 
-					GUICtrlSetData($inputMediaPlayerLocation, $sProgramFilesDir & "\Kodi\Kodi.exe")
-				Else 
-					GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\Kodi\Kodi.exe")
-				EndIf 
-
 			Case $btnPlayerDeo
 				; For SteamVR
 				GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\Steam\steamapps\common\DeoVR Video Player\DeoVR.exe")
