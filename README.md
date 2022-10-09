@@ -2,10 +2,16 @@
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
 Though Stash is powerful. It comes with just a console window and not super easy to use for the beginners. This program is trying to improve that aspect and add some features to it.
 ## Features of SH
+
 <table>
   <tr>
    <td><img src="https://user-images.githubusercontent.com/22040708/181331368-2a10e5d2-5d24-4c83-a81c-5c944565257c.png" /></td>
-    <td>(New) Merge 2 performers' information to reduce performer duplications.</td>
+    <td>Merge 2 performers' information to reduce performer duplications.</td>
+  </tr>
+  <tr>
+   <td><img src="https://user-images.githubusercontent.com/22040708/194734010-f076d4e7-7527-4a1a-8944-ddc8c211c490.png" />
+   </td>
+    <td>Use Alt-P to easily play the Movie/Scene/Image/Gallery in the current browser tab.</td>
   </tr>
   <tr>
    <td><img src="https://user-images.githubusercontent.com/22040708/147078458-74833489-8460-4ba0-bd8b-4ded7263db94.png" /></td>
