@@ -41,7 +41,7 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.10"
+Global Const $currentVersion = "v2.3.11"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
@@ -51,7 +51,8 @@ Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wa
 				& @CRLF & "Also thanks to InstallForge.net for providing me such an easy-to-build installer!" _
 				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice," _
 				& @CRLF & "and thank you gamerjax for your play list suggestions!" _
-				& @CRLF & "Wraithstalker90, you made my program more solid, thank you !"
+				& @CRLF & "Wraithstalker90, you made my program more solid, thank you !" _
+				& @CRLF & "Also thank you EoinBurke93 for your play current tab suggestions!" 
 
 
 ; This already declared in Custom.au3
@@ -516,7 +517,13 @@ EndIf
 
 ; c("Session ID:" & $sSession)
 
-Global $sBrowserHandle
+Global $gsBrowserHandle = _WD_Window($sSession, "window")
+; c( "Browser Handle:" & $gsBrowserHandle )
+
+;~ Local $oStatus = _WD_Status()
+;~ If IsObj($oStatus) Then 
+;~ 	c( "WD Status :" & Json_Encode( $oStatus ) )
+;~ EndIf
 
 #EndRegion Globals
 
@@ -704,6 +711,66 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+Func SetHandleToActiveTab()
+	; Set the browser handle to the active tab
+	Local $sCurrentTitle = CurrentBrowserTitle()  ; Long name with extra
+	If $sCurrentTitle = "" Then Return SetError(1)
+	
+	Local $sTitle = _WD_Action( $sSession, "title")
+	c( "title:" & $sTitle)
+	c( "Current Title" & $sCurrentTitle)
+
+	Local $bFound = False 
+	if $sTitle <> stringleft( $sCurrentTitle, StringLen($sTitle) ) Then
+		Local $aHandles = _WD_Window($sSession, 'handles')
+		If @error = $_WD_ERROR_Success Then
+			Local $sCurrentTab = _WD_Window($sSession, 'window')
+			For $sHandle In $aHandles
+				_WD_Window($sSession, 'Switch', '{"handle":"' & $sHandle & '"}')
+				$sTitle = _WD_Action($sSession, "title")
+				
+				If $sTitle = stringleft( $sCurrentTitle, StringLen($sTitle) ) Then
+					$bFound = True
+					$gsBrowserHandle = $sHandle
+					ExitLoop
+				EndIf
+			Next
+		EndIf
+	Else
+		$bFound = True
+	EndIf 
+
+	If Not $bFound Then 
+		MsgBox(0, "Error", "Error switching to active tab. Line:" & @ScriptLineNumber)
+		Return SetError(2)
+	EndIf
+
+EndFunc
+
+Func CurrentBrowserTitle()
+	; Return the browser's active tab's title
+	Opt( "WinTitleMatchMode", 2 )
+	Local $sTitle
+	If $gsBrowserLocation = "" Then 
+		; Regular situation.
+		Switch $stashBrowser
+			Case "Firefox"
+				$sTitle = WinGetTitle( " — Mozilla Firefox" )
+			Case "Chrome"
+				$sTitle = WinGetTitle( " - Google Chrome" )
+			Case "Edge"
+				$sTitle = WinGetTitle( " - Microsoft​ Edge" )
+		EndSwitch
+	Else
+		; If the browser is a special one, use the exe file name
+		Local $sExe = StringMid( $gsBrowserLocation, StringInStr($gsBrowserLocation, "\", 0, -1) + 1 )
+		$sExe = StringLeft( $sExe, StringInStr( $sExe, ".") -1 )  ; Remove the ".exe"
+		$sTitle = WinGetTitle( " - " & $sExe )
+	EndIf 
+	Opt( "WinTitleMatchMode", 1 )	; Restore to default
+	Return $sTitle
+EndFunc
 
 Func IsEmpty( $item )
 	Switch VarGetType($item)
@@ -1116,33 +1183,29 @@ EndFunc
 
 Func GetURL()
 	; Probably it's close or no windows at all.
-	Local $sCurrentTab = _WD_Window($sSession, 'Window')
-	If @error <> $_WD_ERROR_Success Then 
-		; No current tab
-		$sCurrentTab = ""
-	EndIf
-	
+	c("Getting current URL")
+	Local $sResult
 	Local $aHandles =  _WD_Window($sSession, 'Handles')
 	Switch  UBound($aHandles)
 		case 0
 			; No wd windows opened.
 			MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
 			Return SetError(1)
-		case 1
-			Local $sResult = _WD_Action($sSession, "url")
-			If @error <> $_WD_ERROR_Success Then
-				; Set the last tab as the current browser tab
-				Local $sHandle =  $aHandles[UBound($aHandles)-1]
-				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
-				$sResult = _WD_Action($sSession, "url")
-			EndIf
 		case Else
-			; Multi-tab situation. if no current tab, then get the first tab.
-			If $sCurrentTab = "" Then 
-				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle[0] & '"}')
-			EndIf 
+			; Set the current handle to the front tab of the browser
+			SetHandleToActiveTab()
+			
 			$sResult = _WD_Action($sSession, "url")
+;~ 			If @error <> $_WD_ERROR_Success Then
+;~ 				; Set the last tab as the current browser tab
+;~ 				Local $sHandle =  $aHandles[UBound($aHandles)-1]
+;~ 				_WD_Window($sSession, "Switch", '{"handle":"'& $sHandle & '"}')
+;~ 				$sResult = _WD_Action($sSession, "url")
+;~ 				c ( "1 tab:" & $sResult )
+;~ 			EndIf
+
 	EndSwitch
+	
 	Return _URLDecode($sResult)
 EndFunc
 
@@ -1890,23 +1953,26 @@ Func PlayCurrentTab()
 	Local $sURL = GetURL()
 	If @error Then  Return SetError(1)
 
-	If StringInStr($sURL, "/scenes/") Then
-		PlayCurrentScene()
-	ElseIf StringInStr($sURL, "/movies/") Then
-		Local $nMovie = GetNumber($sURL, "movies")
-		PlayMovieInCurrentTab($nMovie)
-	ElseIf StringInStr($sURL, "/images") Or StringInStr($sURL, "/galleries/") Then
-		CurrentImagesViewer()
-	Else
-		MsgBox(0, "Not support", "Sorry, this operation only supports current movie/scene/images/gallery.")
-	EndIf
-
+	Select 
+		Case StringInStr($sURL, "/scenes/")
+			PlayCurrentScene()
+		Case StringInStr($sURL, "/movies/")
+			Local $nMovie = GetNumber($sURL, "movies")
+			PlayMovieInCurrentTab($nMovie)
+		Case StringInStr($sURL, "/images") Or StringInStr($sURL, "/galleries/")
+			CurrentImagesViewer()
+		Case Else
+			; The current tab is not 
+			MsgBox(0, "Not support", "Sorry, this operation only supports current movie/scene/images/gallery.")
+	EndSelect 
 EndFunc
 
 
 Func PlayCurrentScene()
 	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
+	
+	c( "Play current scene, URL:" & $sURL )
 
 	Local $aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
 	If @error Then Return SetError(@error)
@@ -2127,11 +2193,11 @@ Func OpenURL($url)
 			; No browser at all, open a new session.
 			$sSession = _WD_CreateSession($sDesiredCapabilities)
 			_WD_Navigate($sSession, $url)
-			$sBrowserHandle = _WD_Window($sSession, "Window")
+			$gsBrowserHandle = _WD_Window($sSession, "Window")
 	Else
 			; The session is still alive. Switch to the last handle to make sure that's the current one
-			$sBrowserHandle = ( $sCurrentTab = "" ? $sCurrentTab : $aHandles[$iCount-1] )
-			_WD_Window($sSession, "switch", '{"handle":"' & $sBrowserHandle & '"}' )
+			$gsBrowserHandle = ( $sCurrentTab = "" ? $sCurrentTab : $aHandles[$iCount-1] )
+			_WD_Window($sSession, "switch", '{"handle":"' & $gsBrowserHandle & '"}' )
 			_WD_Navigate($sSession, $url)
 	EndIf
 EndFunc
