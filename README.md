@@ -4,6 +4,8 @@ To use v17 with Stash_Helper, you need Stash_Helper v2.3.13 and above. <p>
 To be perfectly clear:
 * If you are using Stash v16.1 or below, use Stash_Helper v2.3.12 or below.
 * If you are using Stash v17 or above, use Stash_Helper v2.3.13 or above.
+Personally I don't recommend upgrade to v17 yet, because the new file structure actually generate duplicate file entries for every scene, and there is no indication of which file entry is the "primary file". Maybe simply the first entry of a file collection is the primary, but I am just regarding this implement as premature.
+
 
 # Stash_Helper
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
