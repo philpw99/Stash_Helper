@@ -3,7 +3,7 @@ Because v17 is using a very different file structure, my Stash_Helper 2.3.12 and
 To use v17 with Stash_Helper, you need Stash_Helper v2.3.13 and above. <p>
 To be perfectly clear:
 * If you are using Stash v16.1 or below, use Stash_Helper v2.3.12 or below.
-* If you are using Stash v17 or above, use Stash_Helper v2.3.13 or above.
+* If you are using Stash v17 or above, use Stash_Helper v2.4.1 or above.
 <p>
 Personally I don't recommend upgrade to v17 yet, because the new file structure actually generate duplicate file entries for every scene, and there is no indication of which file entry is the "primary file". Maybe simply the first entry of a file collection is the primary, but I am just regarding this implement as premature.
 
