@@ -1,6 +1,6 @@
 # Notice: stash v17 compatibility
 Because v17 is using a very different file structure, my Stash_Helper 2.3.12 and below will not work properly with it.
-To use v17 with Stash_Helper, you need Stash_Helper v2.3.13 and above. <p>
+To use v17 with Stash_Helper, you need Stash_Helper v2.4.1 and above. <p>
 To be perfectly clear:
 * If you are using Stash v16.1 or below, use Stash_Helper v2.3.12 or below.
 * If you are using Stash v17 or above, use Stash_Helper v2.4.1 or above.
