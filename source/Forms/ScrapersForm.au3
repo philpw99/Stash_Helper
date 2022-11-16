@@ -281,6 +281,7 @@ Func UpdateScrapers()
 	Local $aScraperFiles = _FileListToArray($sScraperPath, "*.yml", $FLTA_FILES)
 	; c("scraperPath:" & $sScraperPath)
 	; check their contents online.
+	Local $bAlwaysYes = False , $bAlwaysNo = False 
 	For $i = 1 to UBound($aScraperFiles)-1
 		Local $sLocalFile = FileRead($sScraperPath & $aScraperFiles[$i])
 		; get last line
@@ -305,31 +306,35 @@ Func UpdateScrapers()
 		Local $sRemoteDate =StringStripWS( stringmid($sLastLine2, 15), 3)
 		Local $iRemoteDate =Int( _Date_Time_Convert($sRemoteDate, "MMMM dd, yyyy", "yyyyMMdd" ) )
 		; c("local:" & $iLocalDate & "remote:" & $iRemoteDate)
+		
 		If $iRemoteDate > $iLocalDate Then
 			
-			$reply = MsgBox(3, "Update this scraper?", "The current scraper: " & $aScraperFiles[$i] & _ 
-				" was updated on " & $sLocalDate & ", and the new one is " & $sRemoteDate & ". Do you want to update this one?", 0)
-			If $reply = $IDNO Then
-				ContinueLoop  ; said no, so next file
-			ElseIf $reply = $IDCANCEL Then ; Cancel the whole thing.
-				ExitLoop
-			EndIf
-			; Yes
-			Local $hFile = FileOpen($sScraperPath & $aScraperFiles[$i], $FO_OVERWRITE)
-			Local $result = FileWrite($hFile, $sContent)
-			If $result = 0 Then 
-				MsgBox(0, "Error writing files", "Error in writing the scraper file:" & $aScraperFiles[$i])
+			If Not $bAlwaysYes And Not $bAlwaysNo Then 
+				$reply = _SimpleMsgBox( "The current scraper: " & $aScraperFiles[$i] & " was updated on " & $sLocalDate _ 
+					& ", and the new one is " & $sRemoteDate & ". Do you want to update this one?", "&Yes|No|Always Yes|Always No|Cancel" )
+				If $reply = 3 Then $bAlwaysYes = True 
+				If $reply = 4 Then $bAlwaysNo = True 
+			EndIf 
+			If $reply = 1 Or $bAlwaysYes Then 
+				; Yes or AlwaysYes
+				Local $hFile = FileOpen($sScraperPath & $aScraperFiles[$i], $FO_OVERWRITE)
+				Local $result = FileWrite($hFile, $sContent)
+				If $result = 0 Then 
+					MsgBox(0, "Error writing files", "Error in writing the scraper file:" & $aScraperFiles[$i])
+					FileClose($hFile)
+					ContinueLoop 
+				EndIf
 				FileClose($hFile)
-				ContinueLoop 
-			EndIf
-			FileClose($hFile)
-			$iTotalUpdated += 1
-			; Handle the .py scrapers
-			If StringInStr($sContent, "- python", 2) <>0 And StringInStr($sContent, "action: script") <> 0  Then
-				; Python script. Need to download the py file
-				Local $sPyFile = Stringleft($aScraperFiles[$i], stringinstr($aScraperFiles[$i], ".", 2, -1) -1) & ".py"
-				; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
-				InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
+				$iTotalUpdated += 1
+				; Handle the .py scrapers
+				If StringInStr($sContent, "- python", 2) <>0 And StringInStr($sContent, "action: script") <> 0  Then
+					; Python script. Need to download the py file
+					Local $sPyFile = Stringleft($aScraperFiles[$i], stringinstr($aScraperFiles[$i], ".", 2, -1) -1) & ".py"
+					; ConsoleWrite("download py:" & $sBase & $sPyFile & @CRLF & "To:" & $sScraperPath & $sPyFile)
+					InetGet( $sScraperBaseURL & $sPyFile, $sScraperPath & $sPyFile)
+				EndIf
+			ElseIf $reply = 5 Then	; Cancel
+				Return
 			EndIf
 		EndIf 
 	Next

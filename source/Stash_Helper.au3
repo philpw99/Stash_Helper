@@ -24,10 +24,14 @@
 #Include <GDIPlus.au3>
 ; opt("MustDeclareVars", 1)
 
+#include <WinAPIGdi.au3>
+; The scale of the screen. This needs to be called before the "SetProcessDPIAware"
+Global $gdScale = _WinAPI_EnumDisplaySettings('', $ENUM_CURRENT_SETTINGS)[0] / @DesktopWidth
+
 #include "DTC.au3"
 #include "URL_Encode.au3"
 #include "TrayMenuEx.au3"
-
+#include "SimpleMsgBox.au3"
 
 If AlreadyRunning() Then
 	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _
@@ -41,7 +45,10 @@ EndIf
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
-Global Const $currentVersion = "v2.3.11"
+
+; This version only compatible with Stash v17 and above.
+Global Const $currentVersion = "v2.4.1"
+
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
@@ -1034,7 +1041,7 @@ Func OpenMediaFolder()
 			MsgBox(0, "Cannot be a studio", "No folder location for studios.")
 			Return
 		Case "markers"
-			MsgBox(0, "Cannot be markers", "Sorry, no support for markers yet.")
+			MsgBox(0, "Cannot be markers", "Sorry, no support for markers.")
 			Return
 		Case "movies"
 			; Now get the movie info
@@ -1056,7 +1063,8 @@ Func OpenMediaFolder()
 			EndIf
 			; Just need the first scene location
 			Local $nSceneID = $oMovieData.Item("scenes")[0].Item("id")
-			$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path}}"}'
+			; $sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path}}"}'		; For v16 and below
+			$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){files{path}}}"}'	; For v17 and above
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
@@ -1066,14 +1074,10 @@ Func OpenMediaFolder()
 				Return SetError(1)
 			EndIf
 			Local $oSceneData = Json_ObjGet($oResult, "data.findScene")
-			Local $sFilePath = $oSceneData.Item("path")
-			; Geth the path only
-			Local $iPos =  StringInStr($sFilePath, "\", 2, -1)
-			Local $sPath = StringLeft($sFilePath, $iPos)
-			ShellExecute($sPath)
 
 		Case "scenes"
-			$sQuery = '{"query":"{findScene(id:' & $aStr[2] & '){path}}"}'
+			; $sQuery = '{"query":"{findScene(id:' & $aStr[2] & '){path}}"}'		; v16
+			$sQuery = '{"query":"{findScene(id:' & $aStr[2] & '){files{path}}}"}'	; v17
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
@@ -1083,13 +1087,10 @@ Func OpenMediaFolder()
 				Return SetError(1)
 			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findScene")
-			$sFilePath = $oSceneData.Item("path")
-			; Geth the path only
-			$iPos =  StringInStr($sFilePath, "\", 2, -1)
-			$sPath = StringLeft($sFilePath, $iPos)
-			ShellExecute($sPath)
+			
 		Case "images"
-			$sQuery = '{"query":"{findImage(id:' & $aStr[2] & '){path}}"}'
+			; $sQuery = '{"query":"{findImage(id:' & $aStr[2] & '){path}}"}'		; For v16
+			$sQuery = '{"query":"{findImage(id:' & $aStr[2] & '){files{path}}}"}'	; For v17
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
@@ -1099,13 +1100,10 @@ Func OpenMediaFolder()
 				Return SetError(1)
 			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findImage")
-			$sFilePath = $oSceneData.Item("path")
-			; Geth the path only
-			$iPos =  StringInStr($sFilePath, "\", 2, -1)
-			$sPath = StringLeft($sFilePath, $iPos)
-			ShellExecute($sPath)
+
 		Case "galleries"
-			$sQuery = '{"query":"{findGallery(id:' & $aStr[2] & '){path}}"}'
+			; $sQuery = '{"query":"{findGallery(id:' & $aStr[2] & '){path}}"}'		; For v16
+			$sQuery = '{"query":"{findGallery(id:' & $aStr[2] & '){files{path}}}"}'	; For v17
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
@@ -1115,13 +1113,20 @@ Func OpenMediaFolder()
 				Return SetError(1)
 			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findGallery")
-			$sFilePath = $oSceneData.Item("path")
-			; Geth the path only
-			$iPos =  StringInStr($sFilePath, "\", 2, -1)
-			$sPath = StringLeft($sFilePath, $iPos)
-			ShellExecute($sPath)
-
+		Case Else 
+			Return
 	EndSwitch
+	
+	If IsObj($oSceneData) Then 
+		; $sFilePath = $oSceneData.Item("path")					; For v16
+		$sFilePath = $oSceneData.Item("files")[0].Item("path")	; For v17
+		$sFilePath = FixPath($sFilePath)		; v17 need fixing
+		
+		; Geth the path only
+		$iPos =  StringInStr($sFilePath, "\", 2, -1)
+		$sPath = StringLeft($sFilePath, $iPos)
+		ShellExecute($sPath)
+	EndIf
 EndFunc
 
 Func ReloadScrapers()
@@ -1498,7 +1503,8 @@ EndFunc
 Func AddImageToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findImage(id:' & $sID & '){title,path,paths{image} }}"}'
+	; $sQuery = '{"query":"{findImage(id:' & $sID & '){title,path,paths{image} }}"}' 		; For v16
+	$sQuery = '{"query":"{findImage(id:' & $sID & '){title,files{path},paths{image} }}"}' 	; For v17
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1515,7 +1521,8 @@ Func AddImageToList($sID)
 	$aPlayList[$i][$LIST_TITLE] = "Image: " & $oData.Item("title")
 	$aPlayList[$i][$LIST_DURATION] = $iSlideShowSeconds
 	If $stashType = "Local" Then
-		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+		; $aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))						; for v16
+		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("files")[0].Item("path") )	; For v17
 	ElseIf $stashType = "Remote" Then
 		$aPlayList[$i][$LIST_FILE] = $oData.Item("paths").Item("image")
 	EndIf
@@ -1525,7 +1532,8 @@ EndFunc
 Func AddGalleryToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findGallery(id:' & $sID & '){title,image_count,path,images{path, paths{image} }}}"}'
+	; $sQuery = '{"query":"{findGallery(id:' & $sID & '){title,image_count,path,images{path, paths{image} }}}"}'  		; for v16
+	$sQuery = '{"query":"{findGallery(id:' & $sID & '){title,image_count,path,images{files{path}, paths{image} }}}"}'	; for v17
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1555,7 +1563,8 @@ Func AddGalleryToList($sID)
 		$aPlayList[$i][$LIST_TITLE] = "Gallery: " & $oData.Item("title") & " Image: " & $iCount
 		$aPlayList[$i][$LIST_DURATION] = $iSlideShowSeconds
 		If $stashType = "Local" Then
-			$aPlayList[$i][$LIST_FILE] = FixPath($oImage.Item("path"))
+			; $aPlayList[$i][$LIST_FILE] = FixPath($oImage.Item("path"))				; for v16
+			$aPlayList[$i][$LIST_FILE] = FixPath($oImage.Item("files")[0].Item("path"))	; for v17
 		ElseIf $stashType = "Remote" Then
 			$aPlayList[$i][$LIST_FILE] = $oImage.Item("paths").Item("image")
 		EndIf
@@ -1621,7 +1630,8 @@ Func AddMovieToList($sID)
 	For $i = 0 to $iCount-1
 		Local $nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
 		; Now add this scene to the  play list
-		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration},paths{stream} }}"}'
+		; $sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration},paths{stream} }}"}'	; For v16
+		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){ files{path,duration},paths{stream} }}"}'	; For v17
 		$sResult = Query($sQuery)
 		If @error Then Return SetError(1)
 
@@ -1635,9 +1645,11 @@ Func AddMovieToList($sID)
 		Local $j = UBound($aPlayList)
 		ReDim $aPlayList[$j+1][3]
 		$aPlayList[$j][$LIST_TITLE] = "Movie: " & $oMovieData.Item("name") & " - Scene " & ($i+1)
-		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )
+		; $aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )		; For v16
+		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("files")[0].Item("duration") )		; For v17
 		If $stashType = "Local" Then
-			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))
+			; $aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))					; for v16
+			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("files")[0].Item("path"))	; for v17
 		ElseIf $stashType = "Remote" Then
 			; disable for now. stash has very poor performance after adding extension
 ;~ 			$sPath = $oSceneData.Item("path")
@@ -1653,7 +1665,8 @@ EndFunc
 Func AddSceneToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
-	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,path,file{duration},paths{stream}}}"}'
+	; $sQuery = '{"query":"{findScene(id:' & $sID & '){title,path,file{duration},paths{stream}}}"}'		; for v16
+	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,files{path,duration},paths{stream}}}"}'		; for v17
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1668,9 +1681,11 @@ Func AddSceneToList($sID)
 	$i = UBound($aPlayList)
 	ReDim $aPlayList[$i+1][3]
 	$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("title")
-	$aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("file").Item("duration") )
+	; $aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("file").Item("duration") )			; for v16
+	$aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("files")[0].Item("duration") )			; for v17
 	If $stashType = "Local" Then
-		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))
+		; $aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("path"))					; for v16
+		$aPlayList[$i][$LIST_FILE] = FixPath($oData.Item("files")[0].Item("path"))	; for v17
 	ElseIf $stashType = "Remote" Then
 ;~ 		$sPath = $oData.Item("path")
 ;~ 		$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
@@ -1682,11 +1697,10 @@ EndFunc
 
 Func FixPath($sPath)
 	; Fix the path returned from Stash
-	; g:\myvideo instead of g:myvideo
+	; g:\myvideo\folder instead of g:myvideo\\folder
 	If stringmid($sPath, 2, 1) = ":" AND stringmid($sPath, 2, 2) <> ":\" Then
 		$sPath = StringLeft($sPath, 1) & ":\" & StringMid($sPath, 3)
 	EndIf
-	; g:\myvideo\mypath instead of g:\myvideo\\mypath
 	Return StringReplace($sPath, "\\", "\")
 EndFunc
 
@@ -1817,7 +1831,8 @@ EndFunc
 
 Func PlayMovieInCurrentTab($nMovie)
 	; Use graphql to get the scenes in movies
-	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path,paths{stream}}}}"}' )
+	; $sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path,paths{stream}}}}"}' ) 			; for v16
+	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{files{path},paths{stream}}}}"}' )		; for v17
 	If @error Then Return
 	Local $oData = Json_Decode($sResult)
 	If Not IsObj($oResult) Then
@@ -1834,7 +1849,8 @@ Func PlayMovieInCurrentTab($nMovie)
 			; Just play it.
 			If $stashType = "Local" Then
 				; Play the local file
-				Play( $aScenes[0].Item("path") )
+				; Play( $aScenes[0].Item("path") )					; for v16		
+				Play( $aScenes[0].Item("files")[0].Item("path") )			; For v17
 			ElseIf $stashType = "Remote" Then
 				; Add the stream its extension
 ;~ 				$sPath = $aScenes[0].Item("path")
@@ -1856,7 +1872,8 @@ Func PlayMovieInCurrentTab($nMovie)
 			For $i = 0 to UBound($aScenes) - 1
 				FileWriteLine($hFile, "#EXTINF:-1,")
 				If $stashType = "Local" Then
-					FileWriteLine($hFile, $aScenes[$i].Item("path") )
+					; FileWriteLine($hFile, $aScenes[$i].Item("path") )		; for v16
+					FileWriteLine($hFile, FixPath( $aScenes[$i].Item("files")[0].Item("path") )	)	; for v17
 				Elseif $stashType ="Remote" Then
 ;~ 					$sPath = $aScenes[$i].Item("path")
 ;~ 					$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
@@ -1874,6 +1891,7 @@ EndFunc
 Func Play($sFile)
 	; Use external player to play the file
 	If $stashType = "Local" or stringright($sFile, 4) = ".m3u" Then
+		$sFile = FixPath($sFile)			; Fix it if the format is slightly wrong.
 		Local $sPath = StringLeft($sFile, StringInStr($sFile, "\", -1) )
 		$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), Q($sPath), $SHEX_OPEN)
 	ElseIf $stashType = "Remote" Then
@@ -1980,7 +1998,8 @@ Func PlayCurrentScene()
 	c("scene id:" & $aMatch[0])
 
 	If $stashType = "Local" Then
-		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}'
+		; $sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}' 			; for v16
+		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){files{path}}}"}'		; for v17
 		c("scene query:" & $sQuery)
 
 		; This will query the graphql and get the path info
@@ -1997,7 +2016,13 @@ Func PlayCurrentScene()
 			Return
 		EndIf
 		; Get the scenes file path and play
-		$sFile = Json_ObjGet($oData, "data.findScene.path")
+		; $sFile = Json_ObjGet($oData, "data.findScene.path")				; For v16
+		Local $aFiles = Json_ObjGet($oData, "data.findScene.files")			; for v17
+		if UBound($aFiles) =  0 Then 
+			MsgBox(0, "Error in files array", "Find scene returns empty file array")
+			Return SetError(1)
+		EndIf
+		Local $sFile = $aFiles[0].Item("path")								; for v17
 		If Not IsString($sFile) Then
 			MsgBox(0, "Data error.", "Error getting the scene file/path.")
 			Return SetError(1)
