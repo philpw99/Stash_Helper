@@ -6,13 +6,13 @@ To be perfectly clear:
 * If you are using Stash v17 or above, use Stash_Helper v2.4.1 or above.
 <p>
 Personally I don't recommend upgrade to v17 yet, because there is an issue needs to be addressed. The previous file scans from v12 will generate file paths like 
-`g:my folder\my video.mp4` , instead of the normal `g:\my folder\my video.mp4`. The upgrades from v12 to v16 didn't fix this problem at all, they just leave the path as it is. Now in V17 if you do a scan with file path like that, you will end with 2 file entries and 2 parent_folder_ids, because Stash v17 will think `g:my folder` and `g:\my folder` are different folders, thus the file paths are also different. I got over 900 duplicate entries because of it.
+"g:my folder\my video.mp4" , instead of the normal "g:\my folder\my video.mp4". The upgrades from v12 to v16 didn't fix this problem at all, they just leave the path as it is. Now in V17 if you do a scan with file path like that, you will end with 2 file entries and 2 parent_folder_ids, because Stash v17 will think "g:my folder" and "g:\my folder" are different folders, thus the file paths are also different. I got over 900 duplicate entries because of it.
 
-The easy fix for this is to revert the sqlite database to the v16 one then using 
+The easy fix for this is to revert the sqlite database to the v16 one then using a sqlite dabase program to run SQL like this:
 ```
-UPDATE scene SET path = "g:\" || substr( path, 2) WHERE substr( path, 1, 2) = "g:" AND substr( path, 3, 1) != "\"
+UPDATE scene SET path = "g:\" || substr( path, 2) WHERE lower( substr( path, 1, 2)) == "g:" AND substr( path, 3, 1) != "\"
 ```
-to fix the small error in path. After that Stash v17 will handle the paths correctly.
+to fix the small error in path. After that Stash v17 will handle the paths correctly. 
 
 # Stash_Helper
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
