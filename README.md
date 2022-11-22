@@ -10,7 +10,7 @@ Personally I don't recommend upgrade to v17 yet, because there is an issue needs
 
 The easy fix for this is to revert the sqlite database to the v16 one then using a sqlite dabase program to run SQL like this:
 ```
-UPDATE scene SET path = "g:\" || substr( path, 2) WHERE lower( substr( path, 1, 2)) == "g:" AND substr( path, 3, 1) != "\"
+UPDATE scenes SET path = substr(path,1,2) || '\' || substr( path, 3) WHERE substr( path, 2, 1) == ':' AND substr( path, 3, 1) != '\';
 ```
 to fix the small error in path. After that Stash v17 will handle the paths correctly. 
 
