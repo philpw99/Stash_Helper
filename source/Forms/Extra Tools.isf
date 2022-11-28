@@ -1,0 +1,80 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+
+$Extra_Tools = GUICreate("Extra Tools",837,901,-1,-1,-1,-1)
+GUICtrlCreateLabel("If your scenes have duplicate file entries like"&@crlf&"'G:myfolder\\myfile.mp4' and 'G:\\myfolder\\myfile.mp4',"&@crlf&"you can use this function to get rid of them all in once.",60,80,689,214,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetBkColor(-1,"-2")
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=default
+title=Extra Tools
+breite=837
+hoehe=901
+style=-1
+exstyle=-1
+bgcolour=0xF0F0F0
+bgimage=none
+handle=Extra_Tools
+parent=
+code=
+codebeforegui=
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x000724CC]
+type=label
+handle=433
+locked=0
+resize=
+x=60
+y=80
+width=689
+height=214
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=If your scenes have duplicate file entries like[BREAK]'G:myfolder\\myfile.mp4' and 'G:\\myfolder\\myfile.mp4',[BREAK]you can use this function to get rid of them all in once.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+#ce

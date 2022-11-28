@@ -25,6 +25,9 @@
 ; opt("MustDeclareVars", 1)
 
 #include <WinAPIGdi.au3>
+
+#Region Globals
+
 ; The scale of the screen. This needs to be called before the "SetProcessDPIAware"
 Global $gdScale = _WinAPI_EnumDisplaySettings('', $ENUM_CURRENT_SETTINGS)[0] / @DesktopWidth
 
@@ -47,7 +50,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.1"
+Global Const $currentVersion = "v2.4.2"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -59,7 +62,8 @@ Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wa
 				& @CRLF & "Special thanks to BViking78 for the numerous pieces of advice," _
 				& @CRLF & "and thank you gamerjax for your play list suggestions!" _
 				& @CRLF & "Wraithstalker90, you made my program more solid, thank you !" _
-				& @CRLF & "Also thank you EoinBurke93 for your play current tab suggestions!" 
+				& @CRLF & "Also thank you EoinBurke93 for your play current tab suggestions!" _
+				& @CRLF & "githubxnoob, thank you for suggesting the ApiKey fix!"
 
 
 ; This already declared in Custom.au3
@@ -73,7 +77,7 @@ Global $aPlayList[0][3]
 
 TraySetIcon("helper2.ico")
 
-#Region Globals Initialization
+
 Opt("TrayAutoPause", 0)  ; No pause in tray
 ; Opt("TrayOnEventMode", 1) ; Enable tray on event mode. NO,NO, DON'T DO IT!
 
@@ -110,29 +114,27 @@ Global $stashPath = stringleft($stashFilePath, StringInStr($stashFilePath, "\", 
 Global $showStashConsole = RegRead($gsRegBase, "ShowStashConsole")
 If @error Then $showStashConsole = 0
 ; For v0.11 and above. Disable the browser from autostart
-Global $sNoBrowser = ""
+Global $gsNoBrowser = ""
 
 If $stashType = "Local" Then
-
 	; Now determine where to get the settings: working directory or %userprofile%\.stash
-	Global $sFileConfig = $stashPath & "config.yml"
-	If Not FileExists($sFileConfig) Then
+	Global $gsFileConfig = $stashPath & "config.yml"
+	If Not FileExists($gsFileConfig) Then
 		$stashPath = @UserProfileDir & "\.stash\"
-		$sFileConfig = $stashPath & "config.yml"
-		If not FileExists($sFileConfig) Then
+		$gsFileConfig = $stashPath & "config.yml"
+		If not FileExists($gsFileConfig) Then
 			MsgBox(0, "No Config file", "There is no config.yml in either current working directory or .stash directory yet." & @CRLF _
 				& "Please finish setup and generate a config.yml file then run the Stash Helper again.")
 		EndIf
 	EndIf
 
-	If FileExists($sFileConfig) Then
-		Local $sConfigContent = FileRead($sFileConfig)
+	If FileExists($gsFileConfig) Then
+		Global $gsConfigContent = FileRead($gsFileConfig)
 		; If exist this setting, then it's v0.11 and above
-		If StringInStr($sConfigContent, "nobrowser:", 2) <> 0 Then
-			$sNoBrowser = " --nobrowser"
+		If StringInStr($gsConfigContent, "nobrowser:", 2) <> 0 Then
+			$gsNoBrowser = " --nobrowser"
 		EndIf
 	EndIf
-
 EndIf
 
 ; Get the browser type and profile type
@@ -145,7 +147,7 @@ Global $showWDConsole = RegRead($gsRegBase, "ShowWDConsole")
 if @error Then $showWDConsole = 0
 
 Global $sDesiredCapabilities, $sSession
-Global $stashVersion, $stashURL
+Global $stashVersion
 Global $sMediaPlayerLocation = RegRead($gsRegBase, "MediaPlayerLocation")
 
 Global $iSlideShowSeconds = RegRead($gsRegBase, "SlideShowSeconds")
@@ -176,6 +178,10 @@ If @error Then
 	$giBossKey =  1
 EndIf
 
+#EndRegion Globals
+
+#Region Forms and browsers startup globals
+
 ; All forms.
 #include <Forms\SettingsForm.au3>
 #include <Forms\CustomizeForm.au3>
@@ -204,7 +210,7 @@ If $stashURL = "" Then
 	$iStashPID = ProcessExists("stash-win.exe")
 	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
 	; Run it for the first time. Merged.
-	$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE, $STDERR_MERGED)
+	$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE, $STDERR_MERGED)
 Else
 	; StashURL already saved. Launch it only when it's local.
 	If $stashType = "Local" Then
@@ -216,9 +222,9 @@ Else
 			If $iStashPID = 0 Then
 				; Not running. Launch it.
 				If $showStashConsole Then
-					$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
+					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
 				Else
-					$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
+					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 				EndIf
 			Else
 				; Already running. Get the PID which is listening to that port
@@ -268,76 +274,6 @@ EndIf
 
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
 ; Now create the top level tray menu items.
-
-; Use query to get the version
-Local $sResult = Query('{"query":"{version{version,hash}}"}')
-If Not @error Then
-	; Query and Get current version.
-	Local $oResult = Json_Decode($sResult)
-	If IsObj($oResult) Then
-		Local $oVersion = Json_ObjGet($oResult, "data.version")
-		$stashVersion = $oVersion.Item("version")
-		Local $stashVersionHash = $oVersion.Item("hash")
-
-		; Now get the latest version. Only above 0.11
-		$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
-		If Not @error Then
-			; Successfully get the info about latest version.
-			$oResult = Json_Decode($sResult)
-			If IsObj($oResult) Then
-				Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
-				Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
-				Local $sLatestVersionURL = $oLatestVersion.Item("url")
-				Local $sIgnoreHash = RegRead($gsRegBase, "IgnoreHash")
-				; c( "Latest Version Hash:" & $sLatestVersionHash & " VersionHash:" & $stashVersionHash & " latestVersionURL:" & $sLatestVersionURL)
-				If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash And $stashType = "Local" Then
-					; A new version is waiting.
-					Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
-					; c ("Latest Version:" & $sLatestVersionURL)
-					If UBound($aMatchStr) = 1 Then
-						Local $sNewVersion = $aMatchStr[0]
-						Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
-							& " Do you want to update the current stash to the new one?" & @CRLF _
-							& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
-							& "If you hit 'No', this new version will be ignored." & @CRLF _
-							& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
-						switch $hAskUpgrade
-							case 6 ;YES, update.
-								If $stashType = "Remote" Then
-									MsgBox(0, "Not local Stash", "The stash is not running locally. Cannot update it.")
-								Elseif $stashType = "Local" Then
-									ProcessClose($iStashPID)
-									InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
-									If Not @error Then
-										$stashVersion = ""
-										; Download successful.
-										FileDelete($stashFilePath)
-										FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
-										; Run it now.
-										If $showStashConsole Then
-											$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_SHOW)
-										Else
-											$iStashPID = Run($stashFilePath & $sNoBrowser, $stashPath, @SW_HIDE)
-										EndIf
-									EndIf
-								EndIf
-							case 7 ;NO, ignore.
-								RegWrite($gsRegBase, "IgnoreHash", "REG_SZ", $sLatestVersionHash)
-							case 2 ;CANCEL
-						endswitch
-					EndIf
-				EndIf
-			EndIf ; End of if $oResult is object.
-		EndIf ; End of Query latest version no error
-	EndIf ; End of if $oResult is object
-Else
-	; Error getting version
-	c("Version result:" & $sResult)
-EndIf
-
-If $stashVersion <> "" Then
-	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
-EndIf
 
 TrayCreateItem("Stash Helper " & $currentVersion ) ; 0
 TrayCreateItem("")
@@ -416,8 +352,7 @@ _TrayMenuAddImage($hIcons[19], $iTrayIconCount)
 Global $aCSSItems[0][4]
 ; Enums for the array row.
 Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
-; Create the css menu with a function.
-CreateCSSMenu()
+
 
 $iTrayIconCount += 1
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
@@ -532,7 +467,7 @@ Global $gsBrowserHandle = _WD_Window($sSession, "window")
 ;~ 	c( "WD Status :" & Json_Encode( $oStatus ) )
 ;~ EndIf
 
-#EndRegion Globals
+#EndRegion Forms and browsers startup globals
 
 #Region Tray Menu Handling
 
@@ -542,6 +477,27 @@ CreateSubMenu()
 TraySetState($TRAY_ICONSTATE_SHOW)
 ; Launch the web page
 OpenURL($stashURL)
+
+; Find out if this site is password protected and set ApiKey accordingly
+Global $gbUserPass = False, $gsApiKey = ""
+If IsLoginScreen() Then
+	$gbUserPass = True
+	TraySetClick(0)		; Disable tray menu
+	While True 
+		Sleep(1000)
+		If Not IsLoginScreen() Then ExitLoop 
+	Wend
+	SetApiKey()
+	TraySetClick(9)		; Enable tray menu
+EndIf
+
+CheckStashVersion()
+If $stashVersion <> "" Then
+	TrayTip("Stash is Active", $stashVersion, 5, $TIP_ICONASTERISK+$TIP_NOSOUND  )
+EndIf
+
+; Create the css menu with a function. It can only becalled after ApiKey is checked.
+CreateCSSMenu()
 
 ; Ctrl + Enter to close all web sessions and media player
 If  $giBossKey =  1 Then HotKeySet("^{ENTER}", "CloseSession")
@@ -712,12 +668,149 @@ While True
 	EndSwitch
 Wend
 
-
+; Not supposed to end here.
 Exit
 
 #EndRegion Tray menu
 
 #Region Functions
+
+Func CheckStashVersion()
+	; It will set the global $stashVersion variable
+	; Will prompt if there is a new version available.
+	If $gbUserPass And $gsApiKey = "" Then
+		; no api key, no access to any query
+		Return SetError(1)
+	EndIf
+	
+	Local $sResult = Query('{"query":"{version{version,hash}}"}')
+	If @error Then
+		MsgBox(0, "Error getting current version", "Error getting data for current verion.")
+		Return SetError(1)
+	EndIf
+	
+	; Query and Get current version.
+	Local $oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error getting current version", "Error decoding data for current verion.")
+		Return SetError(2)
+	EndIf 
+		
+	Local $oVersion = Json_ObjGet($oResult, "data.version")
+	$stashVersion = $oVersion.Item("version")
+	Local $stashVersionHash = $oVersion.Item("hash")
+
+	; Now get the latest version. Only above 0.11
+	$sResult = Query('{"query":"{latestversion{shorthash,url}}"}')
+	If @error Then
+		MsgBox(0, "Error getting latest version", "Error getting data for the latest version.")
+		Return SetError(3)
+	EndIf 
+	; Successfully get the info about latest version.
+	$oResult = Json_Decode($sResult)
+	If Not IsObj($oResult) Then
+		MsgBox(0, "Error getting latest version", "Error decoding data for the latest version.")
+		Return SetError(4)
+	EndIf
+	
+	Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
+	Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
+	Local $sLatestVersionURL = $oLatestVersion.Item("url")
+	Local $sIgnoreHash = RegRead($gsRegBase, "IgnoreHash")
+	
+	; c( "Latest Version Hash:" & $sLatestVersionHash & " VersionHash:" & $stashVersionHash & " latestVersionURL:" & $sLatestVersionURL)
+	If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash And $stashType = "Local" Then
+		; A new version is waiting.
+		Local $aMatchStr = StringRegExp($sLatestVersionURL, '\/download\/(.+)\/stash-win.exe', $STR_REGEXPARRAYMATCH)
+		; c ("Latest Version:" & $sLatestVersionURL)
+		If UBound($aMatchStr) = 1 Then
+			Local $sNewVersion = $aMatchStr[0]
+			Local $hAskUpgrade = MsgBox(266787,"A new stash version:" & $sNewVersion & " is available.","There is a new version of Stash: " & $sNewVersion _
+				& " Do you want to update the current stash to the new one?" & @CRLF _
+				& "If you hit 'Yes', the new version will automatically replace the old one." & @CRLF _
+				& "If you hit 'No', this new version will be ignored." & @CRLF _
+				& "If you hit 'Cancel', Stash_Helper will ask you again next time.",0)
+			switch $hAskUpgrade
+				case 6 ;YES, update.
+					If $stashType = "Remote" Then
+						MsgBox(0, "Not local Stash", "The stash is not running locally. Cannot update it.")
+					Elseif $stashType = "Local" Then
+						ProcessClose($iStashPID)
+						InetGet($sLatestVersionURL, @TempDir & "\stash-win.exe" )
+						If Not @error Then
+							$stashVersion = ""
+							; Download successful.
+							FileDelete($stashFilePath)
+							FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
+							; Run it now.
+							If $showStashConsole Then
+								$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
+							Else
+								$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
+							EndIf
+						EndIf
+					EndIf
+				case 7 ;NO, ignore.
+					RegWrite($gsRegBase, "IgnoreHash", "REG_SZ", $sLatestVersionHash)
+				case 2 ;CANCEL
+			endswitch
+		EndIf
+	EndIf
+EndFunc
+
+Func SetApiKey()
+	; Get the Api key from $gsConfigContent
+	
+	If $gbUserPass Then 
+		If $stashType = "Local" Then 
+			Local $iPos1 = StringInStr($gsConfigContent, "api_key: ")
+			If $iPos1 <> 0 Then 
+				$iPos1 += 9
+				Local $iPos2 = StringInStr($gsConfigContent, @LF, 1, 1, $iPos1)
+				If $iPos2 = 0 Then $iPos2 = StringLen($gsConfigContent) + 1
+				$gsApiKey = StringMid($gsConfigContent, $iPos1, $iPos2-$iPos1)
+				c("ApiKey:|" & $gsApiKey & "|")
+			Else 
+				$gsApiKey = ""			
+			EndIf
+			If $gsApiKey = "" Or $gsApiKey = '""' Then 
+				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _ 
+					& @CRLF & "You need to generate an apikey in order for most features to work properly." ,0)
+						
+				OpenURL($stashURL & "settings?tab=security" )
+				$gsApiKey = ""
+			EndIf
+			
+		ElseIf $stashType = "Remote" Then 
+			; Open the security tab to get the api key
+			OpenURL($stashURL & "settings?tab=security" )
+			_WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='value text-break']", 0, 10000 )
+			Local $sKey
+			Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='value text-break']" )
+			If $sElement <> "" Then 
+				$gsApiKey = _WD_ElementAction( $sSession, $sElement, "Text")
+			EndIf
+			If $gsApiKey = "" Then 
+				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _ 
+					& @CRLF & "You need to generate an apikey in order for most features to work properly." ,0)
+			Else
+				OpenURL($stashURL)				
+			EndIf
+		EndIf 
+
+	EndIf
+EndFunc
+
+Func IsLoginScreen()
+	; return true if current screen is login screen
+	Local $sActualURL = GetURL()
+	If @error Then Return SetError(1)	; no browser opened.
+	
+	Local $aURL = _WinHttpCrackUrl($sActualURL)
+	c( "$aURL[6]:" & $aURL[6] )
+	If $aURL[6] = "/login" Then Return True 
+	Return False
+EndFunc
 
 Func SetHandleToActiveTab()
 	; Set the browser handle to the active tab
@@ -749,7 +842,8 @@ Func SetHandleToActiveTab()
 	EndIf 
 
 	If Not $bFound Then 
-		MsgBox(0, "Error", "Error switching to active tab. Line:" & @ScriptLineNumber)
+		; MsgBox(0, "Error", "Error switching to active tab. Line:" & @ScriptLineNumber)
+		c( "error switching to active tab.")
 		Return SetError(2)
 	EndIf
 
@@ -876,6 +970,12 @@ Func CreateCSSMenu()
 	; Global $trayMenuCSS
 	; Global $aCSSItems[0][4]
 	; Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
+	
+	; It will have problems when a user/pass is set
+	If $gbUserPass And $gsApiKey = "" Then
+		Return SetError(1)
+	EndIf
+	
 	If UBound($aCSSItems) = 0 Then InitCSSArray($aCSSItems)
 
 	For $i = 0 To UBound($aCSSItems) -1
@@ -1437,7 +1537,7 @@ Func AddItemToList()
 	$sResult = Query2($sQuery)
 	if @error Then Return SetError(1)
 	Local $oData = Json_Decode($sResult)
-	If Not IsObj($oResult) Then
+	If Not IsObj($oData) Then
 		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
 		Return SetError(1)
 	EndIf
@@ -1835,7 +1935,7 @@ Func PlayMovieInCurrentTab($nMovie)
 	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{files{path},paths{stream}}}}"}' )		; for v17
 	If @error Then Return
 	Local $oData = Json_Decode($sResult)
-	If Not IsObj($oResult) Then
+	If Not IsObj($oData) Then
 		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
 		Return SetError(1)
 	EndIf
@@ -1878,7 +1978,9 @@ Func PlayMovieInCurrentTab($nMovie)
 ;~ 					$sPath = $aScenes[$i].Item("path")
 ;~ 					$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
 ;~ 					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") & $sExt )
+
 					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") )
+
 				EndIf
 			Next
 			FileClose($hFile)
@@ -1890,7 +1992,7 @@ EndFunc
 
 Func Play($sFile)
 	; Use external player to play the file
-	If $stashType = "Local" or stringright($sFile, 4) = ".m3u" Then
+	If $stashType = "Local" or stringright($sFile, 4) = ".m3u" or StringMid($sFile,2,1) == ":" Then
 		$sFile = FixPath($sFile)			; Fix it if the format is slightly wrong.
 		Local $sPath = StringLeft($sFile, StringInStr($sFile, "\", -1) )
 		$iMediaPlayerPID = ShellExecute($sMediaPlayerLocation, Q($sFile), Q($sPath), $SHEX_OPEN)
@@ -1925,6 +2027,12 @@ EndFunc
 
 Func Query($sQuery, $bIgnoreError = False )
 	; Use Stash's graphql to get results or do something
+	If $gbUserPass And $gsApiKey = "" Then 
+		; It won't work. Need to set ApiKey
+		c("Query without ApiKey, won't work")
+		Return SetError(1)
+	EndIf
+	
 	Local $hOpen = _WinHttpOpen()
 	Local $hConnect = _WinHttpConnect($hOpen, $aStashURL[2], $aStashURL[3])
 	If $hConnect = 0 Then
@@ -1935,17 +2043,74 @@ Func Query($sQuery, $bIgnoreError = False )
 	EndIf
 	Local $sPath = $aStashURL[6]	; Get the start relative path
 	If StringRight($sPath,1) = "/" Then $sPath = StringTrimRight($sPath,1)	; Remove the right slash
+	
+	$sPath &= "/graphql"
+	
+	; Use full http Request for query
+	$hRequest = _WinHttpOpenRequest($hConnect, "POST", $sPath)
+	If @error Then 
+		MsgBox(0, "error in request", "Error in opening a request to server.")
+		Return SetError(2)
+	EndIf
+	
+ 	; Add headers
+	If $gsApiKey <> "" Then 
+		_WinHttpAddRequestHeaders($hRequest, "ApiKey: " & $gsApiKey)
+		If @error Then
+			MsgBox(0, "error in request", "Error in adding apikey header to server.")
+			Return SetError(3)
+		EndIf
+	EndIf
+
+
+	_WinHttpAddRequestHeaders($hRequest, "Content-Type: application/json")
+	If @error Then
+		MsgBox(0, "error in request", "Error in adding content type header to server.")
+		Return SetError(3)
+	EndIf
+
 	; Have to use binary way to communicate, otherwise Japanese and Chinese words will have errors!
 	Local $BinQuery = StringToBinary($sQuery, $SB_UTF8)
-	Local $BinResult = _WinHttpSimpleRequest($hConnect, "POST", $sPath & "/graphql", Default, _
-		$BinQuery, "Content-Type: application/json", Default, 2 )  ; Last one is iMode: Reading UTF-8 Text
-	Local $result = BinaryToString( $BinResult, $SB_UTF8)
-	; c("result:" & $result)
-	; Close handles
+	
+	_WinHttpSendRequest($hRequest, Default, $BinQuery )
+	If @error Then
+		MsgBox(0, "error in request", "Error in sending request to server.")
+		Return SetError(3)
+	EndIf
+	
+
+	; wait for receiving response, maximum 10 seconds.
+	_WinHttpReceiveResponse($hRequest)
+	Local $hTimer = TimerInit()
+	While _WinHttpQueryDataAvailable($hRequest) = 0 
+		Sleep(1)
+		If TimerDiff($hTimer) > 10000 Then ExitLoop		; Wait max 10 seconds for response.
+	Wend
+
+	; Get return header
+	Local $iReturnCode = _WinHttpQueryHeaders($hRequest, $WINHTTP_QUERY_STATUS_CODE)
+	c("return header:" & $iReturnCode)
+	; Get return data
+
+	Local $binData = _WinHttpSimpleReadData($hRequest, 2)	; Read data in binary mode.
+
+
+;~  	Local $sHeader = 'Content-Type: application/json'
+;~  	If $gsApiKey <> "" Then $sHeader &= @CRLF & 'ApiKey: ' & $gsApiKey & @CRLF
+
+;~  	Local $BinResult = _WinHttpSimpleRequest($hConnect, "POST", $sPath, Default, _
+;~  		$BinQuery, $sHeader, Default, 2 )  ; Last one is iMode: Reading UTF-8 Text
+
+
+ 	Local $result = BinaryToString( $binData, $SB_UTF8)
+ 	c("returned result:" & $result)
+
+ 	; Close handles
+	_WinHttpCloseHandle($hRequest)
 	_WinHttpCloseHandle($hConnect)
 	_WinHttpCloseHandle($hOpen)
-	If @error Then
-		If Not $bIgnoreError Then MsgBox(0, "got data error",  "Error getting data from the stash server.")
+	If $iReturnCode >= 400 Then
+		MsgBox(0, "got data error",  "Error getting data from the stash server. Returned code:" & $iReturnCode)
 		Return SetError(1)
 	ElseIf QueryResultError($result) Then
 		If Not $bIgnoreError Then MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
@@ -1960,8 +2125,8 @@ Func PlayScene()
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
 
-	SwitchToTab("scenes")
-	If @error Then Return SetError(1)
+;~ 	SwitchToTab("scenes")
+;~ 	If @error Then Return SetError(1)
 
 	PlayCurrentScene()
 EndFunc
@@ -1998,21 +2163,17 @@ Func PlayCurrentScene()
 	c("scene id:" & $aMatch[0])
 
 	If $stashType = "Local" Then
-		; $sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path}}"}' 			; for v16
-		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){files{path}}}"}'		; for v17
+		; $sQuery = "{findScene(id:' & $aMatch[0] & '){path}}" 			; for v16
+		$sQuery = "{findScene(id:" & $aMatch[0] & "){files{path}}}"						; for v17
 		c("scene query:" & $sQuery)
 
 		; This will query the graphql and get the path info
-		$sResult = Query( $sQuery )
+		$sResult = Query2( $sQuery )
 		If @error  Then Return SetError(1)
 
 		Local $oData = Json_Decode($sResult)
-		If Not IsObj($oResult) Then
-			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
-			Return SetError(1)
-		EndIf
-		If Not Json_IsObject($oData) Then
-			MsgBox(0, "Data error.", "The data return from stash has errors.")
+		If @error Or Not Json_IsObject($oData) Then
+			MsgBox(0, "Data error.", "The data return from stash has errors. Error:" & @error & @CRLF & "Result:" & $sResult)
 			Return
 		EndIf
 		; Get the scenes file path and play
@@ -2037,17 +2198,13 @@ Func PlayCurrentScene()
 		If @error  Then Return SetError(1)
 
 		Local $oData = Json_Decode($sResult)
-		If Not IsObj($oResult) Then
-			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
-			Return SetError(1)
-		EndIf
 		If Not Json_IsObject($oData) Then
 			MsgBox(0, "Data error.", "The data return from stash has errors.")
 			Return
 		EndIf
 		; Get the scenes file path and play
 		$sFile = Json_ObjGet($oData, "data.findScene.paths.stream")
-		If Not IsString($sFile) Then
+		If Not IsString($sFile) or $sFile = "" Then
 			MsgBox(0, "Data error.", "Error getting the scene stream.")
 			Return SetError(1)
 		EndIf
