@@ -29,7 +29,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
     <td>Merge 2 performers' information to reduce performer duplications.</td>
   </tr>
   <tr>
-   <td><img src="https://user-images.githubusercontent.com/22040708/194734010-f076d4e7-7527-4a1a-8944-ddc8c211c490.png" />
+   <td><img src="https://user-images.githubusercontent.com/22040708/205507970-4b1fa73a-0ea1-44f8-88e3-fc455acebcf1.png" />
    </td>
     <td>Use Alt-P to easily play the Movie/Scene/Image/Gallery in the current browser tab.</td>
   </tr>
@@ -42,7 +42,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
     <td>Allow you to choose which browser to run Stash: Firefox, Chrome or MS Edge. It will use the according webdriver to launch Stash web interface.</td>
   </tr>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/22040708/147073952-91165432-05b0-4428-93fd-8d7a942e5710.png" /></td>
+    <td><img src="https://user-images.githubusercontent.com/22040708/205507768-31e31ee7-660d-4ed3-a2de-0e09c6422380.png" /></td>
     <td>Provide 20 bookmark slots for each category: Scenes, Images, Movies...etc. You can give a short name for that bookmark, like "Good Video", "Nice Actress"...etc, so you can find and launch the page easily. </td>
   </tr>
   <tr>
@@ -62,7 +62,8 @@ Though Stash is powerful. It comes with just a console window and not super easy
     <td>CSS Magic to add/remove special CSS Snippets quickly. Usually it works right away, sometimes you need to close the browser to take effect.</td>
   </tr>
   <tr>
-    <td><img src="https://user-images.githubusercontent.com/22040708/147079498-a2563ab1-6705-4d5d-a62a-e5a016744d42.png" /></td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/22040708/205507652-7765f393-8958-4ac2-a48b-6f9b2fe98fa1.png" /></td>
     <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
   </tr>
   <tr>
