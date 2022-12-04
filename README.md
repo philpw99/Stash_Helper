@@ -21,6 +21,10 @@ Though Stash is powerful. It comes with just a console window and not super easy
 
 <table>
   <tr>
+   <td><img src="https://user-images.githubusercontent.com/22040708/205507493-b2917555-f779-419f-b509-0e202bed9ac8.png" /></td>
+    <td>Supports password protected Stash. Local or remote. </td>
+  </tr>
+  <tr>
    <td><img src="https://user-images.githubusercontent.com/22040708/181331368-2a10e5d2-5d24-4c83-a81c-5c944565257c.png" /></td>
     <td>Merge 2 performers' information to reduce performer duplications.</td>
   </tr>
