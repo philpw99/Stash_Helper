@@ -50,7 +50,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.2"
+Global Const $currentVersion = "v2.4.3"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -940,12 +940,12 @@ Func JsonEscape( $str )
 EndFunc
 
 Func StartBrowser()
-	Switch $stashBrowser
-		Case "Firefox"
+	Switch StringLower($stashBrowser)
+		Case "firefox"
 			SetupFirefox()
-		Case "Chrome"
+		Case "chrome"
 			SetupChrome()
-		Case "Edge"
+		Case "edge"
 			SetupEdge()
 		Case Else
 			$stashBrowser = "Edge"
@@ -2321,13 +2321,18 @@ Func SetupChrome()
 			If $gsBrowserLocation <> "" Then 
 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
 					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
-					& '"excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
+					& '"excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
 			Else
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Google\\Chrome\\User Data\\", "--profile-directory=Default"]}}}}'
+				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
 			EndIf
 			
 	EndSwitch
 EndFunc   ;==>SetupChrome
+
+Func GetDefaultChromeProfile()
+	; return like "C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\"
+	return StringReplace( StringReplace( @AppDataDir, "\Roaming", "\Local") , "\", "\\" ) & "\\Google\\Chrome\\User Data\\"
+EndFunc
 
 Func SetupEdge()
 	If Not FileExists(@AppDataDir & "\Webdriver\" & "msedgedriver.exe") Then
@@ -2346,13 +2351,19 @@ Func SetupEdge()
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\msedge.log")
+	; Edge cannot specified an exe location.
 	Switch $stashBrowserProfile
 		Case "Private"
 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
 		Case "Default"
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"], "args": ["user-data-dir=C:\\Users\\' & @UserName & '\\AppData\\Local\\Microsoft\\Edge\\User Data\\", "profile-directory=Default"]}}}}'
+			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"], "args": ["user-data-dir='& GetDefaultEdgeProfile() & '", "profile-directory=Default"]}}}}'
 	EndSwitch
 EndFunc   ;==>SetupEdge
+
+Func GetDefaultEdgeProfile()
+	; C:\\Users\\user\\AppData\\Local\\Microsoft\\Edge\\User Data\\
+	Return StringReplace( StringReplace( @AppDataDir, "\Roaming", "\Local") , "\", "\\" ) & "\\Microsoft\\Edge\\User Data\\"
+EndFunc
 
 Func BrowserError($code, $sLine)
 	MsgBox(48,"Oops !","Something wrong with the browser's driver. Cannot continue." _
