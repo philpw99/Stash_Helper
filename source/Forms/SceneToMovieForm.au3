@@ -93,6 +93,7 @@ Func Scene2Movie()
 				; Add aditional filter.
 				BatchCreate($lvValues, $chkCover, ",studios:{value:"& $mInfo.Item("StudioID") & ", modifier:INCLUDES}")
 				RefreshAllTabs()
+				ExitLoop
 			Case $GUI_EVENT_RESIZED
 				GUICtrlSetImage($imgCover, $sTempPicFile)
 			Case $GUI_EVENT_CLOSE, $btnCancel
@@ -245,9 +246,9 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	; c ("ScreenShot:" & $mInfo.Item("ScreenShot") )
 
 	; Now the info is ready.
-	Local $sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & JsonEscape( $mInfo.Item("Title") ) & '\",' & _
+	Local $sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & _JsonStringEscape( $mInfo.Item("Title") ) & '\",' & _
 		($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date")  & '\",' ) & _
-		($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& JsonEscape( $mInfo.Item("Details") ) & '\",' ) & _
+		($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& _JsonStringEscape( $mInfo.Item("Details") ) & '\",' ) & _
 		($mInfo.Item("URL") = Null ? "" : 'url: \"' & $mInfo.Item("URL") & '\",' ) & _
 		($mInfo.Item("StudioID") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
 		($mInfo.Item("ScreenShot") = Null ? "" : 'front_image:\"' & $mInfo.Item("ScreenShot") & '\",' )& _

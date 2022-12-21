@@ -64,3 +64,44 @@ Func _URLDecode($toDecode)
  Next
  Return StringReplace($strChar, "+", " ")
 EndFunc
+
+;===============================================================================
+; _JsonEscape()
+; Description: : Encodes a string to be used for a Json string
+; Parameter(s): : $InputStr - The String to Encode
+; Return Value(s): : The encoded string
+; Reference: https://www.ietf.org/rfc/rfc4627.txt
+; Note: The input string is supposed to be encoded in UTF16 BE as AutoIt standard
+;===============================================================================
+
+Func _JsonStringEscape($InputStr)
+    $StrLength = StringLen($InputStr)
+    Local $EncodedString = ""
+	Local $sExemptChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !#$%&'()-_.+*,;?:@=<>{}^`~"
+    For $i = 1 To $StrLength
+        Local $sChar = StringMid($InputStr, $i, 1)
+        If StringInStr( $sExemptChars, $sChar, 1) Then
+            $EncodedString &= $sChar	; simple chars, add directly
+		Else
+			Switch $sChar
+				Case '"'		; quote
+					$EncodedString &= '\"'	
+				Case "\"		; back slash
+					$EncodedString &= '\\'	
+				Case ChrW(8)	; Backspace
+					$EncodedString &= "\b"
+				Case Chrw(12)	; Form feed
+					$EncodedString &= "\f"
+				Case ChrW(10)	; line feed
+					$EncodedString &= "\n"
+				Case ChrW(13)	; Carriage return
+					$EncodedString &= "\r"
+				Case ChrW(9)	; Tab
+					$EncodedString &= "\t"
+				Case Else 
+					$EncodedString &= '\u' & StringToBinary($sChar, 3)	; Always Big Endian if using \uXXXX
+			EndSwitch
+        EndIf
+    Next
+    Return $EncodedString
+EndFunc   ;==>_UnicodeURLEncode

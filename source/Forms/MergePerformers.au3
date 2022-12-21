@@ -134,7 +134,8 @@ Func MergePerformers()
 					Else
 						TrayTip("Done.", "Performer " & $sP1 & " deleted.", 5, $TIP_NOSOUND )
 					EndIf
-				EndIf 
+				EndIf
+				RefreshAllTabs() 
 				ExitLoop
 				
 			Case $GUI_EVENT_CLOSE, $btnCancel

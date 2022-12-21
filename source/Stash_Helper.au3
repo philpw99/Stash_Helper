@@ -32,7 +32,7 @@
 Global $gdScale = _WinAPI_EnumDisplaySettings('', $ENUM_CURRENT_SETTINGS)[0] / @DesktopWidth
 
 #include "DTC.au3"
-#include "URL_Encode.au3"
+#include "URL_Json_Encode.au3"
 #include "TrayMenuEx.au3"
 #include "SimpleMsgBox.au3"
 
@@ -50,7 +50,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.3"
+Global Const $currentVersion = "v2.4.4"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -893,50 +893,6 @@ EndFunc
 Func AddToList($sList, $sItem, $sep = "|" )
 	; Add items to a list separated by "|" for listview or listbox
 	Return $sList = "" ? $sItem : $sList & $sep & $sItem
-EndFunc
-
-Func JsonEscape( $str )
-	; This function will escape special characters in $str for Json
-    ; Backspace to be replaced with \b
-    ; Form feed to be replaced with \f
-    ; Newline to be replaced with \n
-    ; Carriage return to be replaced with \r
-    ; Tab to be replaced with \t
-    ; Double quote to be replaced with \"
-    ; Backslash to be replaced with \\
-	;
-	; The flag follows BinaryToString conversion.
-	; Flag 1 $SB_ANSI (1) = binary data is ANSI (default)
-    ; Flag 2 $SB_UTF16LE (2) = binary data is UTF16 Little Endian
-    ; Flag 3 $SB_UTF16BE (3) = binary data is UTF16 Big Endian
-    ; Flag 4 $SB_UTF8 (4) = binary data is UTF8
-	
-	Local $sNewStr = ""
-	
-	For $i = 1 to StringLen( $str )	; Loop through all the chars
-		$c = StringMid( $str, $i, 1)
-		Switch $c
-			Case Chr(8)
-				$sNewStr &= "\b"
-			Case Chr(9)
-				$sNewStr &= "\t"
-			Case Chr(10)
-				$sNewStr &= "\n"
-			Case Chr(12)
-				$sNewStr &= "\f"
-			Case Chr(13)
-				$sNewStr &= "\r"
-			Case '"'
-				$sNewStr &= "'"
-			Case Chr(92)	; Back slash
-				$sNewStr &= "\\"
-			Case Else 
-				$sNewStr &= $c
-		EndSwitch
-	Next
-
-	Return $sNewStr
-
 EndFunc
 
 Func StartBrowser()
@@ -2331,7 +2287,7 @@ EndFunc   ;==>SetupChrome
 
 Func GetDefaultChromeProfile()
 	; return like "C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\"
-	return StringReplace( StringReplace( @AppDataDir, "\Roaming", "\Local") , "\", "\\" ) & "\\Google\\Chrome\\User Data\\"
+	return _JsonStringEscape( StringReplace( @AppDataDir, "\Roaming", "\Local") & "\Google\Chrome\User Data\" )
 EndFunc
 
 Func SetupEdge()
@@ -2362,7 +2318,7 @@ EndFunc   ;==>SetupEdge
 
 Func GetDefaultEdgeProfile()
 	; C:\\Users\\user\\AppData\\Local\\Microsoft\\Edge\\User Data\\
-	Return StringReplace( StringReplace( @AppDataDir, "\Roaming", "\Local") , "\", "\\" ) & "\\Microsoft\\Edge\\User Data\\"
+	Return _JsonStringEscape( StringReplace( @AppDataDir, "\Roaming", "\Local") & "\Microsoft\Edge\User Data\" )
 EndFunc
 
 Func BrowserError($code, $sLine)
