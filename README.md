@@ -1,4 +1,4 @@
-#Notice: Chrome and Edge users.
+# Notice: Chrome and Edge users.
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
 
 # Notice: stash v17 compatibility
