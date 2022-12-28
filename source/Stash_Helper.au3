@@ -19,6 +19,7 @@
 #include <EditConstants.au3>
 #include <wd_core.au3>
 #include <wd_helper.au3>
+#include <wd_capabilities.au3>
 #include <Array.au3>
 #include <Inet.au3>
 #Include <GDIPlus.au3>
@@ -50,7 +51,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.4"
+Global Const $currentVersion = "v2.4.5"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -401,7 +402,8 @@ Global $customPerformers, $customStudios, $customTags
 If Not $showWDConsole Then
 	$_WD_DEBUG = $_WD_DEBUG_None
 EndIf
-
+; For debug purpose
+; $_WD_DEBUG = $_WD_DEBUG_Full
 StartBrowser()
 
 ; Slow down a bit here, or the web driver is not ready.
@@ -421,11 +423,15 @@ If @error <> $_WD_ERROR_Success Then
 				$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
 			Case "Edge"
 				$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+			Case "Opera"
+				$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
 		EndSwitch
 		
 	$iConsolePID = _WD_Startup()
 	if @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
 EndIf
+
+c("DesireCap:" & $sDesiredCapabilities)
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then
@@ -442,6 +448,8 @@ If @error <> $_WD_ERROR_Success Then
 				$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
 			Case "Edge"
 				$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+			Case "Opera"
+				$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
 		EndSwitch
 
 		StartBrowser()
@@ -452,12 +460,17 @@ If @error <> $_WD_ERROR_Success Then
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
 		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
-
+		
+	ElseIf @extended >= 400 Then
+		BrowserError( @extended,  @ScriptLineNumber)	; Show error and exit
+	Else
+		; Other errors:
+		BrowserError( @error, @ScriptLineNumber)	; Show other error and exit.
 	EndIf
 EndIf
 
-
-; c("Session ID:" & $sSession)
+c("Session ID:" & $sSession )
+; ExitScript()
 
 Global $gsBrowserHandle = _WD_Window($sSession, "window")
 ; c( "Browser Handle:" & $gsBrowserHandle )
@@ -903,6 +916,8 @@ Func StartBrowser()
 			SetupChrome()
 		Case "edge"
 			SetupEdge()
+		Case "opera"
+			SetupOpera()
 		Case Else
 			$stashBrowser = "Edge"
 			SetupEdge()  ; Edge is more universally available.
@@ -2203,28 +2218,51 @@ Func SetupFirefox()
 	_WD_Option('DriverClose', True)
 	_WD_Option('DriverParams', '--log trace')
 	_WD_Option('Port', 4444)
-	Switch $stashBrowserProfile
-		Case "Private"
-			if $gsBrowserLocation <> "" Then 
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true,' _
-					& '"moz:firefoxOptions":{"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '"}' _
-					& '}}}'
-			Else
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
-			EndIf
-			
-		Case "Default"
-			_WD_Option('DriverParams', '--marionette-port 2828')
-			
-			If $gsBrowserLocation <> "" Then 
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {' _
-				& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '",' _
-				& '"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
-			Else
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]},"browserName": "firefox"}}}'
-			EndIf
-			
-	EndSwitch
+	
+	; Use new UDF for capabilities
+	_WD_CapabilitiesStartup()
+	_WD_CapabilitiesAdd("firstMatch", "firefox")
+	_WD_CapabilitiesAdd("browserName", "firefox")
+	_WD_CapabilitiesAdd("acceptInsecureCerts", True)
+	_WD_CapabilitiesAdd("w3c", True)
+	; _WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
+
+	If $gsBrowserLocation <> "" Then
+		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
+	EndIf
+
+	If $stashBrowserProfile = "Default" Then 
+		_WD_Option('DriverParams', '--marionette-port 2828')
+		_WD_CapabilitiesAdd( "args", "-profile", GetDefaultFFProfile() )
+	Else
+		; Private profile. Do nothing for now.
+	EndIf
+	
+	$sDesiredCapabilities = _WD_CapabilitiesGet()
+
+	; The old way
+;~ 	Switch $stashBrowserProfile
+;~ 		Case "Private"
+;~ 			if $gsBrowserLocation <> "" Then 
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true,' _
+;~ 					& '"moz:firefoxOptions":{"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '"}' _
+;~ 					& '}}}'
+;~ 			Else
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
+;~ 			EndIf
+;~ 			
+;~ 		Case "Default"
+;~ 			_WD_Option('DriverParams', '--marionette-port 2828')
+;~ 			
+;~ 			If $gsBrowserLocation <> "" Then 
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": { "browserName": "firefox", "acceptInsecureCerts":true, "moz:firefoxOptions": {' _
+;~ 				& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '",' _
+;~ 				& '"args": ["-profile", "' & GetDefaultFFProfile() & '"]}}}}'
+;~ 			Else
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true, "moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]}}}}'
+;~ 			EndIf
+;~ 			
+;~ 	EndSwitch
 
 EndFunc   ;==>SetupGecko
 
@@ -2249,8 +2287,9 @@ Func GetDefaultFFProfile()
 EndFunc
 
 Func SetupChrome()
-	If Not FileExists( @AppDataDir & "\Webdriver\" & "chromedriver.exe") Then
-		Local $bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default, True) ; Force update
+	Local $sChromeDriverPath = @AppDataDir & "\Webdriver"
+	If Not FileExists( $sChromeDriverPath & "\chromedriver.exe" ) Then
+		Local $bGood = _WD_UPdateDriver ("chrome",  $sChromeDriverPath , Default, True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting Chrome Driver", _
 			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
@@ -2259,35 +2298,59 @@ Func SetupChrome()
 		EndIf
 	EndIf
 
-	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'chromedriver.exe')
+	_WD_Option('Driver', $sChromeDriverPath & '\chromedriver.exe')
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\chrome.log")
-	Switch $stashBrowserProfile
-		Case "Private"
-			If $gsBrowserLocation <> "" Then 
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
-					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
-					& '"excludeSwitches": [ "enable-automation"]}}}}'
-			Else
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
-			EndIf
-			
-		Case "Default"
-			If $gsBrowserLocation <> "" Then 
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
-					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
-					& '"excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
-			Else
-				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
-			EndIf
-			
-	EndSwitch
+	_WD_Option('DriverParams', '--verbose --log-path="' & $sChromeDriverPath & '\chrome.log"')
+	
+	; Use new UDF for capabilities
+	_WD_CapabilitiesStartup()
+	_WD_CapabilitiesAdd("firstMatch", "chrome")
+	_WD_CapabilitiesAdd("browserName", "chrome")
+	_WD_CapabilitiesAdd("w3c", True)
+	_WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
+
+	If $gsBrowserLocation <> "" Then
+		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
+	EndIf
+
+	If $stashBrowserProfile = "Default" Then 
+		_WD_CapabilitiesAdd( "args", "--no-sandbox")
+		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultChromeProfile() )
+		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
+		
+	Else
+		; Private profile. Do nothing for now.
+	EndIf
+	
+	$sDesiredCapabilities = _WD_CapabilitiesGet()
+	
+	; The old way
+;~ 	Switch $stashBrowserProfile
+;~ 		Case "Private"
+;~ 			If $gsBrowserLocation <> "" Then 
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "chrome", "goog:chromeOptions": {"w3c": true, ' _
+;~ 					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
+;~ 					& '"excludeSwitches": [ "enable-automation"]}}}}'
+;~ 			Else
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "chrome", "goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
+;~ 			EndIf
+;~ 			
+;~ 		Case "Default"
+;~ 			If $gsBrowserLocation <> "" Then 
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
+;~ 					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
+;~ 					& '"excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
+;~ 			Else
+;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
+;~ 			EndIf
+;~ 	EndSwitch
 EndFunc   ;==>SetupChrome
 
 Func GetDefaultChromeProfile()
 	; return like "C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\"
-	return _JsonStringEscape( StringReplace( @AppDataDir, "\Roaming", "\Local") & "\Google\Chrome\User Data\" )
+	; For new UDF wd_capabilities.au3, it's not necessary. just "c:\users\user..."
+	return StringReplace( @AppDataDir, "\Roaming", "\Local", 1 ) & "\Google\Chrome\User Data"
 EndFunc
 
 Func SetupEdge()
@@ -2295,8 +2358,8 @@ Func SetupEdge()
 		Local $b64 = ( @CPUArch = "X64" )
 		Local $bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
 		If Not $bGood Then
-			MsgBox(48,"Error Getting Firefox Driver", _
-			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
+			MsgBox(48,"Error Getting MS Edge Driver", _
+			"There is an error getting the driver for MS Edge. Maybe your Internet is down?" _
 				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
 			Exit
 		EndIf
@@ -2307,25 +2370,94 @@ Func SetupEdge()
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
 	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\msedge.log")
-	; Edge cannot specified an exe location.
-	Switch $stashBrowserProfile
-		Case "Private"
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
-		Case "Default"
-			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"ms:edgeOptions": {"excludeSwitches": [ "enable-automation"], "args": ["user-data-dir='& GetDefaultEdgeProfile() & '", "profile-directory=Default"]}}}}'
-	EndSwitch
+	
+	; Use new UDF for capabilities
+	_WD_CapabilitiesStartup()
+	_WD_CapabilitiesAdd("firstMatch", "msedge")
+	_WD_CapabilitiesAdd("browserName", "msedge")
+	_WD_CapabilitiesAdd("w3c", True)
+	_WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
+
+	If $gsBrowserLocation <> "" Then
+		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
+	EndIf
+
+	If $stashBrowserProfile = "Default" Then 
+		_WD_CapabilitiesAdd( "args", "--no-sandbox" )
+		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultEdgeProfile() )
+		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
+	Else
+		; Private profile. Do nothing for now.
+	EndIf
+	
+	$sDesiredCapabilities = _WD_CapabilitiesGet()
+
+	; The old way
+;~ 	Switch $stashBrowserProfile
+;~ 		Case "Private"
+;~ 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "MicrosoftEdge", "ms:edgeOptions": {"excludeSwitches": [ "enable-automation"]}}}}'
+;~ 		Case "Default"
+;~ 			$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "MicrosoftEdge", "ms:edgeOptions": {"excludeSwitches": [ "enable-automation"], "args": ["user-data-dir='& GetDefaultEdgeProfile() & '", "profile-directory=Default"]}}}}'
+;~ 	EndSwitch
+
 EndFunc   ;==>SetupEdge
 
 Func GetDefaultEdgeProfile()
 	; C:\\Users\\user\\AppData\\Local\\Microsoft\\Edge\\User Data\\
-	Return _JsonStringEscape( StringReplace( @AppDataDir, "\Roaming", "\Local") & "\Microsoft\Edge\User Data\" )
+	; Local $sPath = StringReplace( @AppDataDir, "\Roaming", "\Local", 1) & "\Microsoft\Edge\User Data\" 
+	; Return $sPath
+	Return StringReplace( @AppDataDir, "\Roaming", "\Local", 1) & "\Microsoft\Edge\User Data" 
 EndFunc
+
+Func SetupOpera()
+	If Not FileExists(@AppDataDir & "\Webdriver\" & "operadriver.exe") Then
+		Local $b64 = ( @CPUArch = "X64" )
+		Local $bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		If Not $bGood Then
+			MsgBox(48,"Error Getting Opera Driver", _
+			"There is an error getting the driver for Opera browser. Maybe your Internet is down?" _
+				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
+			Exit
+		EndIf
+	EndIf
+
+
+	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'operadriver.exe')
+	_WD_Option('DriverClose', True)
+	_WD_Option('Port', 9515)
+	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\opera.log")
+	
+	; Use new UDF for capabilities
+	_WD_CapabilitiesStartup()
+	_WD_CapabilitiesAdd("firstMatch", "opera")
+	_WD_CapabilitiesAdd("browserName", "opera")
+	_WD_CapabilitiesAdd("w3c", True)
+	_WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
+
+	If $gsBrowserLocation <> "" Then
+		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
+	EndIf
+
+	If $stashBrowserProfile = "Default" Then 
+		_WD_CapabilitiesAdd( "args", "--no-sandbox" )
+		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultOperaProfile() )
+		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
+	Else
+		; Private profile. Do nothing for now.
+	EndIf
+	
+	$sDesiredCapabilities = _WD_CapabilitiesGet()
+
+EndFunc   ;==>SetupOpera
+
+Func GetDefaultOperaProfile()
+	Return @AppDataDir & '\Opera software\Opera Stable'
+EndFunc
+
 
 Func BrowserError($code, $sLine)
 	MsgBox(48,"Oops !","Something wrong with the browser's driver. Cannot continue." _
 		 & @CRLF & "WinHTTP status code:" & $code & @CRLF & "Script Line:" & $sLine)
-	If $sSession Then _WD_DeleteSession($sSession)
-	_WD_Shutdown()
 	ExitScript()
 EndFunc
 

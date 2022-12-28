@@ -6,8 +6,6 @@
 #include <GuiTab.au3>
 #include <EditConstants.au3>
 
-If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
-
 $Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
 $tab = GUICtrlCreatetab(40,69,1201,673,-1,-1)
 GuiCtrlSetState(-1,2048)
@@ -81,6 +79,42 @@ _GUICtrlTab_SetCurFocus($tab,0)
 
 
 #cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Initial Settings
+breite=1326
+hoehe=809
+style=-1
+exstyle=-1
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$Initial_Settings
+parent=
+code=
+codebeforegui=
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
 [tab]
 type=tab
 handle=432
@@ -128,42 +162,6 @@ page=1
 text=Start
 textmode=text
 handle=
-[gui]
-Handle_deklaration=default
-Handle_deklaration_const=false
-title=Initial Settings
-breite=1326
-hoehe=809
-style=-1
-exstyle=-1
-bgcolour=0xF0F0F0
-bgimage=none
-handle=$Initial_Settings
-parent=
-code=
-codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
-xpos=-1
-ypos=-1
-center_gui=true
-title_textmode=normal
-isf_include_once=false
-only_controls_in_isf=false
-const_modus=default
-gui_code_in_function=false
-gui_code_in_function_name=
-gui_event_close=
-gui_event_minimize=
-gui_event_restore=
-gui_event_maximize=
-gui_event_mousemove=
-gui_event_primarydown=
-gui_event_primaryup=
-gui_event_secoundarydown=
-gui_event_secoundaryup=
-gui_event_resized=
-gui_event_dropped=
-defaultfont=MS Sans Serif
-defaultfontsize=8
 [0x00091D60]
 type=label
 handle=433

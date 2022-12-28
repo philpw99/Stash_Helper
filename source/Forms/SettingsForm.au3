@@ -78,34 +78,38 @@ Func ShowSettings()
 	GUICtrlCreateGroup("Preferred Browser",31,133,417,273,$BS_CENTER,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	GUICtrlCreateLabel("Drivers",292,174,83,24,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	GUICtrlSetBkColor(-1,"-2")
-
 	; Choose browser radios and update buttons
-	Global  $radioChooseFirefox = GUICtrlCreateRadio("Firefox",84,204,147,38,-1,-1)
+	Global  $radioChooseFirefox = GUICtrlCreateRadio("Firefox",84,180,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	
-	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",280,213,112,32,-1,-1)
+	Local $btnUpdateFirefox = GUICtrlCreateButton("Update",280,185,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when Firefox is not under control any more.")
 	
-	Global $radioChooseChrome = GUICtrlCreateRadio("Chrome",84,256,147,38,-1,-1)
+	Global $radioChooseChrome = GUICtrlCreateRadio("Chrome",84,220,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	Local  $btnUpdateChrome = GUICtrlCreateButton("Update",280,263,112,32,-1,-1)
+	Local  $btnUpdateChrome = GUICtrlCreateButton("Update",280,225,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when Chrome is not under control any more.")
 	
-	Global $radioChooseEdge = GUICtrlCreateRadio("MS Edge",84,304,147,38,-1,-1)
+	Global $radioChooseEdge = GUICtrlCreateRadio("MS Edge",84,260,147,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	Local $btnUpdateEdge = GUICtrlCreateButton("Update",280,311,112,32,-1,-1)
+	Local $btnUpdateEdge = GUICtrlCreateButton("Update",280,265,112,32,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Update this web driver only when MS Edge is not under control any more.")
+
+	Global $radioChooseOpera = GUICtrlCreateRadio("Opera",84,300,147,38,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+
+	Local $btnUpdateOpera = GUICtrlCreateButton("Update",280,305,112,32,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Update this web driver only when Opera is not under control any more.")
+
 	
 	; Button to specify browser exe location.
-	$btnExeLocation = GUICtrlCreateButton("Browser EXE Location ...",84,356,308,38,-1,-1)
+	$btnExeLocation = GUICtrlCreateButton("Browser EXE Location ...",84,350,308,38,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	If $gsBrowserLocation <> "" Then 
 		GUICtrlSetTip(-1,"Currently location: " & $gsBrowserLocation & @CRLF & "Leave it empty to use default location.")
@@ -293,6 +297,8 @@ Func ShowSettings()
 						$sBrowser = "Chrome"
 					Case GUICtrlRead($radioChooseEdge) = $GUI_CHECKED
 						$sBrowser = "Edge"
+					Case GUICtrlRead($radioChooseOpera) = $GUI_CHECKED
+						$sBrowser = "Opera"
 				EndSelect
 				RegWrite($gsRegBase, "Browser", "REG_SZ", $sBrowser)
 				If $sBrowser <> $stashBrowser Then $bRestartRequired = True
@@ -411,17 +417,35 @@ Func ShowSettings()
 					$sSession = _WD_CreateSession($sDesiredCapabilities)
 					OpenURL($stashURL)
 				EndIf 
+
+			Case $btnUpdateOpera
+				If $stashBrowser = "Opera" Then 
+					_WD_DeleteSession($sSession)
+					_WD_Shutdown()
+				EndIf 
+				Local $b64 = ( @OSArch = "X64" )
+				Local $bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+				If Not $bGood Then 
+					MsgBox(48,"Error Getting Opera Driver", _ 
+					"There is an error getting the driver for Opera. Maybe your Internet is down?" _ 
+						& @CRLF & "The program will try to get the driver again next time you launch it.",0)
+				Else 
+					MsgBox(64,"Opera Driver Updated","Opera webdriver just updated to the latest version.",0)
+				EndIf
+				If $stashBrowser = "Opera" Then 
+					SetupOpera()
+					_WD_Startup()
+					$sSession = _WD_CreateSession($sDesiredCapabilities)
+					OpenURL($stashURL)
+				EndIf 
 			
 			Case $btnExeLocation
-				If GUICtrlRead( $radioChooseEdge) = $GUI_CHECKED Then 
-					MsgBox( 0, "Cannot set exe for Edge", "Sorry. Cannot find a way to change default exe for Microsoft Edge.")
-					ContinueLoop 
-				EndIf
 				
 				Local $sExePath = FileOpenDialog( "Choose the Browser Exe file", @ProgramFilesDir & "\", "Exe Files (*.exe)", $FD_FILEMUSTEXIST )
 				If @error Then 
-					$sBrowserLocation = "unchanged"
-					MsgBox( $MB_SYSTEMMODAL, "Cancelled", "No file was selected.")
+					$sBrowserLocation = ""
+					MsgBox( $MB_SYSTEMMODAL, "Cancelled", "Now the Exe location is empty.")
+					GUICtrlSetTip($btnExeLocation, "Currently location: empty" & @CRLF & "Leave it empty to use default location.")
 				Else
 					$sBrowserLocation = $sExePath
 					GUICtrlSetTip($btnExeLocation, "Currently location: " & $sBrowserLocation & @CRLF & "Leave it empty to use default location.")

@@ -5,7 +5,7 @@
 ; Thank you for the shiny stuff :kiss:
 
 #comments-start
-	Copyright 2013 Dragana R. <trancexx at yahoo dot com>
+	Copyright 2020 Dragana R. <trancexx at yahoo dot com>
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 ; #INDEX# ===================================================================================
 ; Title ...............: WinHttp
 ; File Name............: WinHttp.au3
-; File Version.........: 1.6.4.1
+; File Version.........: 1.6.4.2
 ; Min. AutoIt Version..: v3.3.7.20
 ; Description .........: AutoIt wrapper for WinHTTP functions
 ; Author... ...........: trancexx, ProgAndy
@@ -529,12 +529,12 @@ EndFunc
 ; #FUNCTION# ;===============================================================================
 ; Name...........: _WinHttpOpenRequest
 ; Description ...: Creates an HTTP request handle.
-; Syntax.........: _WinHttpOpenRequest($hConnect [, $sVerb = Default [, $sObjectName = Default [, $sVersion = Default [, $sReferrer = Default [, $sAcceptTypes = Default [, $iFlags = Default ]]]]]])
+; Syntax.........: _WinHttpOpenRequest($hConnect [, $sVerb = Default [, $sObjectName = Default [, $sVersion = Default [, $sReferer = Default [, $sAcceptTypes = Default [, $iFlags = Default ]]]]]])
 ; Parameters ....: $hConnect - Handle to an HTTP session returned by _WinHttpConnect().
 ;                  $sVerb - [optional] HTTP verb to use in the request. Default is "GET".
 ;                  $sObjectName - [optional] The name of the target resource of the specified HTTP verb.
 ;                  $sVersion - [optional] HTTP version. Default is "HTTP/1.1"
-;                  $sReferrer - [optional] URL of the document from which the URL in the request $sObjectName was obtained. Default is $WINHTTP_NO_REFERER.
+;                  $sReferer - [optional] URL of the document from which the URL in the request $sObjectName was obtained. Default is $WINHTTP_NO_REFERER.
 ;                  $sAcceptTypes - [optional] Media types accepted by the client. Default is $WINHTTP_DEFAULT_ACCEPT_TYPES
 ;                  $iFlags - [optional] Integer specifying the Internet flag values. Default is $WINHTTP_FLAG_ESCAPE_DISABLE
 ; Return values .: Success - Returns valid session handle.
@@ -544,11 +544,11 @@ EndFunc
 ; Related .......: _WinHttpCloseHandle, _WinHttpConnect, _WinHttpSendRequest
 ; Link ..........: http://msdn.microsoft.com/en-us/library/aa384099.aspx
 ;============================================================================================
-Func _WinHttpOpenRequest($hConnect, $sVerb = Default, $sObjectName = Default, $sVersion = Default, $sReferrer = Default, $sAcceptTypes = Default, $iFlags = Default)
+Func _WinHttpOpenRequest($hConnect, $sVerb = Default, $sObjectName = Default, $sVersion = Default, $sReferer = Default, $sAcceptTypes = Default, $iFlags = Default)
 	__WinHttpDefault($sVerb, "GET")
 	__WinHttpDefault($sObjectName, "")
 	__WinHttpDefault($sVersion, "HTTP/1.1")
-	__WinHttpDefault($sReferrer, $WINHTTP_NO_REFERER)
+	__WinHttpDefault($sReferer, $WINHTTP_NO_REFERER)
 	__WinHttpDefault($iFlags, $WINHTTP_FLAG_ESCAPE_DISABLE)
 	Local $pAcceptTypes
 	If $sAcceptTypes = Default Or Number($sAcceptTypes) = -1 Then
@@ -569,7 +569,7 @@ Func _WinHttpOpenRequest($hConnect, $sVerb = Default, $sObjectName = Default, $s
 			"wstr", StringUpper($sVerb), _
 			"wstr", $sObjectName, _
 			"wstr", StringUpper($sVersion), _
-			"wstr", $sReferrer, _
+			"wstr", $sReferer, _
 			"ptr", $pAcceptTypes, _
 			"dword", $iFlags)
 	If @error Or Not $aCall[0] Then Return SetError(1, 0, 0)
@@ -1137,7 +1137,7 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 				$sCredName = $aStrSplit[0]
 				$sCredPass = $aStrSplit[1]
 			EndIf
-			$sAdditionalHeaders = StringReplace($sAdditionalHeaders, $aCred[0], "", 1)
+			$sAdditionalHeaders = StringReplace($sAdditionalHeaders, $aCred[0], "", 1, 0)
 		EndIf
 	EndIf
 	; Get page source
@@ -1151,14 +1151,14 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 		$iScheme = _WinHttpQueryOption($hInternet, $WINHTTP_OPTION_CONTEXT_VALUE); read internet scheme from the connection handle
 		Local $sAccpt = "Accept: text/html;q=0.9,text/plain;q=0.8,*/*;q=0.5"
 		If $iScheme = $INTERNET_SCHEME_HTTPS Then
-			$aHTML = _WinHttpSimpleSSLRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt, 1, Default, $sCredName, $sCredPass, $iIgnoreCertErr)
+			$aHTML = _WinHttpSimpleSSLRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt & @CRLF & $sAdditionalHeaders, 1, Default, $sCredName, $sCredPass, $iIgnoreCertErr)
 		ElseIf $iScheme = $INTERNET_SCHEME_HTTP Then
-			$aHTML = _WinHttpSimpleRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt, 1, Default, $sCredName, $sCredPass)
+			$aHTML = _WinHttpSimpleRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt & @CRLF & $sAdditionalHeaders, 1, Default, $sCredName, $sCredPass)
 		Else
 			; Try both http and https scheme and deduct the right one besed on response
-			$aHTML = _WinHttpSimpleRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt, 1, Default, $sCredName, $sCredPass)
+			$aHTML = _WinHttpSimpleRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt & @CRLF & $sAdditionalHeaders, 1, Default, $sCredName, $sCredPass)
 			If @error Or @extended >= $HTTP_STATUS_BAD_REQUEST Then
-				$aHTML = _WinHttpSimpleSSLRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt, 1, Default, $sCredName, $sCredPass, $iIgnoreCertErr)
+				$aHTML = _WinHttpSimpleSSLRequest($hInternet, Default, $sActionPage, Default, Default, $sAccpt & @CRLF & $sAdditionalHeaders, 1, Default, $sCredName, $sCredPass, $iIgnoreCertErr)
 				$iScheme = $INTERNET_SCHEME_HTTPS
 			Else
 				$iScheme = $INTERNET_SCHEME_HTTP
@@ -1170,7 +1170,10 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 		EndIf
 	EndIf
 	$sHTML = StringRegExpReplace($sHTML, "(?s)<!--.*?-->", "") ; removing comments
+	$sHTML = StringRegExpReplace($sHTML, "(?is)<\s*head.*?/head\s*>", "") ; removing head
 	$sHTML = StringRegExpReplace($sHTML, "(?s)<!\[CDATA\[.*?\]\]>", "") ; removing CDATA
+	$sHTML = StringRegExpReplace($sHTML, "(?is)<\s*style.*?/style\s*>", "") ; removing styles
+	$sHTML = StringRegExpReplace($sHTML, "(?is)<\s*script.*?/script\s*>", "") ; removing scripts
 	Local $fSend = False ; preset 'Sending flag'
 	; Find all forms on page
 	Local $aForm = StringRegExp($sHTML, "(?si)<\s*form(?:[^\w])\s*(.*?)(?:(?:<\s*/form\s*>)|\Z)", 3)
@@ -1218,15 +1221,21 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 		$sMethod = __WinHttpAttribVal($sAttributes, "method")
 		; Requested form is found. Set $fSend flag to true
 		$fSend = True
+		$sHTML = StringReplace($sHTML, $sForm, ">", 0, 1)
 		Local $sSpr1 = Chr(27), $sSpr2 = Chr(26)
 		__WinHttpNormalizeForm($sForm, $sSpr1, $sSpr2)
 		$aInput = StringRegExp($sForm, "(?si)<\h*(?:input|textarea|label|fieldset|legend|select|optgroup|option|button)\h*(.*?)/*\h*>", 3)
+		; HTML5 "form" attribute on form elements
+		__WinHttpHTML5Form($sHTML, $sId, @error, $aInput)
 		If @error Then Return SetError(2, 0, "") ; invalid form
+		$sHTML = ""
 		; HTML5 allows for "formaction", "formenctype", "formmethod" submit-control attributes to be set. If such control is "clicked" then form's attributes needs updating/correcting
 		__WinHttpHTML5FormAttribs($aDtas, $aFlds, $iNumParams, $aInput, $sAction, $sEnctype, $sMethod)
 		; Workout correct URL, scheme, etc...
-		__WinHttpNormalizeActionURL($sActionPage, $sAction, $iScheme, $sNewURL, $sEnctype, $sMethod, $sURL)
+		Local $sReferer
+		__WinHttpNormalizeActionURL($sActionPage, $sAction, $iScheme, $sNewURL, $sEnctype, $sMethod, $sReferer, $sURL)
 		If $fVarForm And Not $sNewURL Then Return SetError(5, 0, "") ; "action" must have URL specified
+		If $sReferer Then $sAdditionalHeaders &= @CRLF & "Referer: " & $sReferer
 		Local $aSplit, $sBoundary, $sPassedId, $sPassedData, $iNumRepl, $fMultiPart = False, $sSubmit, $sRadio, $sCheckBox, $sButton
 		Local $sGrSep = Chr(29), $iErr
 		Local $aInputIds[4][UBound($aInput)]
@@ -1235,8 +1244,8 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 				For $i = 0 To UBound($aInput) - 1 ; for all input elements
 					__WinHttpFormAttrib($aInputIds, $i, $aInput[$i])
 					If $aInputIds[1][$i] Then ; if there is 'name' field then add it
-						$aInputIds[1][$i] = __WinHttpURLEncode(StringReplace($aInputIds[1][$i], $sSpr1, " "), $sEnctype)
-						$aInputIds[2][$i] = __WinHttpURLEncode(StringReplace(StringReplace($aInputIds[2][$i], $sSpr2, ">"), $sSpr1, " "), $sEnctype)
+						$aInputIds[1][$i] = __WinHttpURLEncode(StringReplace($aInputIds[1][$i], $sSpr1, " ", 0, 1), $sEnctype)
+						$aInputIds[2][$i] = __WinHttpURLEncode(StringReplace(StringReplace($aInputIds[2][$i], $sSpr2, ">", 0, 1), $sSpr1, " ", 0, 1), $sEnctype)
 						$sAddData &= $aInputIds[1][$i] & "=" & $aInputIds[2][$i] & "&"
 						If $aInputIds[3][$i] = "submit" Then $sSubmit &= $aInputIds[1][$i] & "=" & $aInputIds[2][$i] & $sGrSep ; add to overall "submit" string
 						If $aInputIds[3][$i] = "radio" Then $sRadio &= $aInputIds[1][$i] & "=" & $aInputIds[2][$i] & $sGrSep ; add to overall "radio" string
@@ -1282,12 +1291,12 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 									If $sPassedData = $aInputIds[2][$j] Then
 										For $sChunkSub In StringSplit($sRadio, $sGrSep, 3) ; go tru all "radio" controls
 											If $sChunkSub == $aInputIds[1][$j] & "=" & $sPassedData Then
-												$sAddData = StringRegExpReplace(StringReplace($sAddData, "&", "&&"), "(?:&|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:&|\Z)", "&")
-												$sAddData = StringReplace(StringReplace($sAddData, "&&", "&"), "&&", "&")
+												$sAddData = StringRegExpReplace(StringReplace($sAddData, "&", "&&", 0, 1), "(?:&|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:&|\Z)", "&")
+												$sAddData = StringReplace(StringReplace($sAddData, "&&", "&", 0, 1), "&&", "&", 0, 1)
 												If StringLeft($sAddData, 1) = "&" Then $sAddData = StringTrimLeft($sAddData, 1)
 												$sAddData &= "&" & $sChunkSub
-												$sRadio = StringRegExpReplace(StringReplace($sRadio, $sGrSep, $sGrSep & $sGrSep), "(?:" & $sGrSep & "|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:" & $sGrSep & "|\Z)", $sGrSep)
-												$sRadio = StringReplace(StringReplace($sRadio, $sGrSep & $sGrSep, $sGrSep), $sGrSep & $sGrSep, $sGrSep)
+												$sRadio = StringRegExpReplace(StringReplace($sRadio, $sGrSep, $sGrSep & $sGrSep, 0, 1), "(?:" & $sGrSep & "|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:" & $sGrSep & "|\Z)", $sGrSep)
+												$sRadio = StringReplace(StringReplace($sRadio, $sGrSep & $sGrSep, $sGrSep, 0, 1), $sGrSep & $sGrSep, $sGrSep, 0, 1)
 											EndIf
 										Next
 									EndIf
@@ -1298,9 +1307,9 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 									$sButton = StringRegExpReplace($sButton, "\Q" & $aInputIds[1][$j] & "=" & $sPassedData & "\E" & $sGrSep & "*", "")
 									__WinHttpTrimBounds($sButton, $sGrSep)
 								Else
-									$sAddData = StringRegExpReplace(StringReplace($sAddData, "&", "&&"), "(?:&|\A)\Q" & $aInputIds[1][$j] & "=" & $aInputIds[2][$j] & "\E(?:&|\Z)", "&" & $aInputIds[1][$j] & "=" & $sPassedData & "&")
+									$sAddData = StringRegExpReplace(StringReplace($sAddData, "&", "&&", 0, 1), "(?:&|\A)\Q" & $aInputIds[1][$j] & "=" & $aInputIds[2][$j] & "\E(?:&|\Z)", "&" & $aInputIds[1][$j] & "=" & $sPassedData & "&")
 									$iNumRepl = @extended
-									$sAddData = StringReplace($sAddData, "&&", "&")
+									$sAddData = StringReplace($sAddData, "&&", "&", 0, 1)
 									If $iNumRepl > 1 Then ; equalize ; TODO: remove duplicates
 										$sAddData = StringRegExpReplace($sAddData, "(?:&|\A)\Q" & $aInputIds[1][$j] & "\E=.*?(?:&|\Z)", "&", $iNumRepl - 1)
 									EndIf
@@ -1334,11 +1343,11 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 							ElseIf $aInputIds[1][$j] == $aSplit[1] And $aInputIds[3][$j] = "radio" Then
 								For $sChunkSub In StringSplit($sRadio, $sGrSep, 3) ; go tru all "radio" controls
 									If $sChunkSub == $aInputIds[1][$j] & "=" & $sPassedData Then
-										$sAddData = StringReplace(StringReplace(StringRegExpReplace(StringReplace($sAddData, "&", "&&"), "(?:&|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:&|\Z)", "&"), "&&", "&"), "&&", "&")
+										$sAddData = StringReplace(StringReplace(StringRegExpReplace(StringReplace($sAddData, "&", "&&", 0, 1), "(?:&|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:&|\Z)", "&"), "&&", "&", 0, 1), "&&", "&", 0, 1)
 										If StringLeft($sAddData, 1) = "&" Then $sAddData = StringTrimLeft($sAddData, 1)
 										$sAddData &= "&" & $sChunkSub
-										$sRadio = StringRegExpReplace(StringReplace($sRadio, $sGrSep, $sGrSep & $sGrSep), "(?:" & $sGrSep & "|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:" & $sGrSep & "|\Z)", $sGrSep)
-										$sRadio = StringReplace(StringReplace($sRadio, $sGrSep & $sGrSep, $sGrSep), $sGrSep & $sGrSep, $sGrSep)
+										$sRadio = StringRegExpReplace(StringReplace($sRadio, $sGrSep, $sGrSep & $sGrSep, 0, 1), "(?:" & $sGrSep & "|\A)\Q" & $aInputIds[1][$j] & "\E(.*?)(?:" & $sGrSep & "|\Z)", $sGrSep)
+										$sRadio = StringReplace(StringReplace($sRadio, $sGrSep & $sGrSep, $sGrSep, 0, 1), $sGrSep & $sGrSep, $sGrSep, 0, 1)
 									EndIf
 								Next
 								ContinueLoop 2 ; process next parameter
@@ -1352,9 +1361,9 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 								ContinueLoop 2 ; process next parameter
 							EndIf
 						Next
-						$sAddData = StringRegExpReplace(StringReplace($sAddData, "&", "&&"), "(?:&|\A)\Q" & $aSplit[1] & "\E=.*?(?:&|\Z)", "&" & $aSplit[1] & "=" & $sPassedData & "&")
+						$sAddData = StringRegExpReplace(StringReplace($sAddData, "&", "&&", 0, 1), "(?:&|\A)\Q" & $aSplit[1] & "\E=.*?(?:&|\Z)", "&" & $aSplit[1] & "=" & $sPassedData & "&")
 						$iNumRepl = @extended
-						$sAddData = StringReplace($sAddData, "&&", "&")
+						$sAddData = StringReplace($sAddData, "&&", "&", 0, 1)
 						If $iNumRepl > 1 Then ; remove duplicates
 							$sAddData = StringRegExpReplace($sAddData, "(?:&|\A)\Q" & $aSplit[1] & "\E=.*?(?:&|\Z)", "&", $iNumRepl - 1)
 						EndIf
@@ -1375,8 +1384,8 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 					For $i = 0 To UBound($aInput) - 1 ; for all input elements
 						__WinHttpFormAttrib($aInputIds, $i, $aInput[$i])
 						If $aInputIds[1][$i] Then ; if there is 'name' field
-							$aInputIds[1][$i] = StringReplace($aInputIds[1][$i], $sSpr1, " ")
-							$aInputIds[2][$i] = StringReplace(StringReplace($aInputIds[2][$i], $sSpr2, ">"), $sSpr1, " ")
+							$aInputIds[1][$i] = StringReplace($aInputIds[1][$i], $sSpr1, " ", 0, 1)
+							$aInputIds[2][$i] = StringReplace(StringReplace($aInputIds[2][$i], $sSpr2, ">", 0, 1), $sSpr1, " ", 0, 1)
 							If $aInputIds[3][$i] = "file" Then
 								$sAddData &= "--" & $sBoundary & @CRLF & _
 										$sCDisp & $aInputIds[1][$i] & '"; filename=""' & @CRLF & @CRLF & _
@@ -1519,7 +1528,7 @@ Func _WinHttpSimpleFormFill(ByRef $hInternet, $sActionPage = Default, $sFormId =
 								EndIf
 							Next
 							$sAddData = StringRegExpReplace($sAddData, '(?s)\Q' & $sCDisp & $aSplit[1] & '"' & '\E\r\n\r\n.*?\r\n', _
-									$sCDisp & $aSplit[1] & '"' & @CRLF & @CRLF & StringReplace($sPassedData, "\", "\\") & @CRLF)
+									$sCDisp & $aSplit[1] & '"' & @CRLF & @CRLF & StringReplace($sPassedData, "\", "\\", 0, 1) & @CRLF)
 							$iNumRepl = @extended
 							If $iNumRepl > 1 Then ; remove duplicates
 								$sAddData = StringRegExpReplace($sAddData, '(?s)\Q--' & $sBoundary & @CRLF & $sCDisp & $aSplit[1] & '"' & '\E\r\n\r\n.*?\r\n', "", $iNumRepl - 1)
@@ -1663,11 +1672,11 @@ EndFunc
 ; #FUNCTION# ====================================================================================================================
 ; Name...........: _WinHttpSimpleRequest
 ; Description ...: A function to send a request in a simpler form
-; Syntax.........: _WinHttpSimpleRequest($hConnect, $sType, $sPath [, $sReferrer = Default [, $sDta = Default [, $sHeader = Default [, $fGetHeaders = Default [, $iMode = Default ]]]]])
+; Syntax.........: _WinHttpSimpleRequest($hConnect, $sType, $sPath [, $sReferer = Default [, $sDta = Default [, $sHeader = Default [, $fGetHeaders = Default [, $iMode = Default ]]]]])
 ; Parameters ....: $hConnect  - Handle from _WinHttpConnect
 ;                  $sType       - [optional] GET or POST (default: GET)
 ;                  $sPath       - [optional] request path (default: "" - empty string; meaning 'default' page on the server)
-;                  $sReferrer   - [optional] referrer (default: $WINHTTP_NO_REFERER)
+;                  $sReferer   - [optional] referer (default: $WINHTTP_NO_REFERER)
 ;                  $sDta        - [optional] POST-Data (default: $WINHTTP_NO_REQUEST_DATA)
 ;                  $sHeader     - [optional] additional Headers (default: $WINHTTP_NO_ADDITIONAL_HEADERS)
 ;                  $fGetHeaders - [optional] return response headers (default: False)
@@ -1688,11 +1697,11 @@ EndFunc
 ; Modified.......: trancexx
 ; Related .......: _WinHttpSimpleSSLRequest, _WinHttpSimpleSendRequest, _WinHttpSimpleSendSSLRequest, _WinHttpQueryHeaders, _WinHttpSimpleReadData
 ; ===============================================================================================================================
-Func _WinHttpSimpleRequest($hConnect, $sType = Default, $sPath = Default, $sReferrer = Default, $sDta = Default, $sHeader = Default, $fGetHeaders = Default, $iMode = Default, $sCredName = Default, $sCredPass = Default)
+Func _WinHttpSimpleRequest($hConnect, $sType = Default, $sPath = Default, $sReferer = Default, $sDta = Default, $sHeader = Default, $fGetHeaders = Default, $iMode = Default, $sCredName = Default, $sCredPass = Default)
 	; Author: ProgAndy
 	__WinHttpDefault($sType, "GET")
 	__WinHttpDefault($sPath, "")
-	__WinHttpDefault($sReferrer, $WINHTTP_NO_REFERER)
+	__WinHttpDefault($sReferer, $WINHTTP_NO_REFERER)
 	__WinHttpDefault($sDta, $WINHTTP_NO_REQUEST_DATA)
 	__WinHttpDefault($sHeader, $WINHTTP_NO_ADDITIONAL_HEADERS)
 	__WinHttpDefault($fGetHeaders, False)
@@ -1700,7 +1709,7 @@ Func _WinHttpSimpleRequest($hConnect, $sType = Default, $sPath = Default, $sRefe
 	__WinHttpDefault($sCredName, "")
 	__WinHttpDefault($sCredPass, "")
 	If $iMode > 2 Or $iMode < 0 Then Return SetError(4, 0, 0)
-	Local $hRequest = _WinHttpSimpleSendRequest($hConnect, $sType, $sPath, $sReferrer, $sDta, $sHeader)
+	Local $hRequest = _WinHttpSimpleSendRequest($hConnect, $sType, $sPath, $sReferer, $sDta, $sHeader)
 	If @error Then Return SetError(@error, 0, 0)
 	__WinHttpSetCredentials($hRequest, $sHeader, $sDta, $sCredName, $sCredPass)
 	Local $iExtended = _WinHttpQueryHeaders($hRequest, $WINHTTP_QUERY_STATUS_CODE)
@@ -1717,11 +1726,11 @@ EndFunc
 ; #FUNCTION# ====================================================================================================================
 ; Name...........: _WinHttpSimpleSendRequest
 ; Description ...: A function to send a request in a simpler form, but not read the data
-; Syntax.........: _WinHttpSimpleSendRequest($hConnect, $sType, $sPath [, $sReferrer = Default [, $sDta = Default [, $sHeader = Default ]]])
+; Syntax.........: _WinHttpSimpleSendRequest($hConnect, $sType, $sPath [, $sReferer = Default [, $sDta = Default [, $sHeader = Default ]]])
 ; Parameters ....: $hConnect  - Handle from _WinHttpConnect
 ;                  $sType       - [optional] GET or POST (default: GET)
 ;                  $sPath       - [optional] request path (default: "" - empty string; meaning 'default' page on the server)
-;                  $sReferrer   - [optional] referrer (default: $WINHTTP_NO_REFERER)
+;                  $sReferer   - [optional] referer (default: $WINHTTP_NO_REFERER)
 ;                  $sDta        - [optional] POST-Data (default: $WINHTTP_NO_REQUEST_DATA)
 ;                  $sHeader     - [optional] additional Headers (default: $WINHTTP_NO_ADDITIONAL_HEADERS)
 ; Return values .: Success      - handle of request after _WinHttpReceiveResponse.
@@ -1732,14 +1741,14 @@ EndFunc
 ; Author ........: ProgAndy
 ; Related .......: _WinHttpSimpleRequest, _WinHttpSimpleSendSSLRequest, _WinHttpSimpleReadData
 ; ===============================================================================================================================
-Func _WinHttpSimpleSendRequest($hConnect, $sType = Default, $sPath = Default, $sReferrer = Default, $sDta = Default, $sHeader = Default)
+Func _WinHttpSimpleSendRequest($hConnect, $sType = Default, $sPath = Default, $sReferer = Default, $sDta = Default, $sHeader = Default)
 	; Author: ProgAndy
 	__WinHttpDefault($sType, "GET")
 	__WinHttpDefault($sPath, "")
-	__WinHttpDefault($sReferrer, $WINHTTP_NO_REFERER)
+	__WinHttpDefault($sReferer, $WINHTTP_NO_REFERER)
 	__WinHttpDefault($sDta, $WINHTTP_NO_REQUEST_DATA)
 	__WinHttpDefault($sHeader, $WINHTTP_NO_ADDITIONAL_HEADERS)
-	Local $hRequest = _WinHttpOpenRequest($hConnect, $sType, $sPath, Default, $sReferrer)
+	Local $hRequest = _WinHttpOpenRequest($hConnect, $sType, $sPath, Default, $sReferer)
 	If Not $hRequest Then Return SetError(1, @error, 0)
 	If $sType = "POST" And $sHeader = $WINHTTP_NO_ADDITIONAL_HEADERS Then $sHeader = "Content-Type: application/x-www-form-urlencoded" & @CRLF
 	_WinHttpSetOption($hRequest, $WINHTTP_OPTION_DECOMPRESSION, $WINHTTP_DECOMPRESSION_FLAG_ALL)
@@ -1754,11 +1763,11 @@ EndFunc
 ; #FUNCTION# ====================================================================================================================
 ; Name...........: _WinHttpSimpleSendSSLRequest
 ; Description ...: A function to send a SSL request in a simpler form, but not read the data
-; Syntax.........: _WinHttpSimpleSendSSLRequest($hConnect [, $sType [, $sPath [, $sReferrer = Default [, $sDta = Default [, $sHeader = Default ]]]]])
+; Syntax.........: _WinHttpSimpleSendSSLRequest($hConnect [, $sType [, $sPath [, $sReferer = Default [, $sDta = Default [, $sHeader = Default ]]]]])
 ; Parameters ....: $hConnect  - Handle from _WinHttpConnect
 ;                  $sType       - [optional] GET or POST (default: GET)
 ;                  $sPath       - [optional] request path (default: "" - empty string; meaning 'default' page on the server)
-;                  $sReferrer   - [optional] referrer (default: $WINHTTP_NO_REFERER)
+;                  $sReferer   - [optional] referer (default: $WINHTTP_NO_REFERER)
 ;                  $sDta        - [optional] POST-Data (default: $WINHTTP_NO_REQUEST_DATA)
 ;                  $sHeader     - [optional] additional Headers (default: $WINHTTP_NO_ADDITIONAL_HEADERS)
 ; Return values .: Success      - handle of request after _WinHttpReceiveResponse.
@@ -1767,23 +1776,32 @@ EndFunc
 ;                  |2 - could not send request
 ;                  |3 - could not receive response
 ; Author ........: ProgAndy
+; Modified.......: trancexx
 ; Related .......: _WinHttpSimpleSSLRequest, _WinHttpSimpleSendRequest, _WinHttpSimpleReadData
 ; ===============================================================================================================================
-Func _WinHttpSimpleSendSSLRequest($hConnect, $sType = Default, $sPath = Default, $sReferrer = Default, $sDta = Default, $sHeader = Default, $iIgnoreAllCertErrors = 0)
+Func _WinHttpSimpleSendSSLRequest($hConnect, $sType = Default, $sPath = Default, $sReferer = Default, $sDta = Default, $sHeader = Default, $iIgnoreAllCertErrors = 0)
 	; Author: ProgAndy
 	__WinHttpDefault($sType, "GET")
 	__WinHttpDefault($sPath, "")
-	__WinHttpDefault($sReferrer, $WINHTTP_NO_REFERER)
+	__WinHttpDefault($sReferer, $WINHTTP_NO_REFERER)
 	__WinHttpDefault($sDta, $WINHTTP_NO_REQUEST_DATA)
 	__WinHttpDefault($sHeader, $WINHTTP_NO_ADDITIONAL_HEADERS)
-	Local $hRequest = _WinHttpOpenRequest($hConnect, $sType, $sPath, Default, $sReferrer, Default, BitOR($WINHTTP_FLAG_SECURE, $WINHTTP_FLAG_ESCAPE_DISABLE))
+	Local $hRequest = _WinHttpOpenRequest($hConnect, $sType, $sPath, Default, $sReferer, Default, BitOR($WINHTTP_FLAG_SECURE, $WINHTTP_FLAG_ESCAPE_DISABLE))
 	If Not $hRequest Then Return SetError(1, @error, 0)
 	If $iIgnoreAllCertErrors Then _WinHttpSetOption($hRequest, $WINHTTP_OPTION_SECURITY_FLAGS, BitOR($SECURITY_FLAG_IGNORE_UNKNOWN_CA, $SECURITY_FLAG_IGNORE_CERT_DATE_INVALID, $SECURITY_FLAG_IGNORE_CERT_CN_INVALID, $SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE))
 	If $sType = "POST" And $sHeader = $WINHTTP_NO_ADDITIONAL_HEADERS Then $sHeader = "Content-Type: application/x-www-form-urlencoded" & @CRLF
 	_WinHttpSetOption($hRequest, $WINHTTP_OPTION_DECOMPRESSION, $WINHTTP_DECOMPRESSION_FLAG_ALL)
 	_WinHttpSetOption($hRequest, $WINHTTP_OPTION_UNSAFE_HEADER_PARSING, 1)
+	_WinHttpSetOption($hRequest, $WINHTTP_OPTION_REDIRECT_POLICY, $WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS)
+	_WinHttpSetOption(_WinHttpQueryOption(_WinHttpQueryOption($hRequest, $WINHTTP_OPTION_PARENT_HANDLE), $WINHTTP_OPTION_PARENT_HANDLE), $WINHTTP_OPTION_SECURE_PROTOCOLS, BitOR($WINHTTP_FLAG_SECURE_PROTOCOL_ALL, $WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_1, $WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2))
 	_WinHttpSendRequest($hRequest, $sHeader, $sDta)
-	If @error Then Return SetError(2, 0 * _WinHttpCloseHandle($hRequest), 0)
+	If @error Then
+		If __WinHttpGetLastError() = $ERROR_WINHTTP_SECURE_FAILURE Then
+			_WinHttpSetOption(_WinHttpQueryOption(_WinHttpQueryOption($hRequest, $WINHTTP_OPTION_PARENT_HANDLE), $WINHTTP_OPTION_PARENT_HANDLE), $WINHTTP_OPTION_SECURE_PROTOCOLS, BitOR($WINHTTP_FLAG_SECURE_PROTOCOL_TLS1, $WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_1, $WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2))
+			_WinHttpSendRequest($hRequest, $sHeader, $sDta)
+			If @error Then Return SetError(2, 0 * _WinHttpCloseHandle($hRequest), 0)
+		EndIf
+	EndIf
 	_WinHttpReceiveResponse($hRequest)
 	If @error Then Return SetError(3, 0 * _WinHttpCloseHandle($hRequest), 0)
 	Return $hRequest
@@ -1792,11 +1810,11 @@ EndFunc
 ; #FUNCTION# ====================================================================================================================
 ; Name...........: _WinHttpSimpleSSLRequest
 ; Description ...: A function to send a SSL request in a simpler form
-; Syntax.........: _WinHttpSimpleSSLRequest($hConnect [, $sType [, $sPath [, $sReferrer = Default [, $sDta = Default [, $sHeader = Default [, $fGetHeaders = Default [, $iMode = Default ]]]]]]])
+; Syntax.........: _WinHttpSimpleSSLRequest($hConnect [, $sType [, $sPath [, $sReferer = Default [, $sDta = Default [, $sHeader = Default [, $fGetHeaders = Default [, $iMode = Default ]]]]]]])
 ; Parameters ....: $hConnect  - Handle from _WinHttpConnect
 ;                  $sType       - [optional] GET or POST (default: GET)
 ;                  $sPath       - [optional] request path (default: "" - empty string; meaning 'default' page on the server)
-;                  $sReferrer   - [optional] referrer (default: $WINHTTP_NO_REFERER)
+;                  $sReferer   - [optional] referer (default: $WINHTTP_NO_REFERER)
 ;                  $sDta        - [optional] POST-Data (default: $WINHTTP_NO_REQUEST_DATA)
 ;                  $sHeader     - [optional] additional Headers (default: $WINHTTP_NO_ADDITIONAL_HEADERS)
 ;                  $fGetHeaders - [optional] return response headers (default: False)
@@ -1817,11 +1835,11 @@ EndFunc
 ; Modified.......: trancexx
 ; Related .......: _WinHttpSimpleRequest, _WinHttpSimpleSendSSLRequest, _WinHttpSimpleSendRequest, _WinHttpQueryHeaders, _WinHttpSimpleReadData
 ; ===============================================================================================================================
-Func _WinHttpSimpleSSLRequest($hConnect, $sType = Default, $sPath = Default, $sReferrer = Default, $sDta = Default, $sHeader = Default, $fGetHeaders = Default, $iMode = Default, $sCredName = Default, $sCredPass = Default, $iIgnoreCertErrors = 0)
+Func _WinHttpSimpleSSLRequest($hConnect, $sType = Default, $sPath = Default, $sReferer = Default, $sDta = Default, $sHeader = Default, $fGetHeaders = Default, $iMode = Default, $sCredName = Default, $sCredPass = Default, $iIgnoreCertErrors = 0)
 	; Author: ProgAndy
 	__WinHttpDefault($sType, "GET")
 	__WinHttpDefault($sPath, "")
-	__WinHttpDefault($sReferrer, $WINHTTP_NO_REFERER)
+	__WinHttpDefault($sReferer, $WINHTTP_NO_REFERER)
 	__WinHttpDefault($sDta, $WINHTTP_NO_REQUEST_DATA)
 	__WinHttpDefault($sHeader, $WINHTTP_NO_ADDITIONAL_HEADERS)
 	__WinHttpDefault($fGetHeaders, False)
@@ -1829,17 +1847,19 @@ Func _WinHttpSimpleSSLRequest($hConnect, $sType = Default, $sPath = Default, $sR
 	__WinHttpDefault($sCredName, "")
 	__WinHttpDefault($sCredPass, "")
 	If $iMode > 2 Or $iMode < 0 Then Return SetError(4, 0, 0)
-	Local $hRequest = _WinHttpSimpleSendSSLRequest($hConnect, $sType, $sPath, $sReferrer, $sDta, $sHeader, $iIgnoreCertErrors)
+	Local $hRequest = _WinHttpSimpleSendSSLRequest($hConnect, $sType, $sPath, $sReferer, $sDta, $sHeader, $iIgnoreCertErrors)
 	If @error Then Return SetError(@error, 0, 0)
 	__WinHttpSetCredentials($hRequest, $sHeader, $sDta, $sCredName, $sCredPass)
+	Local $iExtended = _WinHttpQueryHeaders($hRequest, $WINHTTP_QUERY_STATUS_CODE)
+
 	If $fGetHeaders Then
 		Local $aData[3] = [_WinHttpQueryHeaders($hRequest), _WinHttpSimpleReadData($hRequest, $iMode), _WinHttpQueryOption($hRequest, $WINHTTP_OPTION_URL)]
 		_WinHttpCloseHandle($hRequest)
-		Return $aData
+		Return SetExtended($iExtended, $aData)
 	EndIf
 	Local $sOutData = _WinHttpSimpleReadData($hRequest, $iMode)
 	_WinHttpCloseHandle($hRequest)
-	Return $sOutData
+	Return SetExtended($iExtended, $sOutData)
 EndFunc
 
 ; #FUNCTION# ;===============================================================================
@@ -2029,27 +2049,17 @@ EndFunc
 Func __WinHttpURLEncode($vData, $sEncType = "")
 	If IsBool($vData) Then Return $vData
 	$vData = __WinHttpHTMLDecode($vData)
-	If $sEnctype = "text/plain" Then Return StringReplace($vData, " ", "+")
-	Local $aData = StringToASCIIArray($vData, Default, Default, 2)
-	Local $sOut
-	For $i = 0 To UBound($aData) - 1
-		Switch $aData[$i]
-			Case 45, 46, 48 To 57, 65 To 90, 95, 97 To 122, 126
-				$sOut &= Chr($aData[$i])
-			Case 32
-				$sOut &= "+"
-			Case Else
-				$sOut &= "%" & Hex($aData[$i], 2)
-		EndSwitch
-	Next
-	Return $sOut
+	If $sEnctype = "text/plain" Then Return StringReplace($vData, " ", "+", 0, 1)
+	Local $aURLArray[8] = ["http", 1, "", 80, "", "", BinaryToString(StringToBinary($vData, 4), 1), ""]
+	Return StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringReplace(StringTrimLeft(_WinHttpCreateUrl($aURLArray), 7), "!", "%21", 0, 1), "#", "%23", 0, 1), "$", "%24", 0, 1), "&", "%26", 0, 1), "'", "%27", 0, 1), "(", "%28", 0, 1), ")", "%29", 0, 1), "*", "%2A", 0, 1), "+", "%2B", 0, 1), ",", "%2C", 0, 1), "/", "%2F", 0, 1), ":", "%3A", 0, 1), ";", "%3B", 0, 1), "=", "%3D", 0, 1), "?", "%3F", 0, 1), "@", "%40", 0, 1)
 EndFunc
 
 Func __WinHttpHTMLDecode($vData)
-	Return StringReplace(StringReplace(StringReplace(StringReplace($vData, "&amp;", "&"), "&lt;", "<"), "&gt;", ">"), "&quot;", '"')
+	Return StringRegExpReplace(StringRegExpReplace(StringRegExpReplace(StringRegExpReplace(StringRegExpReplace($vData, "(?i)&apos;", "'"), "(?i)&amp;", "&"), "(?i)&lt;", "<"), "(?i)&gt;", ">"), "(?i)&quot;", '"')
 EndFunc
 
-Func __WinHttpNormalizeActionURL($sActionPage, ByRef $sAction, ByRef $iScheme, ByRef $sNewURL, ByRef $sEnctype, ByRef $sMethod, $sURL = "")
+Func __WinHttpNormalizeActionURL($sActionPage, ByRef $sAction, ByRef $iScheme, ByRef $sNewURL, ByRef $sEnctype, ByRef $sMethod, ByRef $sReferer, $sURL = "")
+	$sReferer = $sURL
 	Local $aCrackURL = _WinHttpCrackUrl($sAction)
 	If @error Then
 		If $sAction Then
@@ -2066,14 +2076,23 @@ Func __WinHttpNormalizeActionURL($sActionPage, ByRef $sAction, ByRef $iScheme, B
 				EndIf
 			ElseIf StringLeft($sAction, 1) = "?" Then
 				$aCrackURL = _WinHttpCrackUrl($sURL)
-				$sAction = $aCrackURL[6] & $sAction
+				If Not @error Then
+					$sAction = $aCrackURL[6] & $sAction
+				EndIf
 			ElseIf StringLeft($sAction, 1) = "#" Then
-				$sAction = StringReplace($sActionPage, StringRegExpReplace($sActionPage, "(.*?)(#.*?)", "$2"), $sAction)
-			ElseIf StringLeft($sAction, 1) <> "/" Then
-					Local $sCurrent
-					Local $aURL = StringRegExp($sActionPage, '(.*)/', 3)
-					If Not @error Then $sCurrent = $aURL[0]
-					If $sCurrent Then $sAction = $sCurrent & "/" & $sAction
+				$sAction = StringReplace($sActionPage, StringRegExpReplace($sActionPage, "(.*?)(#.*?)", "$2"), $sAction, 0, 1)
+			ElseIf StringLeft($sAction, 1) = "/" Then
+				$aCrackURL = _WinHttpCrackUrl($sURL)
+				If Not @error Then
+					$sNewURL = $aCrackURL[0] & "://" & $aCrackURL[2] & ":" & $aCrackURL[3]
+					$iScheme = $aCrackURL[1]
+					$sActionPage = ""
+				EndIf
+			Else
+				Local $sCurrent
+				Local $aURL = StringRegExp($sActionPage, '(.*)/', 3)
+				If Not @error Then $sCurrent = $aURL[0]
+				If $sCurrent Then $sAction = $sCurrent & "/" & $sAction
 			EndIf
 			If StringLeft($sAction, 1) = "?" Then $sAction = $sActionPage & $sAction
 		EndIf
@@ -2086,6 +2105,23 @@ Func __WinHttpNormalizeActionURL($sActionPage, ByRef $sAction, ByRef $iScheme, B
 	EndIf
 	If Not $sMethod Then $sMethod = "GET"
 	If $sMethod = "GET" Then $sEnctype = ""
+EndFunc
+
+Func __WinHttpHTML5Form($sHTML, $sId, $iFormErr, ByRef $aInput)
+	If $sId Then
+		If $iFormErr Then Dim $aInput[1]
+		Local $aInputHTML5 = StringRegExp($sHTML, "(?si)<\h*(?:input|textarea|label|fieldset|legend|select|optgroup|option|button)\h*(.*?)/*\h*>", 3)
+		If Not @error Then
+			For $sElem In $aInputHTML5
+				If __WinHttpAttribVal($sElem, "form") = $sId Then
+					$iFormErr = 0
+					ReDim $aInput[UBound($aInput) + 1]
+					$aInput[UBound($aInput) - 1] = $sElem
+				EndIf
+			Next
+		EndIf
+	EndIf
+	Return SetError($iFormErr, 0, "")
 EndFunc
 
 Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, ByRef $aInput, ByRef $sAction, ByRef $sEnctype, ByRef $sMethod)
@@ -2134,7 +2170,7 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 						$iImgCur += 1
 				EndSwitch
 			Next
-			ElseIf $aSpl[0] = "name" Then
+		ElseIf $aSpl[0] = "name" Then
 			Local $sInpNme = $aSpl[1], $sType
 			For $i = 0 To UBound($aInput) - 1 ; for all input elements
 				$sType = __WinHttpAttribVal($aInput[$i], "type")
@@ -2296,7 +2332,7 @@ Func __WinHttpFormAttrib(ByRef $aAttrib, $i, $sElement)
 EndFunc
 
 Func __WinHttpAttribVal($sIn, $sAttrib)
-	Local $aArray = StringRegExp($sIn, '(?i).*?(\A| )\b' & $sAttrib & '\h*=(\h*"(.*?)"|' & "\h*'(.*?)'|" & '\h*(.*?)(?: |\Z))', 1) ; e.g. id="abc" or id='abc' or id=abc
+	Local $aArray = StringRegExp($sIn, '(?i).*?(\A|\h)\b' & $sAttrib & '\h*=(?s)(\h*"(.*?)"|' & "\h*'(.*?)'|" & '\h*(.*?)(?: |\Z))', 1) ; e.g. id="abc" or id='abc' or id=abc
 	If @error Then Return ""
 	Return $aArray[UBound($aArray) - 1]
 EndFunc
@@ -2306,6 +2342,7 @@ Func __WinHttpFormSend($hInternet, $sMethod, $sAction, $fMultiPart, $sBoundary, 
 	If $fSecure Then
 		$hRequest = _WinHttpOpenRequest($hInternet, $sMethod, $sAction, Default, Default, Default, $WINHTTP_FLAG_SECURE)
 		If $iIgnoreAllCertErrors Then _WinHttpSetOption($hRequest, $WINHTTP_OPTION_SECURITY_FLAGS, BitOR($SECURITY_FLAG_IGNORE_UNKNOWN_CA, $SECURITY_FLAG_IGNORE_CERT_DATE_INVALID, $SECURITY_FLAG_IGNORE_CERT_CN_INVALID, $SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE))
+		_WinHttpSetOption($hRequest, $WINHTTP_OPTION_REDIRECT_POLICY, $WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS)
 	Else
 		$hRequest = _WinHttpOpenRequest($hInternet, $sMethod, $sAction)
 	EndIf
@@ -2355,13 +2392,14 @@ Func __WinHttpSetCredentials($hRequest, $sHeaders = "", $sOptional = "", $sCredN
 EndFunc
 
 Func __WinHttpFormUpload($hRequest, $sHeaders, $sData)
+	#forceref $sHeaders ; already added by the caller
 	Local $aClbk = _WinHttpSimpleFormFill_SetUploadCallback()
 	If $aClbk[0] <> Default Then
 		Local $iSize = StringLen($sData), $iChunk = Floor($iSize / $aClbk[1]), $iRest = $iSize - ($aClbk[1] - 1) * $iChunk, $iCurCh = $iChunk
 		_WinHttpSendRequest($hRequest, Default, Default, $iSize)
 		For $i = 1 To $aClbk[1]
 			If $i = $aClbk[1] Then $iCurCh = $iRest
-			_WinHttpWriteData($hRequest, StringMid($sData, 1 + $iChunk * ($i -1), $iCurCh))
+			_WinHttpWriteData($hRequest, StringMid($sData, 1 + $iChunk * ($i - 1), $iCurCh))
 			Call($aClbk[0], Floor($i * 100 / $aClbk[1]))
 		Next
 	Else
@@ -2385,6 +2423,12 @@ Func __WinHttpPtrStringLenW($pStr)
 	Return $aCall[0]
 EndFunc
 
+Func __WinHttpGetLastError()
+	Local $aCall = DllCall("kernel32.dll", "dword", "GetLastError")
+	If @error Then Return SetError(1, 0, 0)
+	Return $aCall[0]
+EndFunc
+
 Func __WinHttpUA()
 	Local Static $sUA = "Mozilla/5.0 " & __WinHttpSysInfo() & " WinHttp/" & __WinHttpVer() & " (WinHTTP/5.1) like Gecko"
 	Return $sUA
@@ -2399,7 +2443,7 @@ Func __WinHttpSysInfo()
 EndFunc
 
 Func __WinHttpVer()
-	Return "1.6.4.1"
+	Return "1.6.4.2"
 EndFunc
 
 Func _WinHttpBinaryConcat(ByRef $bBinary1, ByRef $bBinary2)
