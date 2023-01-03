@@ -1,3 +1,5 @@
+## Notice: Stash Helper makes playing media directly in Windows easy, but it won't work for Quest 2 or other standalone VR headsets.
+
 ### New Feature: Mid-Mouse-Button
 -----
 For now, click on the mid-mouse-button (or the mouse wheel button) will play the current tab's scene/movie/image/gallery in your favorite media player.
