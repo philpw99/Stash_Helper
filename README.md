@@ -1,3 +1,6 @@
+# New Feature: Mid-Mouse-Button
+For now, click on the mid-mouse-button (or the mouse wheel button) will add the current tab's scene/movie/image/gallery to the playlist.
+This will greatly simplify the process of creating a playlist. Maybe it will be used for playing current tab as well. We will see.
 # Notice: Chrome and Edge users.
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
 Btw, the new Stash Helper v2.4.5 has an updated Webdriver, and it supports Opera now.
