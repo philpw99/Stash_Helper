@@ -68,7 +68,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
   <tr>
     <td>
       <img src="https://user-images.githubusercontent.com/22040708/205507652-7765f393-8958-4ac2-a48b-6f9b2fe98fa1.png" /></td>
-    <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
+    <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" or Mid-Mouse-Button to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/22040708/147080557-e4a4f6d0-ea0d-49f6-bc8f-34dd25c9ac8d.png" /></td>
