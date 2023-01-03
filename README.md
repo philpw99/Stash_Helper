@@ -1,7 +1,9 @@
 ### New Feature: Mid-Mouse-Button
 -----
-For now, click on the mid-mouse-button (or the mouse wheel button) will add the current tab's scene/movie/image/gallery to the playlist.
-This will greatly simplify the process of creating a playlist. Maybe it will be used for playing current tab as well. We will see.
+For now, click on the mid-mouse-button (or the mouse wheel button) will play the current tab's scene/movie/image/gallery in your favorite media player.
+Hold the Ctrl button and click the Middle-Mouse-Button will add it to the playlist.
+Hope it will simplify things. Heard some complaint about the use of shortcut keys.
+Another solution is that, I can inject some Javascript into the webpages and make buttons like "Play in external player" or "Add to playlist", but it will change the layout of Stash, which I try my best to avoid.
 ### Notice: Chrome and Edge users.
 -----
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
