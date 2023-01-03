@@ -92,6 +92,7 @@ Func ScrapersManager()
 	
 	; Set busy cursor.
 	GUISetCursor(15, 1, $guiScrapers)
+	SplashTextOn("Please Wait...",  "Loading scrapers' info from the big list...", 500, 200)
 	; Set both $aScraperArray and $aScraperFiles
 	SetScraperArray() 
 	If @error Then Return SetError(1)
@@ -109,7 +110,8 @@ Func ScrapersManager()
 	
 	; Set cursor back.
 	GUISetCursor($old_cursor, 1, $guiScrapers)
-	
+	SplashOff()
+
 	; Now It's all ready. Wait for "Install" or "Remove"
 	Local $aFiles[0]
 
@@ -134,7 +136,8 @@ Func ScrapersManager()
 				If $iFound = -1 Then 
 					; Not found, reset the index
 					$iCurrentSearchIndex = 0
-					MsgBox(48,"Not found","Search reach the end and Cannot find your search of " & $sText,0)
+					MsgBox(262192,"Not Found", _
+						'Search reach the end and cannot find more of your search of "' & $sText & '"' ,0, $guiScrapers)
 				Else 
 					; Found the index, set it highlighted and visible.
 					$iCurrentSearchIndex = $iFound
@@ -387,6 +390,15 @@ Func GetScraperPath()
 	$sPath = StringReplace($sPath, "\\", "\")
 	If Not FileExists($sPath) Then 
 		DirCreate($sPath)
+	EndIf
+	
+	; Handle the py_common folder
+	If Not FileExists($sPath & "py_common") Then 
+		Local $sPyPath = $sPath & "py_common\"
+		DirCreate($sPyPath)
+		InetGet( "https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/scrapers/py_common/config.py", $sPyPath & "config.py")
+		InetGet( "https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/scrapers/py_common/graphql.py", $sPyPath & "graphql.py")
+		InetGet( "https://raw.githubusercontent.com/stashapp/CommunityScrapers/master/scrapers/py_common/log.py", $sPyPath & "log.py")
 	EndIf
 	; c("scraper path is:" & $sPath)
 	Return $sPath

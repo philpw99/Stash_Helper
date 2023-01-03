@@ -26,8 +26,10 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				$sSortby = PairValue( $aStr[$i])
 			Case "sortdir", "qsortd"
 				$sSortDir = StringUpper( PairValue($aStr[$i]) )
-			Case "disp", "p", "perPage", "qfp"
+			Case "disp", "p", "perPage", "qfp", "continue"
 				; Dont care about these at all.
+				; Remember to remove all those unecessary parameters,
+				; Or the whole thing won't work !!
 			Case "q"
 				$sQuickQuery = PairValue($aStr[$i])
 				$bHaveQuery = True
@@ -83,8 +85,9 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 		EndSwitch
 	EndIf
 	; c ("icount =" & $iCount & " is digit?" & StringIsDigit($aStr[1]))
-	If $iCount = 2 And StringIsDigit($aStr[1]) Then
-		; Specified scene or movie
+	
+	If Not $bHaveQuery And StringIsDigit($aStr[1]) Then
+		; Specified image, gallery, scene or movie
 		Switch $aStr[0] & $sQueryType
 			Case "scenescount", "imagescount", "moviescount", "galleriescount"
 				Return "1"

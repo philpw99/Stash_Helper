@@ -72,14 +72,16 @@ Func InitialSettingsForm()
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"0xFFFFFF")
 
-
 	Local $chooseFirefox = GUICtrlCreateRadio("Firefox",200,325,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	Local $chooseChrome = GUICtrlCreateRadio("Chrome",200,387,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseChrome = GUICtrlCreateRadio("Chrome",200,377,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
-	Local $chooseEdge = GUICtrlCreateRadio("MS Edge",200,454,157,48,$BS_AUTORADIOBUTTON,-1)
+	Local $chooseEdge = GUICtrlCreateRadio("MS Edge",200,430,157,48,$BS_AUTORADIOBUTTON,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+
+	Local $chooseOpera = GUICtrlCreateRadio("Opera",200,494,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
 	Local $browserDetails = GUICtrlCreateLabel("",450,339,656,163,-1,-1)
@@ -197,6 +199,9 @@ Func InitialSettingsForm()
 						Case GUICtrlRead($chooseEdge) = $GUI_CHECKED
 							GUICtrlSetData($browserDetails,"It works well, but you probably hate Microsoft so..." )
 							$sBrowser = "Edge"
+						Case GUICtrlRead($chooseOpera) = $GUI_CHECKED
+							GUICtrlSetData($browserDetails,"Never test it myself. It should work though." )
+							$sBrowser = "Opera"
 						Case Else
 							GUICtrlSetData($browserDetails, "Choose one of the browser on the left to see its note here.")
 							$sBrowser = ""

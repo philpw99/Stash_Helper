@@ -1,0 +1,12 @@
+v2.4.6
+	* Auto download the py_common folder and files in Scraper Manager.
+	* Add Opera as an option in the first time setup.
+	* Better way to know if the current browser tab is in the front.
+	* Fix a big bug of URLtoQuery. Now the playlist and play current scene/movie works normally.
+	* Now you can use middle-mouse-button to add scene/movie/image/gallery to the playlist.
+
+v2.4.5
+	* Update Webdriver to 0.11.
+	* Use wd_capabilities.au3 instead of manually built strings.
+	* Add Opera as an option for browsers.
+	* Improvement of running in default profile.

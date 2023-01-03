@@ -61,9 +61,9 @@ GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"0xFFFFFF")
 $chooseFirefox = GUICtrlCreateRadio("Firefox",200,325,157,48,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseChrome = GUICtrlCreateRadio("Chrome",200,387,157,48,$BS_AUTORADIOBUTTON,-1)
+$chooseChrome = GUICtrlCreateRadio("Chrome",200,377,157,48,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-$chooseEdge = GUICtrlCreateRadio("MS Edge",200,454,157,48,$BS_AUTORADIOBUTTON,-1)
+$chooseEdge = GUICtrlCreateRadio("MS Edge",200,430,157,48,$BS_AUTORADIOBUTTON,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 $browserDetails = GUICtrlCreateLabel("When launch StashApp with Firefox, you will see a robot icon and address bar turns red, indicating the browser is under my program's control."&@crlf&"Other than that, it's all fine.",450,339,656,163,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
@@ -74,11 +74,61 @@ GUICtrlSetBkColor(-1,"-2")
 GUICtrlCreateLabel("Note: If this is the first time you run StashApp, it will ask you a question about where to store the config file. Since this is windows, you should choose -> 'In the current working directory.'"&@crlf&""&@crlf&"*** After you finish the wizard, you should click on 'Tasks' then 'Scan' to get your files recognized by Stash."&@crlf&"No movies? No Studio and Performers? No problem. This program will help you along the way.",200,289,895,307,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
+GUISwitch($Initial_Settings,_GUICtrlTab_SetCurFocus($tab,1)&GUICtrlRead ($tab, 1))
+$chooseOpera = GUICtrlCreateRadio("Opera",200,494,150,37,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
 _GUICtrlTab_SetCurFocus($tab,0)
 
 
 
 #cs
+[tab]
+type=tab
+handle=433
+locked=0
+resize=
+x=40
+y=69
+width=1201
+height=673
+func=
+font=MS Sans Serif
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$tab
+text=
+pages=3
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=[BREAK]
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=0
+[0x000B269C]
+order=0
+[TABPAGE3]
+page=3
+text=Launch!
+textmode=text
+handle=
+[TABPAGE2]
+page=2
+text=Choose Browser
+textmode=text
+handle=
+[TABPAGE1]
+page=1
+text=Start
+textmode=text
+handle=
 [gui]
 Handle_deklaration=default
 Handle_deklaration_const=false
@@ -115,56 +165,9 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[tab]
-type=tab
-handle=432
-locked=0
-resize=
-x=40
-y=69
-width=1201
-height=673
-func=
-font=MS Sans Serif
-fontsize=12
-fontstyle=400
-fontattribute=0
-tooltip=
-bgimage=
-textcolour=0x000000
-id=$tab
-text=
-pages=3
-state=$GUI_SHOW+$GUI_ENABLE
-style=
-exstyle=
-bgcolour=
-code=[BREAK]
-tabpage=-1
-iconindex=
-iconlarge=0
-textmode=text
-order=0
-[0x000D1E42]
-order=0
-[TABPAGE3]
-page=3
-text=Launch!
-textmode=text
-handle=
-[TABPAGE2]
-page=2
-text=Choose Browser
-textmode=text
-handle=
-[TABPAGE1]
-page=1
-text=Start
-textmode=text
-handle=
-[0x00091D60]
+[0x00042698]
 type=label
-handle=433
+handle=434
 locked=0
 resize=
 x=190
@@ -191,9 +194,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x000A1D5E]
+[0x00042696]
 type=label
-handle=434
+handle=435
 locked=0
 resize=
 x=166
@@ -220,9 +223,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00081D5C]
+[0x00042694]
 type=input
-handle=435
+handle=436
 locked=0
 resize=
 x=409
@@ -249,9 +252,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00071D5A]
+[0x0004268C]
 type=button
-handle=436
+handle=437
 locked=0
 resize=
 x=982
@@ -278,9 +281,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00081D6E]
+[0x00042692]
 type=button
-handle=437
+handle=438
 locked=0
 resize=
 x=960
@@ -307,9 +310,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00091E6C]
+[0x00911D46]
 type=radio
-handle=438
+handle=439
 locked=0
 resize=
 x=200
@@ -336,9 +339,9 @@ tabpage=1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000A19AE]
+[0x002F0964]
 type=label
-handle=439
+handle=440
 locked=0
 resize=
 x=360
@@ -365,13 +368,13 @@ tabpage=1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000F1D42]
+[0x00660C54]
 type=radio
-handle=440
+handle=441
 locked=0
 resize=
 x=200
-y=387
+y=377
 width=157
 height=48
 func=
@@ -394,13 +397,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=14
-[0x00061D44]
+[0x00FE20FA]
 type=radio
-handle=441
+handle=442
 locked=0
 resize=
 x=200
-y=454
+y=430
 width=157
 height=48
 func=
@@ -423,9 +426,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=15
-[0x000D1E4A]
+[0x003D0A5E]
 type=label
-handle=442
+handle=443
 locked=0
 resize=
 x=450
@@ -452,9 +455,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=16
-[0x00061E3E]
+[0x008B0AC4]
 type=label
-handle=443
+handle=444
 locked=0
 resize=
 x=330
@@ -481,9 +484,9 @@ tabpage=2
 iconindex=
 iconlarge=0
 textmode=text
-[0x00071E3C]
+[0x005B09F0]
 type=label
-handle=444
+handle=445
 locked=0
 resize=
 x=200
@@ -510,9 +513,9 @@ tabpage=2
 iconindex=
 iconlarge=0
 textmode=text
-[0x00081E3A]
+[0x00490A0A]
 type=radio
-handle=445
+handle=446
 locked=0
 resize=
 x=219
@@ -539,9 +542,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00071E38]
+[0x009E217C]
 type=radio
-handle=446
+handle=447
 locked=0
 resize=
 x=219
@@ -568,9 +571,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00061E36]
+[0x006A09B2]
 type=input
-handle=447
+handle=448
 locked=0
 resize=
 x=409
@@ -597,9 +600,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00061E34]
+[0x004A0CA2]
 type=label
-handle=448
+handle=449
 locked=0
 resize=
 x=279
@@ -626,9 +629,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00061E32]
+[0x00A8056A]
 type=label
-handle=449
+handle=450
 locked=0
 resize=
 x=279
@@ -655,9 +658,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00061E30]
+[0x00440924]
 type=group
-handle=450
+handle=451
 locked=0
 resize=
 x=139
@@ -684,9 +687,9 @@ tabpage=0
 iconindex=
 iconlarge=0
 textmode=text
-[0x00061E2E]
+[0x006B0C46]
 type=group
-handle=451
+handle=452
 locked=0
 resize=
 x=157
@@ -709,6 +712,35 @@ exstyle=
 bgcolour=0xFFFFFF
 code=
 order=12
+tabpage=1
+iconindex=
+iconlarge=0
+textmode=text
+[0x008322EA]
+type=radio
+handle=461
+locked=0
+resize=
+x=200
+y=494
+width=150
+height=37
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chooseOpera
+text=Opera
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=21
 tabpage=1
 iconindex=
 iconlarge=0

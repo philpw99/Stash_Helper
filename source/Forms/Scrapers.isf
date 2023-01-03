@@ -95,9 +95,9 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00082128]
+[0x00082646]
 type=listview
-handle=432
+handle=433
 locked=0
 resize=102
 x=40
@@ -124,9 +124,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0003212E]
+[0x0003264C]
 type=label
-handle=433
+handle=434
 locked=0
 resize=38
 x=54
@@ -153,9 +153,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012130]
+[0x0001264E]
 type=button
-handle=434
+handle=435
 locked=0
 resize=804
 x=1065
@@ -182,9 +182,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012132]
+[0x00012650]
 type=button
-handle=435
+handle=436
 locked=0
 resize=804
 x=1298
@@ -211,9 +211,9 @@ order=4
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012134]
+[0x00012652]
 type=input
-handle=436
+handle=437
 locked=0
 resize=550
 x=42
@@ -240,9 +240,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012136]
+[0x00012654]
 type=button
-handle=437
+handle=438
 locked=0
 resize=804
 x=640
@@ -269,9 +269,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012138]
+[0x00012656]
 type=button
-handle=438
+handle=439
 locked=0
 resize=804
 x=1494

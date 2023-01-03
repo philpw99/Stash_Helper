@@ -51,7 +51,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.5"
+Global Const $currentVersion = "v2.4.6"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -358,10 +358,10 @@ Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 $iTrayIconCount += 1
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
 _TrayMenuAddImage($hIcons[16], 18)
-Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List         Ctrl-Alt-A", $trayMenuPlayList)
-Global $trayManageList = 			TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
-Global $trayListPlay = 				TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
-Global $trayClearList = 			TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
+Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List        Mid-Mouse-Button or Ctrl-Alt-A", $trayMenuPlayList)
+Global $trayManageList =	TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
+Global $trayListPlay = 		TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
+Global $trayClearList = 	TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
 
 $iTrayIconCount += 1
 TrayCreateItem("")										; 20
@@ -431,7 +431,7 @@ If @error <> $_WD_ERROR_Success Then
 	if @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
 EndIf
 
-c("DesireCap:" & $sDesiredCapabilities)
+; c("DesireCap:" & $sDesiredCapabilities)
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then
@@ -528,6 +528,10 @@ HotKeySet("^!b", "BookmarkCurrentTab")
 HotKeySet("^!o", "OpenMediaFolder")
 ; Alt+P to play the media in the current tab.
 HotKeySet("!p", "PlayCurrentTab")
+
+; Initialize mouse wheel click handling
+Global $MWHL, $MBUT,$mwhl_call, $mwhl_back
+MouseWheelInit()
 
 ; Looping to get message
 While True
@@ -679,6 +683,10 @@ While True
 			Next
 
 	EndSwitch
+	
+	; Check for middle mouse click
+	if $MBUT Then MouseWheelClick()
+
 Wend
 
 ; Not supposed to end here.
@@ -687,6 +695,47 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions
+
+#cs
+	; From https://www.autoitscript.com/forum/topic/121485-middle-mouse-button-wheel-hook/
+	; Greate and simple mouse wheel handling function.
+	; Returns $MWHL as: 1=up, -1=down, 0=idle
+	; Returns $MBUT as: 1=Click, 0=Not
+
+	; *** EXAMPLE ***
+
+	MouseWheelInit()
+	While GUIGetMsg()<>-3
+		If $MWHL+$MBUT Then MsgBox(0,"",StringMid("UpDownClick",StringInStr("1 -1  2",$MWHL+($MBUT*2),1),3+($MWHL*-1)+($MBUT*2)))
+	WEnd
+#ce
+Func MouseWheelInit()
+	; Global $MWHL, $MBUT,$mwhl_call, $mwhl_back
+	$mwhl_call=DllCall("kernel32.dll","hwnd", "GetModuleHandle","ptr",0)
+	$mwhl_back=DllCall("user32.dll","hwnd","SetWindowsHookEx","int",14,"ptr",DllCallbackGetPtr(DllCallbackRegister("MWENT","int","hwnd;uint;long")),"hwnd",$mwhl_call[0],"dword",0)
+EndFunc
+
+Func MWENT($h,$m,$l)
+	; $MWHL=BitShift(DllStructGetData(DllStructCreate("int X;int Y;dword mouseData", $l), 3), 16)/120
+	$MBUT=($m=0x208)
+EndFunc	
+
+Func MouseWheelClick()
+	; Add current tab to the play list.
+	Local $hBrowser = CurrentBrowserWinHandle()
+	; Get winhandle under the mouse
+	; https://www.autoitscript.com/forum/topic/122147-window-handletitle-under-mouse-pointer/?do=findComment&comment=848114
+	Local $stPoint=DllStructCreate($tagPOINT), $aPos, $hControl, $hWin
+	Local $aPos=MouseGetPos()
+	DllStructSetData($stPoint,1,$aPos[0])
+	DllStructSetData($stPoint,2,$aPos[1])
+	$hControl=_WinAPI_WindowFromPoint($stPoint)
+	$hWin=_WinAPI_GetAncestor($hControl,2)
+	If $hWin = $hBrowser Then 
+		AddItemToList()
+	EndIf 
+EndFunc
+
 
 Func CheckStashVersion()
 	; It will set the global $stashVersion variable
@@ -862,6 +911,32 @@ Func SetHandleToActiveTab()
 
 EndFunc
 
+Func CurrentBrowserWinHandle()
+	; Return the browser's win handle
+	Opt( "WinTitleMatchMode", 2 )
+	Local $hWnd
+	If $gsBrowserLocation = "" Then 
+		; Regular situation.
+		Switch $stashBrowser
+			Case "Firefox"
+				$hWnd = WinGetHandle( " — Mozilla Firefox" )
+			Case "Chrome"
+				$hWnd = WinGetHandle( " - Google Chrome" )
+			Case "Edge"
+				$hWnd = WinGetHandle( " - Microsoft​ Edge" )
+			Case "Opera"
+				$hWnd = WinGetHandle( "Opera" )
+		EndSwitch
+	Else
+		; If the browser is a special one, use the exe file name
+		Local $sExe = StringMid( $gsBrowserLocation, StringInStr($gsBrowserLocation, "\", 0, -1) + 1 )
+		$sExe = StringLeft( $sExe, StringInStr( $sExe, ".") -1 )  ; Remove the ".exe"
+		$hWnd = WinGetHandle( " - " & $sExe )
+	EndIf 
+	Opt( "WinTitleMatchMode", 1 )	; Restore to default
+	Return $hWnd
+EndFunc
+
 Func CurrentBrowserTitle()
 	; Return the browser's active tab's title
 	Opt( "WinTitleMatchMode", 2 )
@@ -875,6 +950,8 @@ Func CurrentBrowserTitle()
 				$sTitle = WinGetTitle( " - Google Chrome" )
 			Case "Edge"
 				$sTitle = WinGetTitle( " - Microsoft​ Edge" )
+			Case "Opera"
+				$sTitle = WinGetTitle( "Opera" )
 		EndSwitch
 	Else
 		; If the browser is a special one, use the exe file name
@@ -1268,9 +1345,10 @@ Func GetURL()
 			MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
 			Return SetError(1)
 		case Else
-			; Set the current handle to the front tab of the browser
-			SetHandleToActiveTab()
-			
+			If Not BrowserTabIsFront() Then 
+				; Set the current handle to the front tab of the browser
+				SetHandleToActiveTab()
+			EndIf
 			$sResult = _WD_Action($sSession, "url")
 ;~ 			If @error <> $_WD_ERROR_Success Then
 ;~ 				; Set the last tab as the current browser tab
@@ -1279,10 +1357,20 @@ Func GetURL()
 ;~ 				$sResult = _WD_Action($sSession, "url")
 ;~ 				c ( "1 tab:" & $sResult )
 ;~ 			EndIf
-
 	EndSwitch
-	
+
 	Return _URLDecode($sResult)
+EndFunc
+
+Func BrowserTabIsFront()
+	; Check to see if the current browser tab is in the front
+	Local $sScript = "return document.visibilityState;"
+	Local $sResult = _WD_ExecuteScript( $sSession, $sScript, Default , Default )
+	; c( "error :" & @error & " result :" & $sResult)
+	If @error = $_WD_ERROR_Success Then 
+		if $sResult = '{"value":"visible"}' Then Return True 
+	EndIf
+	Return False
 EndFunc
 
 Func GetTitle()
@@ -1437,7 +1525,7 @@ Func AddItemToList()
 	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	c("URL:" & $sURL)
+	c("Add current URL:" & $sURL)
 
 	Local $sCategory = GetCategory($sURL)
 	if @error Then Return SetError(1)
@@ -1480,27 +1568,27 @@ Func AddItemToList()
 			Case "scenes"
 				AddSceneToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One scene was added to the current play list." & @CRLF _
-					& "Total entities in play list:  " & UBound($aPlayList))
+				MsgBox(262208, "Done", "One scene was added to the current play list." & @CRLF _
+					& "Total entities in play list:  " & UBound($aPlayList), 10)
 			Case "images"
 				AddImageToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One image was added to the current play list." & @CRLF _
-					& "Total entities in play list:  " & UBound($aPlayList))
+				MsgBox(262208, "Done", "One image was added to the current play list." & @CRLF _
+					& "Total entities in play list:  " & UBound($aPlayList), 10)
 			Case "movies"
 				$iNo = AddMovieToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One movie with " & $iNo & " scenes was added to the current play list." & @CRLF _
-					& "Total entities in play list:  " & UBound($aPlayList))
+				MsgBox(262208, "Done", "One movie with " & $iNo & " scenes was added to the current play list." & @CRLF _
+					& "Total entities in play list:  " & UBound($aPlayList), 10)
 			Case "galleries"
 				$iNo = AddGalleryToList($sID)
 				If @error then Return
-				MsgBox(0, "Done", "One gallery with " & $iNo & " images was added to the current play list." & @CRLF _
-					& "Total entities in play list:  " & UBound($aPlayList))
+				MsgBox(262208, "Done", "One gallery with " & $iNo & " images was added to the current play list." & @CRLF _
+					& "Total entities in play list:  " & UBound($aPlayList), 10)
 		EndSwitch
 		Return
 	ElseIf $sQuery = "not support" Then
-		MsgBox(0, "Not support", "Too bad, this kind of query is not support.")
+		MsgBox(262192, "Not support", "Too bad, this kind of query is not support.")
 		Return
 	EndIf
 
@@ -1509,7 +1597,7 @@ Func AddItemToList()
 	if @error Then Return SetError(1)
 	Local $oData = Json_Decode($sResult)
 	If Not IsObj($oData) Then
-		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
+		MsgBox(262192, "Error decoding result", "Error getting result:" & $sResult)
 		Return SetError(1)
 	EndIf
 
@@ -1518,40 +1606,41 @@ Func AddItemToList()
 		Case "scenes"
 			Local $aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
 			If UBound($aScenes) = 0 Then
-				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
 			Local $i = 0
 			For $oScene in $aScenes
 				$i += AddSceneToList($oScene.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _
-				& "Total entities in play list:  " & UBound($aPlayList))
+			
+			MsgBox(262208, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _
+				& "Total entities in play list:  " & UBound($aPlayList), 10)
 		Case "images"
 			Local $aImages = Json_ObjGet($oData, "data.findImages.images")
 			If UBound($aImages) = 0 Then
-				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
 			Local $i = 0
 			For $oImage in $aImages
 				$i += AddImageToList($oImage.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& $i & " images was added to the current play list." & @CRLF _
+			MsgBox(262208, "Done", "Totally "& $i & " images was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
-				& "Beware: Most media players do not support playing images stored in .zip files." )
+				& "Beware: Most media players do not support playing images stored in .zip files.", 10 )
 		Case "movies"
 			Local $aMovies = Json_ObjGet($oData, "data.findMovies.movies")
 			If UBound($aMovies) = 0 Then
-				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
+				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
 			Local $i = 0
 			For $oMovie in $aMovies
 				$i += AddMovieToList($oMovie.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _
-				& "Total entities in play list:  " & UBound($aPlayList))
+			MsgBox(262208, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _
+				& "Total entities in play list:  " & UBound($aPlayList), 10)
 		Case "galleries"
 			Local $aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
 			If UBound($aGalleries) = 0 Then
@@ -1562,11 +1651,11 @@ Func AddItemToList()
 			For $oGallery in $aGalleries
 				$i += AddGalleryToList($oGallery.item("id"))
 			Next
-			MsgBox(0, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images was added to the current play list." & @CRLF _
+			MsgBox(262208, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
-				& "Beware: Most media players do not support playing images stored in .zip files." )
+				& "Beware: Most media players do not support playing images stored in .zip files.", 10 )
 		Case Else
-			MsgBox(0, "Not supported", "Sorry, only scene/image/movie/gallery are supported.")
+			MsgBox(262192, "Not supported", "Sorry, only scene/image/movie/gallery are supported.", 20)
 	EndSwitch
 
 EndFunc
@@ -2106,7 +2195,7 @@ Func PlayCurrentTab()
 	; Play the current tab's media. Can be scene/movie/galery
 	Local $sURL = GetURL()
 	If @error Then  Return SetError(1)
-
+	c( "Current Tab URL: " & $sURL)
 	Select 
 		Case StringInStr($sURL, "/scenes/")
 			PlayCurrentScene()
