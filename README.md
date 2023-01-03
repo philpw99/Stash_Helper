@@ -1,11 +1,14 @@
-# New Feature: Mid-Mouse-Button
+### New Feature: Mid-Mouse-Button
+-----
 For now, click on the mid-mouse-button (or the mouse wheel button) will add the current tab's scene/movie/image/gallery to the playlist.
 This will greatly simplify the process of creating a playlist. Maybe it will be used for playing current tab as well. We will see.
-# Notice: Chrome and Edge users.
+### Notice: Chrome and Edge users.
+-----
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
 Btw, the new Stash Helper v2.4.5 has an updated Webdriver, and it supports Opera now.
 
-# Notice: stash v17 compatibility
+### Notice: stash v17 compatibility
+-----
 Because v17 is using a very different file structure, my Stash_Helper 2.3.12 and below will not work properly with it.
 To use v17 with Stash_Helper, you need Stash_Helper v2.4.1 and above. <p>
 To be perfectly clear:
@@ -15,11 +18,10 @@ To be perfectly clear:
 Personally I don't recommend upgrade to v17 yet, because there is an issue needs to be addressed. The previous file scans from v12 will generate file paths like 
 "g:my folder\my video.mp4" , instead of the normal "g:\my folder\my video.mp4". The upgrades from v12 to v16 didn't fix this problem at all, they just leave the path as it is. Now in V17 if you do a scan with file path like that, you will end with 2 file entries and 2 parent_folder_ids, because Stash v17 will think "g:my folder" and "g:\my folder" are different folders, thus the file paths are also different. I got over 900 duplicate entries because of it.
 
-The easy fix for this is to revert the sqlite database to the v16 one then using a sqlite dabase program to run SQL like this:
+The easy fix for this is to revert the sqlite database to the v16 one then using a sqlite dabase program to run SQL like below to fix the small error in path. After that Stash v17 will handle the paths correctly. 
 ```
 UPDATE scenes SET path = substr(path,1,2) || '\' || substr( path, 3) WHERE substr( path, 2, 1) == ':' AND substr( path, 3, 1) != '\';
 ```
-to fix the small error in path. After that Stash v17 will handle the paths correctly. 
 
 # Stash_Helper
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
