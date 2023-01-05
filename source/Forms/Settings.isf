@@ -24,34 +24,33 @@ GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
 GUICtrlCreateGroup("Preferred Browser",31,133,417,273,$BS_CENTER,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chooseFirefox = GUICtrlCreateRadio("Firefox",84,204,147,38,-1,-1)
+$chooseFirefox = GUICtrlCreateRadio("Firefox",84,164,147,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chooseChrome = GUICtrlCreateRadio("Chrome",84,256,147,38,-1,-1)
+$chooseChrome = GUICtrlCreateRadio("Chrome",84,216,147,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chooseEdge = GUICtrlCreateRadio("MS Edge",84,304,147,38,-1,-1)
+$chooseEdge = GUICtrlCreateRadio("MS Edge",84,264,147,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlCreateLabel("Drivers",292,174,83,24,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
-GUICtrlSetBkColor(-1,"-2")
-GUICtrlSetResizing(-1,802)
-$updateFirefox = GUICtrlCreateButton("Update",280,213,112,32,-1,-1)
+$updateFirefox = GUICtrlCreateButton("Update",280,173,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-$updateChrome = GUICtrlCreateButton("Update",280,263,112,32,-1,-1)
+$updateChrome = GUICtrlCreateButton("Update",280,223,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
-$updateEdge = GUICtrlCreateButton("Update",280,311,112,32,-1,-1)
+$updateEdge = GUICtrlCreateButton("Update",280,271,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
 $btnExeLocation = GUICtrlCreateButton("Browser EXE Location ...",84,356,308,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Currently location: XXX Leave it empty to use default location.")
-GUICtrlCreateGroup("Browser Profile",486,137,248,269,$BS_CENTER,-1)
+GUICtrlCreateGroup("Browser Profile",477,137,256,172,$BS_CENTER,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$choosePrivate = GUICtrlCreateRadio("Private Profile",504,214,174,20,-1,-1)
+$choosePrivate = GUICtrlCreateRadio("Private Profile",504,194,174,20,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chooseDefault = GUICtrlCreateRadio("Default Profile",504,272,184,20,-1,-1)
+$chooseDefault = GUICtrlCreateRadio("Default Profile",504,252,184,20,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chkSaveLastURL = GUICtrlCreateCheckbox("Remember Last Visit",477,334,249,60,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Remember the last page you visit when closing the Stash Helper. SH will open that page again when it run next time.")
 GUICtrlCreateLabel("Stash-win.exe location:",34,431,299,33,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
@@ -109,11 +108,16 @@ GUICtrlSetTip(-1,"DeoVR the easy and free VR video player. Default SteamVR locat
 $btnDone = GUICtrlCreateButton("Done",546,850,173,63,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Save the settings.")
-GUICtrlCreateCheckbox("Enable",373,862,92,20,-1,-1)
+GUICtrlCreateCheckbox("Enable",373,862,104,27,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
-GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",25,852,333,38,-1,-1)
+GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",25,862,333,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
+$chooseOpera = GUICtrlCreateRadio("Opera",84,309,147,38,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$updateOpera = GUICtrlCreateButton("Update",280,316,112,32,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
 
 
 
@@ -154,13 +158,13 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x000821EC]
+[0x000C26B6]
 type=label
 handle=433
 locked=0
 resize=
 x=25
-y=852
+y=862
 width=333
 height=38
 func=
@@ -183,7 +187,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121EE]
+[0x000526B8]
 type=label
 handle=434
 locked=0
@@ -212,7 +216,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121F0]
+[0x000526BA]
 type=input
 handle=435
 locked=0
@@ -241,7 +245,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121F2]
+[0x000526BC]
 type=button
 handle=436
 locked=0
@@ -270,13 +274,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121F4]
+[0x000627AC]
 type=radio
 handle=437
 locked=0
 resize=
 x=84
-y=204
+y=164
 width=147
 height=38
 func=
@@ -299,7 +303,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121F6]
+[0x000727AA]
 type=group
 handle=438
 locked=0
@@ -328,13 +332,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121F8]
+[0x00062782]
 type=radio
 handle=439
 locked=0
 resize=
 x=84
-y=256
+y=216
 width=147
 height=38
 func=
@@ -357,13 +361,13 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x000121FA]
+[0x0005278C]
 type=radio
 handle=440
 locked=0
 resize=
 x=84
-y=304
+y=264
 width=147
 height=38
 func=
@@ -386,7 +390,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x000121FC]
+[0x000526A2]
 type=button
 handle=441
 locked=0
@@ -415,13 +419,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000121FE]
+[0x000526A0]
 type=button
 handle=442
 locked=0
 resize=
 x=280
-y=213
+y=173
 width=112
 height=32
 func=
@@ -439,18 +443,18 @@ style=
 exstyle=
 bgcolour=
 code=
-order=10
+order=9
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012200]
+[0x000C269E]
 type=button
 handle=443
 locked=0
 resize=
 x=280
-y=263
+y=223
 width=112
 height=32
 func=
@@ -472,14 +476,14 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=11
-[0x00012202]
+order=10
+[0x00391E02]
 type=button
 handle=444
 locked=0
 resize=
 x=280
-y=311
+y=271
 width=112
 height=32
 func=
@@ -501,37 +505,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=12
-[0x00012204]
-type=label
-handle=445
-locked=0
-resize=802
-x=292
-y=174
-width=83
-height=24
-func=
-font=Tahoma
-fontsize=10
-fontstyle=400
-fontattribute=0
-tooltip=
-bgimage=
-textcolour=0x000000
-id=
-text=Drivers
-state=$GUI_SHOW+$GUI_ENABLE
-style=
-exstyle=
-bgcolour=-2
-code=
-order=9
-tabpage=-1
-iconindex=
-iconlarge=0
-textmode=text
-[0x00012206]
+order=11
+[0x000B24AA]
 type=checkbox
 handle=446
 locked=0
@@ -560,7 +535,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012208]
+[0x008422EA]
 type=checkbox
 handle=447
 locked=0
@@ -589,7 +564,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x0001220A]
+[0x006C0C46]
 type=label
 handle=448
 locked=0
@@ -618,7 +593,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=23
-[0x0001220C]
+[0x00450924]
 type=input
 handle=449
 locked=0
@@ -647,7 +622,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=24
-[0x0001220E]
+[0x00A9056A]
 type=button
 handle=450
 locked=0
@@ -676,7 +651,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=25
-[0x00012210]
+[0x004B0CA2]
 type=input
 handle=451
 locked=0
@@ -705,7 +680,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=21
-[0x00012212]
+[0x006B09B2]
 type=label
 handle=452
 locked=0
@@ -734,7 +709,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=20
-[0x00012214]
+[0x009F217C]
 type=button
 handle=453
 locked=0
@@ -763,7 +738,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012216]
+[0x004A0A0A]
 type=label
 handle=454
 locked=0
@@ -792,7 +767,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012218]
+[0x005C09F0]
 type=button
 handle=455
 locked=0
@@ -821,7 +796,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=32
-[0x0001221A]
+[0x008C0AC4]
 type=button
 handle=456
 locked=0
@@ -850,7 +825,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=33
-[0x0001221C]
+[0x003E0A5E]
 type=button
 handle=457
 locked=0
@@ -879,7 +854,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=34
-[0x0001221E]
+[0x00FF20FA]
 type=button
 handle=458
 locked=0
@@ -908,7 +883,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=35
-[0x00012220]
+[0x00670C54]
 type=checkbox
 handle=459
 locked=0
@@ -937,7 +912,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012222]
+[0x00300964]
 type=label
 handle=460
 locked=0
@@ -966,7 +941,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012224]
+[0x00921D46]
 type=input
 handle=461
 locked=0
@@ -995,7 +970,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012226]
+[0x00052692]
 type=label
 handle=462
 locked=0
@@ -1024,13 +999,13 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012228]
+[0x0005268C]
 type=radio
 handle=463
 locked=0
 resize=
 x=504
-y=214
+y=194
 width=174
 height=20
 func=
@@ -1048,18 +1023,18 @@ style=
 exstyle=
 bgcolour=
 code=
-order=15
+order=14
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001222A]
+[0x00052694]
 type=radio
 handle=464
 locked=0
 resize=
 x=504
-y=272
+y=252
 width=184
 height=20
 func=
@@ -1077,20 +1052,20 @@ style=
 exstyle=
 bgcolour=
 code=
-order=16
+order=15
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001222C]
+[0x00052696]
 type=group
 handle=465
 locked=0
 resize=
-x=486
+x=477
 y=137
-width=248
-height=269
+width=256
+height=172
 func=
 font=Tahoma
 fontsize=10
@@ -1106,12 +1081,12 @@ style=$BS_CENTER
 exstyle=
 bgcolour=
 code=
-order=14
+order=13
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001222E]
+[0x00052698]
 type=radio
 handle=466
 locked=0
@@ -1140,7 +1115,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012230]
+[0x000C269C]
 type=group
 handle=467
 locked=0
@@ -1169,7 +1144,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012232]
+[0x0005269A]
 type=radio
 handle=468
 locked=0
@@ -1198,15 +1173,15 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012234]
+[0x000625B4]
 type=checkbox
 handle=469
 locked=0
 resize=
 x=373
 y=862
-width=92
-height=20
+width=104
+height=27
 func=
 font=Palatino Linotype
 fontsize=10
@@ -1227,7 +1202,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012236]
+[0x00072624]
 type=button
 handle=470
 locked=0
@@ -1251,12 +1226,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=13
+order=12
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012238]
+[0x00102386]
 type=group
 handle=471
 locked=0
@@ -1281,6 +1256,93 @@ exstyle=
 bgcolour=
 code=
 order=22
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x003E2734]
+type=radio
+handle=445
+locked=0
+resize=
+x=84
+y=309
+width=147
+height=38
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$chooseOpera
+text=Opera
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=39
+[0x003D2736]
+type=button
+handle=472
+locked=0
+resize=
+x=280
+y=316
+width=112
+height=32
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=If your browser no longer works, then perhaps you need to update the driver.
+bgimage=
+textcolour=0x000000
+id=$updateOpera
+text=Update
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=40
+[0x00630BE8]
+type=checkbox
+handle=473
+locked=0
+resize=
+x=477
+y=334
+width=249
+height=60
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=Remember the last page you visit when closing the Stash Helper. SH will open that page again when it run next time.
+bgimage=
+textcolour=0x000000
+id=$chkSaveLastURL
+text=Remember Last Visit
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=16
 tabpage=-1
 iconindex=
 iconlarge=0

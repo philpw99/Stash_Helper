@@ -23,6 +23,7 @@
 #include <Array.au3>
 #include <Inet.au3>
 #Include <GDIPlus.au3>
+#include <Misc.au3>
 ; opt("MustDeclareVars", 1)
 
 #include <WinAPIGdi.au3>
@@ -116,6 +117,14 @@ Global $showStashConsole = RegRead($gsRegBase, "ShowStashConsole")
 If @error Then $showStashConsole = 0
 ; For v0.11 and above. Disable the browser from autostart
 Global $gsNoBrowser = ""
+
+; For remembering last URL in stash. Default is enable.
+Global $giSaveLastURL = RegRead($gsRegBase, "SaveLastURL")
+If @error Then $giSaveLastURL = 1
+Global $gsLastURL = RegRead($gsRegBase, "LastURL")
+if @error Or $giSaveLastURL = 0 Or StringLower(StringLeft($gsLastURL,4)) <> "http" Then
+	$gsLastURL = $stashURL
+EndIf
 
 If $stashType = "Local" Then
 	; Now determine where to get the settings: working directory or %userprofile%\.stash
@@ -223,7 +232,8 @@ Else
 			If $iStashPID = 0 Then
 				; Not running. Launch it.
 				If $showStashConsole Then
-					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
+					Run(@ComSpec & ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
+					$iStashPID = ProcessExists("stash-win.exe")
 				Else
 					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 				EndIf
@@ -319,7 +329,7 @@ $iTrayIconCount += 1
 TrayCreateItem("")										; 11
 
 $iTrayIconCount += 1
-Global $trayPlayTab = TrayCreateItem("Play Current Scene/Movie/Images/Gallery  Alt-P") ;12
+Global $trayPlayTab = TrayCreateItem("Play Current Scene/Movie...   MidMouseButton or Alt-P") ;12
 ; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[12], $iTrayIconCount)
 
@@ -358,7 +368,7 @@ Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 $iTrayIconCount += 1
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
 _TrayMenuAddImage($hIcons[16], 18)
-Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List        Mid-Mouse-Button or Ctrl-Alt-A", $trayMenuPlayList)
+Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List        Ctrl-MidMouseButton or Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList =	TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 		TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 	TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
@@ -411,24 +421,26 @@ Sleep(500)
 
 Global $iConsolePID = _WD_Startup()
 If @error <> $_WD_ERROR_Success Then
-		MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
-			& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
-		_WD_Shutdown()
-		; Not fit, need to update the driver and try it once again.
-		Local $b64 = ( @CPUArch = "X64" )
-		Switch $stashBrowser
-			Case "Firefox"
-				$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
-			Case "Chrome"
-				$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
-			Case "Edge"
-				$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
-			Case "Opera"
-				$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
-		EndSwitch
+	MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
+		& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
+	_WD_Shutdown()
+	; Not fit, need to update the driver and try it once again.
+	Local $b64 = ( @CPUArch = "X64" )
+	Switch $stashBrowser
+		Case "Firefox"
+			$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
+		Case "Chrome"
+			$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
+		Case "Edge"
+			$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		Case "Opera"
+			$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+	EndSwitch
 		
 	$iConsolePID = _WD_Startup()
-	if @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
+	if @error <> $_WD_ERROR_Success Then
+		BrowserError(@extended, @ScriptLineNumber, "Too bad the web driver still cannot start.")
+	EndIf
 EndIf
 
 ; c("DesireCap:" & $sDesiredCapabilities)
@@ -453,19 +465,20 @@ If @error <> $_WD_ERROR_Success Then
 		EndSwitch
 
 		StartBrowser()
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber, "After cap error, still cannot set up the browser.")
 
 		_WD_Startup()
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber, "After cap error, still cannot start up web driver.")
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber)
+		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber, "Too bad it still doesn't work. Maybe the " & $stashBrowser &  " browser is frozen." _ 
+			& @crlf & "Please use task manager to close all browsers that are still running.")
 		
 	ElseIf @extended >= 400 Then
-		BrowserError( @extended,  @ScriptLineNumber)	; Show error and exit
+		BrowserError( @extended,  @ScriptLineNumber, "Web client error.")	; Show error and exit
 	Else
 		; Other errors:
-		BrowserError( @error, @ScriptLineNumber)	; Show other error and exit.
+		BrowserError( @error, @ScriptLineNumber, "Other error. Please use task manager to make sure all browser processes are closed." )	; Show other error and exit.
 	EndIf
 EndIf
 
@@ -488,8 +501,10 @@ Global $gsBrowserHandle = _WD_Window($sSession, "window")
 CreateSubMenu()
 
 TraySetState($TRAY_ICONSTATE_SHOW)
-; Launch the web page
-OpenURL($stashURL)
+; Launch the web page with last remember URL.
+; If not remember the URL, $gsLastURL is $stashURL anyway.
+c( "Last Url:" & $gsLastURL )
+OpenURL($gsLastURL)
 
 ; Find out if this site is password protected and set ApiKey accordingly
 Global $gbUserPass = False, $gsApiKey = ""
@@ -694,7 +709,7 @@ Exit
 
 #EndRegion Tray menu
 
-#Region Functions
+#Region Functions Region
 
 #cs
 	; From https://www.autoitscript.com/forum/topic/121485-middle-mouse-button-wheel-hook/
@@ -716,13 +731,31 @@ Func MouseWheelInit()
 EndFunc
 
 Func MWENT($h,$m,$l)
+	; Not care about button up or down, just track the click
 	; $MWHL=BitShift(DllStructGetData(DllStructCreate("int X;int Y;dword mouseData", $l), 3), 16)/120
 	$MBUT=($m=0x208)
 EndFunc	
 
-Func MouseWheelClick()
+Func MouseWheelClick($bReset = False)
 	; Add current tab to the play list.
-	Local $hBrowser = CurrentBrowserWinHandle()
+	Static $hBrowser = 0	; Just need to get the win handle once.
+	Static $hTimer = 0 ; Prevent clicking too many times
+	If $hTimer = 0 Then 
+		$hTimer = TimerInit()	; Start timer.
+	Else
+		If TimerDiff($hTimer) < 2000 Then Return ; Too fast. Each click should be 2 seconds apart.
+		$hTimer = TimerInit()	; Accepted. Timer reset.
+	EndIf
+	
+	If $bReset Then			; If browser was closed and relaunched.
+		$hBrowser = 0
+		Return
+	EndIf
+	
+	If $hBrowser = 0 Then
+		$hBrowser = CurrentBrowserWinHandle()
+	EndIf
+	
 	; Get winhandle under the mouse
 	; https://www.autoitscript.com/forum/topic/122147-window-handletitle-under-mouse-pointer/?do=findComment&comment=848114
 	Local $stPoint=DllStructCreate($tagPOINT), $aPos, $hControl, $hWin
@@ -731,8 +764,14 @@ Func MouseWheelClick()
 	DllStructSetData($stPoint,2,$aPos[1])
 	$hControl=_WinAPI_WindowFromPoint($stPoint)
 	$hWin=_WinAPI_GetAncestor($hControl,2)
-	If $hWin = $hBrowser Then 
-		AddItemToList()
+	If $hWin = $hBrowser Then
+		If _IsPressed("11") Then 
+			; Ctrl is pressed, add it to play list.
+			AddItemToList()
+		Else
+			; Play the tab
+			PlayCurrentTab()
+		EndIf
 	EndIf 
 EndFunc
 
@@ -806,7 +845,8 @@ Func CheckStashVersion()
 							FileMove(@TempDir & "\stash-win.exe", $stashFilePath, $FC_OVERWRITE)
 							; Run it now.
 							If $showStashConsole Then
-								$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
+								Run(@ComSpec &  ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
+								$iStashPID = ProcessExists('stash-win.exe')
 							Else
 								$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 							EndIf
@@ -866,10 +906,13 @@ EndFunc
 Func IsLoginScreen()
 	; return true if current screen is login screen
 	Local $sActualURL = GetURL()
-	If @error Then Return SetError(1)	; no browser opened.
+	If @error Then Return SetError(1,  0,  False )	; no browser opened.
 	
 	Local $aURL = _WinHttpCrackUrl($sActualURL)
-	c( "$aURL[6]:" & $aURL[6] )
+	If @error or Not IsArray($aURL) Then Return SetError(2,  0,  False )
+
+	; c( "$aURL[6]:" & $aURL[6] )
+	
 	If $aURL[6] = "/login" Then Return True 
 	Return False
 EndFunc
@@ -927,11 +970,13 @@ Func CurrentBrowserWinHandle()
 			Case "Opera"
 				$hWnd = WinGetHandle( "Opera" )
 		EndSwitch
+		if @error Then $hWnd = 0
 	Else
 		; If the browser is a special one, use the exe file name
 		Local $sExe = StringMid( $gsBrowserLocation, StringInStr($gsBrowserLocation, "\", 0, -1) + 1 )
 		$sExe = StringLeft( $sExe, StringInStr( $sExe, ".") -1 )  ; Remove the ".exe"
 		$hWnd = WinGetHandle( " - " & $sExe )
+		if @error Then $hWnd = 0
 	EndIf 
 	Opt( "WinTitleMatchMode", 1 )	; Restore to default
 	Return $hWnd
@@ -2472,7 +2517,6 @@ Func SetupEdge()
 	EndIf
 
 	If $stashBrowserProfile = "Default" Then 
-		_WD_CapabilitiesAdd( "args", "--no-sandbox" )
 		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultEdgeProfile() )
 		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
 	Else
@@ -2544,32 +2588,37 @@ Func GetDefaultOperaProfile()
 EndFunc
 
 
-Func BrowserError($code, $sLine)
+Func BrowserError($code, $sLine, $sDetails = "")
 	MsgBox(48,"Oops !","Something wrong with the browser's driver. Cannot continue." _
-		 & @CRLF & "WinHTTP status code:" & $code & @CRLF & "Script Line:" & $sLine)
+		 & @CRLF & "WinHTTP status code:" & $code & @CRLF & "Script Line:" & $sLine & @CRLF & $sDetails)
 	ExitScript()
 EndFunc
 
 Func OpenURL($url)
 	; Probably it's close or no windows at all.
-	Local $sCurrentTab = _WD_Window($sSession, 'Window')
+	Local $sCurrentHandle = _WD_Window($sSession, 'Window')
 	If @error <> $_WD_ERROR_Success Then 
-		$sCurrentTab = ""
+		$sCurrentHandle = ""
 	EndIf
 	
 	Local $aHandles =  _WD_Window($sSession, 'Handles')
 	Local $iCount = UBound($aHandles)
 	If $iCount = 0 Then
-			; No browser at all, open a new session.
-			$sSession = _WD_CreateSession($sDesiredCapabilities)
-			_WD_Navigate($sSession, $url)
-			$gsBrowserHandle = _WD_Window($sSession, "Window")
+			; No browser at all, open a new window.
+			_WD_Window($sSession, "new", '{"type":"window"}' )
+			MouseWheelClick(True)	; reset the mouse click
 	Else
-			; The session is still alive. Switch to the last handle to make sure that's the current one
-			$gsBrowserHandle = ( $sCurrentTab = "" ? $sCurrentTab : $aHandles[$iCount-1] )
-			_WD_Window($sSession, "switch", '{"handle":"' & $gsBrowserHandle & '"}' )
-			_WD_Navigate($sSession, $url)
+			; Some browser tab is still alive.
+			If $sCurrentHandle = "" Then
+				; Handle is lost, switch to the tab in the front
+				SetHandleToActiveTab()
+			Else
+				; if active handle is not the one in the front, switch to the front tab.
+				If Not BrowserTabIsFront() Then SetHandleToActiveTab()
+			EndIf
 	EndIf
+	_WD_Navigate($sSession, $url)
+	$gsBrowserHandle = _WD_Window($sSession, "Window")
 EndFunc
 
 Func Alert($sMessage)
@@ -2933,13 +2982,27 @@ Func Q2($str)
 EndFunc
 
 Func ExitScript()
+	If $giSaveLastURL Then
+		If CurrentBrowserWinHandle() <> 0 Then 
+			; The browser is still running.
+			$sURL = GetURL()
+			If @error Then
+				RegWrite($gsRegBase, "LastURL", "REG_SZ", $stashURL )
+			Else 
+				RegWrite($gsRegBase, "LastURL", "REG_SZ", $sURL )
+			EndIf
+		EndIf 
+	EndIf
+
 	If $iStashPID <> 0 Then
 		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
 	EndIf
+	
 	if $sSession Then
 		_WD_DeleteSession($sSession)
 		_WD_Shutdown()
 	EndIf
+	
 	Exit
 EndFunc   ;==>ExitScript
 

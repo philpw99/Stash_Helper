@@ -1,9 +1,15 @@
+v2.4.7
+	* Remember the last visited page and open it next time Stash Helper runs. Can disable it in the settings.
+	* Set a 2 second limit between clicks, to prevent mouse wheel button from clicking too many times.
+	* Fix Stash console not showing problem.
+	* Improve the GetURL and OpenURL ( for the 10th+ time).
+
 v2.4.6
 	* Auto download the py_common folder and files in Scraper Manager.
 	* Add Opera as an option in the first time setup.
 	* Better way to know if the current browser tab is in the front.
 	* Fix a big bug of URLtoQuery. Now the playlist and play current scene/movie works normally.
-	* Now you can use middle-mouse-button to add scene/movie/image/gallery to the playlist.
+	* Now you can use middle-mouse-button to play the current scene/movie/image/gallery, or Ctrl-MidMouseButton to add scene/movie/image/gallery to the playlist.
 
 v2.4.5
 	* Update Webdriver to 0.11.

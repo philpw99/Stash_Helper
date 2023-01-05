@@ -118,16 +118,25 @@ Func ShowSettings()
 	EndIf
 	
 	; Profile choosing radios
-	GUICtrlCreateGroup("Browser Profile",486,137,248,269,$BS_CENTER,-1)
+	GUICtrlCreateGroup("Browser Profile",477,137,256,172,$BS_CENTER,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	Global $radioChoosePrivate = GUICtrlCreateRadio("Private Profile",504,214,174,20,-1,-1)
+	Global $radioChoosePrivate = GUICtrlCreateRadio("Private Profile",504,194,174,20,-1,-1)
 	GUICtrlSetTip(-1,"Stash will run in the browser with a private profile. Your browser's history will be safe.")
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
-	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",504,272,184,20,-1,-1)
+	Global $radioChooseDefault = GUICtrlCreateRadio("Default Profile",504,252,184,20,-1,-1)
 	GUICtrlSetTip(-1,"Stash will run in the browser's default user profile. Your bookmarks and add-ons will be available.")
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group Browser Profile
+	
+	; Option to remember last URL
+	$chkSaveLastURL = GUICtrlCreateCheckbox("Remember Last Visit",477,334,249,60,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Remember the last page you visit when closing the Stash Helper. SH will open that page again when it run next time.")
+	If $giSaveLastURL = 1 Then 
+		GUICtrlSetState(-1, $GUI_CHECKED)
+	EndIf
+
 
 	GUICtrlCreateLabel("Stash-win.exe location:",34,431,299,33,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
@@ -312,6 +321,10 @@ Func ShowSettings()
 				EndSelect
 				RegWrite($gsRegBase, "BrowserProfile", "REG_SZ", $sProfile)
 				If $sProfile <> $stashBrowserProfile Then $bRestartRequired = True
+				
+				; Set the Save Last URL
+				$giSaveLastURL = GUICtrlRead( $chkSaveLastURL) =  $GUI_CHECKED ? 1 : 0
+				RegWrite($gsRegBase, "SaveLastURL", "REG_DWORD", $giSaveLastURL)
 				
 				; Set the stash type choice
 				Select 
