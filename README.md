@@ -1,8 +1,17 @@
-# Notice: Chrome and Edge users.
+## Notice: Stash Helper makes managing Stash and playing media directly in Windows easy, but it won't work for Quest 2 or other standalone VR headsets, neither does it work with Linux or MacOS media players.
+
+### New Feature: Mid-Mouse-Button
+-----
+For now, click on the mid-mouse-button (or the mouse wheel button) will play the current tab's scene/movie/image/gallery in your favorite media player.
+Hold the Ctrl button and click the Middle-Mouse-Button will add it to the playlist.
+Hope it will simplify things. ( Heard some complaint about the use of shortcut keys. )
+### Notice: Chrome and Edge users.
+-----
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
 Btw, the new Stash Helper v2.4.5 has an updated Webdriver, and it supports Opera now.
 
-# Notice: stash v17 compatibility
+### Notice: stash v17 compatibility
+-----
 Because v17 is using a very different file structure, my Stash_Helper 2.3.12 and below will not work properly with it.
 To use v17 with Stash_Helper, you need Stash_Helper v2.4.1 and above. <p>
 To be perfectly clear:
@@ -12,11 +21,10 @@ To be perfectly clear:
 Personally I don't recommend upgrade to v17 yet, because there is an issue needs to be addressed. The previous file scans from v12 will generate file paths like 
 "g:my folder\my video.mp4" , instead of the normal "g:\my folder\my video.mp4". The upgrades from v12 to v16 didn't fix this problem at all, they just leave the path as it is. Now in V17 if you do a scan with file path like that, you will end with 2 file entries and 2 parent_folder_ids, because Stash v17 will think "g:my folder" and "g:\my folder" are different folders, thus the file paths are also different. I got over 900 duplicate entries because of it.
 
-The easy fix for this is to revert the sqlite database to the v16 one then using a sqlite dabase program to run SQL like this:
+The easy fix for this is to revert the sqlite database to the v16 one then using a sqlite dabase program to run SQL like below to fix the small error in path. After that Stash v17 will handle the paths correctly. 
 ```
 UPDATE scenes SET path = substr(path,1,2) || '\' || substr( path, 3) WHERE substr( path, 2, 1) == ':' AND substr( path, 3, 1) != '\';
 ```
-to fix the small error in path. After that Stash v17 will handle the paths correctly. 
 
 # Stash_Helper
 <a href='https://github.com/stashapp/stash'>StashApp</a> is a powerful content management program for your porn collections. It's cross-platform and comes with many website scrapers. It will make your whole video collection looks professional: with detail info about scenes, performers, studios...etc. It's like what Plex has done for your movie collections.<br>
@@ -68,7 +76,7 @@ Though Stash is powerful. It comes with just a console window and not super easy
   <tr>
     <td>
       <img src="https://user-images.githubusercontent.com/22040708/205507652-7765f393-8958-4ac2-a48b-6f9b2fe98fa1.png" /></td>
-    <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
+    <td>Powerful playlist creation tool. You can set the scene filter and it will add the resulting files to the list, or you can browse to a scene/movie, hit "Ctrl-Alt-A" or Mid-Mouse-Button to add it to the list, whichever more convenient for you. You can save or load the play list in standard .m3u format. The playlist can be sent to the media player you chose. </td>
   </tr>
   <tr>
     <td><img src="https://user-images.githubusercontent.com/22040708/147080557-e4a4f6d0-ea0d-49f6-bc8f-34dd25c9ac8d.png" /></td>
