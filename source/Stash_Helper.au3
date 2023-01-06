@@ -23,6 +23,7 @@
 #include <Array.au3>
 #include <Inet.au3>
 #Include <GDIPlus.au3>
+#include <MsgBoxConstants.au3>
 
 ; opt("MustDeclareVars", 1)
 

@@ -86,12 +86,12 @@ Func ScrapersManager()
 	GUICtrlSetResizing(-1,804)
 
 
-	$old_cursor = MouseGetCursor()
+	; $old_cursor = MouseGetCursor()
 
 	GUISetState(@SW_SHOW)
 	
 	; Set busy cursor.
-	GUISetCursor(15, 1, $guiScrapers)
+	; GUISetCursor(15, 1, $guiScrapers)
 	SplashTextOn("Please Wait...",  "Loading scrapers' info from the big list...", 500, 200)
 	; Set both $aScraperArray and $aScraperFiles
 	SetScraperArray() 
@@ -109,7 +109,7 @@ Func ScrapersManager()
 	Next 
 	
 	; Set cursor back.
-	GUISetCursor($old_cursor, 1, $guiScrapers)
+	; GUISetCursor($old_cursor, 1, $guiScrapers)
 	SplashOff()
 
 	; Now It's all ready. Wait for "Install" or "Remove"
@@ -183,13 +183,13 @@ Func ScrapersManager()
 					; Reload scrapers
 					
 					; Set mouse cursor to wait.
-					$old_cursor = MouseGetCursor()
-					GUISetCursor(15, 1, $guiScrapers)
+					; $old_cursor = MouseGetCursor()
+					; GUISetCursor(15, 1, $guiScrapers)
 
 					ReloadScrapers()
 					
 					; Set cursor back.
-					GUISetCursor($old_cursor, 1, $guiScrapers)
+					; GUISetCursor($old_cursor, 1, $guiScrapers)
 
 					MsgBox(64,$iTotalInstalled & " Scrapers Installed",$iTotalInstalled & " Scrapers are now installed and working. If not, please go to Settings->Scraping->Reload scrapers.",20)
 				EndIf 
@@ -228,12 +228,12 @@ Func ScrapersManager()
 					; Reload scrapers
 					
 					; Set mouse cursor to wait.
-					$old_cursor = MouseGetCursor()
-					GUISetCursor(15, 1, $guiScrapers)
+					; $old_cursor = MouseGetCursor()
+					; GUISetCursor(15, 1, $guiScrapers)
 					ReloadScrapers()
 
 					; Set cursor back.
-					GUISetCursor($old_cursor, 1, $guiScrapers)
+					; GUISetCursor($old_cursor, 1, $guiScrapers)
 					
 					MsgBox(64,$iTotalRemoved & " Scrapers removed",$iTotalRemoved & " Scrapers are now removed.",20)
 				EndIf 
