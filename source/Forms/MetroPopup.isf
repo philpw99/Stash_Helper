@@ -1,0 +1,282 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+Local $guiMetroPopup = GUICreate( "MetroPopup", 433, 337, $iGuiX, $iGuiY, -2143289344, 8 )
+GUISetBkColor( 0x808080 )
+Local $btnMetroPlay = GUICtrlCreateButton("Play In External Player",3,0,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Play the current scene/movie/image/gallery in external media player.")
+Local $btnMetroAddToList = GUICtrlCreateButton("Add to Playlist",3,48,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Add the current media to the playlist.")
+Local $btnMetroSendList = GUICtrlCreateButton("Send Playlist to External Player",3,96,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Send the current playlist to external media player.")
+Local $btnMetroEditList = GUICtrlCreateButton("Edit Playlist",3,144,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Edit current playlist.")
+Local $btnMetroCreateMovie = GUICtrlCreateButton("Create Movie from this Scene",3,192,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Create a movie from this scene. Or create movies.")
+Local $btnMetroFetchInfo = GUICtrlCreateButton("Fetch Scene Info from StashDB",3,240,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Retrieve Scene information from StashDB. The scene need to have a Phash ID.")
+Local $btnMetroCancel = GUICtrlCreateButton("Cancel",3,288,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Close this menu.")
+
+
+
+#cs
+[gui]
+Handle_deklaration=local
+Handle_deklaration_const=false
+title=MetroPopup
+breite=433
+hoehe=337
+style=$WS_POPUP+$WS_DLGFRAME
+exstyle=$WS_EX_TOPMOST
+bgcolour=0x444444
+bgimage=none
+handle=$guiMetroPopup
+parent=
+code=%Handle_Declaration%%gui_handle% = GUICreate( "%gui_title%", %gui_width%, %gui_height%, $iGuiX, $iGuiY, %gui_style%, %gui_exstyle% )[BREAK]GUISetBkColor( 0x808080 )
+codebeforegui=
+xpos=0
+ypos=0
+center_gui=false
+title_textmode=normal
+isf_include_once=false
+only_controls_in_isf=true
+const_modus=numbers
+gui_code_in_function=false
+gui_code_in_function_name=
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x000827F2]
+type=button
+handle=433
+locked=0
+resize=
+x=3
+y=0
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Play the current scene/movie/image/gallery in external media player.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroPlay
+text=Play In External Player
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000827EE]
+type=button
+handle=434
+locked=0
+resize=
+x=3
+y=48
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Add the current media to the playlist.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroAddToList
+text=Add to Playlist
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=2
+[0x000827F4]
+type=button
+handle=435
+locked=0
+resize=
+x=3
+y=96
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Send the current playlist to external media player.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroSendList
+text=Send Playlist to External Player
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=3
+[0x00082804]
+type=button
+handle=436
+locked=0
+resize=
+x=3
+y=144
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Edit current playlist.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroEditList
+text=Edit Playlist
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=4
+[0x0008280C]
+type=button
+handle=437
+locked=0
+resize=
+x=3
+y=192
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Create a movie from this scene. Or create movies.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroCreateMovie
+text=Create Movie from this Scene
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=5
+[0x00082806]
+type=button
+handle=438
+locked=0
+resize=
+x=3
+y=240
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Retrieve Scene information from StashDB. The scene need to have a Phash ID.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroFetchInfo
+text=Fetch Scene Info from StashDB
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=6
+[0x000F280E]
+type=button
+handle=439
+locked=0
+resize=
+x=3
+y=288
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Close this menu.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroCancel
+text=Cancel
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=7
+#ce

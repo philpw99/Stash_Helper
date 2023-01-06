@@ -23,10 +23,11 @@
 #include <Array.au3>
 #include <Inet.au3>
 #Include <GDIPlus.au3>
-#include <Misc.au3>
+
 ; opt("MustDeclareVars", 1)
 
 #include <WinAPIGdi.au3>
+
 
 #Region Globals
 
@@ -37,6 +38,9 @@ Global $gdScale = _WinAPI_EnumDisplaySettings('', $ENUM_CURRENT_SETTINGS)[0] / @
 #include "URL_Json_Encode.au3"
 #include "TrayMenuEx.au3"
 #include "SimpleMsgBox.au3"
+; For middle mouse button menu
+
+#include "Forms\MetroPopUpMenu.au3"
 
 If AlreadyRunning() Then
 	MsgBox(48,"Stash Helper is still running.","Stash Helper is still running. Maybe it had an error and froze. " & @CRLF _
@@ -52,7 +56,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.6"
+Global Const $currentVersion = "v2.4.7"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -233,7 +237,8 @@ Else
 				; Not running. Launch it.
 				If $showStashConsole Then
 					Run(@ComSpec & ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
-					$iStashPID = ProcessExists("stash-win.exe")
+					$iStashPID = ProcessWait( "stash-win.exe", 5 )
+					c( "console pid:" & $iStashPID)
 				Else
 					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 				EndIf
@@ -443,7 +448,9 @@ If @error <> $_WD_ERROR_Success Then
 	EndIf
 EndIf
 
-; c("DesireCap:" & $sDesiredCapabilities)
+
+; $sDesiredCapabilities =  StringReplace( $sDesiredCapabilities, "\/", "/" )
+c("Cap:" & $sDesiredCapabilities)
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then
@@ -503,7 +510,8 @@ CreateSubMenu()
 TraySetState($TRAY_ICONSTATE_SHOW)
 ; Launch the web page with last remember URL.
 ; If not remember the URL, $gsLastURL is $stashURL anyway.
-c( "Last Url:" & $gsLastURL )
+; Now browser will open last url for the first run.
+; c( "Last Url:" & $gsLastURL )
 OpenURL($gsLastURL)
 
 ; Find out if this site is password protected and set ApiKey accordingly
@@ -740,8 +748,9 @@ Func MouseWheelClick($bReset = False)
 	; Add current tab to the play list.
 	Static $hBrowser = 0	; Just need to get the win handle once.
 	Static $hTimer = 0 ; Prevent clicking too many times
+	
 	If $hTimer = 0 Then 
-		$hTimer = TimerInit()	; Start timer.
+		$hTimer = TimerInit()	; First time, just start timer. No judgement.
 	Else
 		If TimerDiff($hTimer) < 2000 Then Return ; Too fast. Each click should be 2 seconds apart.
 		$hTimer = TimerInit()	; Accepted. Timer reset.
@@ -765,13 +774,8 @@ Func MouseWheelClick($bReset = False)
 	$hControl=_WinAPI_WindowFromPoint($stPoint)
 	$hWin=_WinAPI_GetAncestor($hControl,2)
 	If $hWin = $hBrowser Then
-		If _IsPressed("11") Then 
-			; Ctrl is pressed, add it to play list.
-			AddItemToList()
-		Else
-			; Play the tab
-			PlayCurrentTab()
-		EndIf
+		; Metro style buttons
+		MetroPopUpMenu()
 	EndIf 
 EndFunc
 
@@ -846,7 +850,7 @@ Func CheckStashVersion()
 							; Run it now.
 							If $showStashConsole Then
 								Run(@ComSpec &  ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
-								$iStashPID = ProcessExists('stash-win.exe')
+								$iStashPID = ProcessWait( "stash-win.exe", 5 )
 							Else
 								$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 							EndIf
@@ -2358,8 +2362,8 @@ Func SetupFirefox()
 	_WD_CapabilitiesAdd("firstMatch", "firefox")
 	_WD_CapabilitiesAdd("browserName", "firefox")
 	_WD_CapabilitiesAdd("acceptInsecureCerts", True)
-	_WD_CapabilitiesAdd("w3c", True)
-	; _WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
+	; _WD_CapabilitiesAdd("w3c", True)		; Not working any more
+	; _WD_CapabilitiesAdd("excludeSwitches", "enable-automation")	; not working
 
 	If $gsBrowserLocation <> "" Then
 		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
@@ -2372,6 +2376,7 @@ Func SetupFirefox()
 		; Private profile. Do nothing for now.
 	EndIf
 	
+	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.	
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
 	; The old way
@@ -2452,10 +2457,11 @@ Func SetupChrome()
 		_WD_CapabilitiesAdd( "args", "--no-sandbox")
 		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultChromeProfile() )
 		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
-		
 	Else
 		; Private profile. Do nothing for now.
 	EndIf
+	
+	; _WD_CapabilitiesAdd( "args", "--app=" & $gsLastURL)	; Launch the last remembered URL or just stash.	
 	
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 	
@@ -2523,6 +2529,8 @@ Func SetupEdge()
 		; Private profile. Do nothing for now.
 	EndIf
 	
+	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.	
+	
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
 	; The old way
@@ -2579,6 +2587,8 @@ Func SetupOpera()
 		; Private profile. Do nothing for now.
 	EndIf
 	
+	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.	
+	
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
 EndFunc   ;==>SetupOpera
@@ -2597,6 +2607,7 @@ EndFunc
 Func OpenURL($url)
 	; Probably it's close or no windows at all.
 	Local $sCurrentHandle = _WD_Window($sSession, 'Window')
+	c( "current handle:" & $sCurrentHandle)
 	If @error <> $_WD_ERROR_Success Then 
 		$sCurrentHandle = ""
 	EndIf
@@ -2605,10 +2616,12 @@ Func OpenURL($url)
 	Local $iCount = UBound($aHandles)
 	If $iCount = 0 Then
 			; No browser at all, open a new window.
-			_WD_Window($sSession, "new", '{"type":"window"}' )
+			$sResult = _WD_Window($sSession, "new", '{"type":"window"}' )
+			c( "use new window.")
 			MouseWheelClick(True)	; reset the mouse click
 	Else
 			; Some browser tab is still alive.
+			c(" use existing window.")
 			If $sCurrentHandle = "" Then
 				; Handle is lost, switch to the tab in the front
 				SetHandleToActiveTab()
@@ -2994,13 +3007,14 @@ Func ExitScript()
 		EndIf 
 	EndIf
 
-	If $iStashPID <> 0 Then
-		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
-	EndIf
-	
+
 	if $sSession Then
 		_WD_DeleteSession($sSession)
 		_WD_Shutdown()
+	EndIf
+
+	If $iStashPID <> 0 Then
+		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
 	EndIf
 	
 	Exit

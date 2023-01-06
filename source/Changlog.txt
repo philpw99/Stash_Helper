@@ -1,8 +1,11 @@
 v2.4.7
+	* Change Middle Mouse Button to show a mini menu in browser.
 	* Remember the last visited page and open it next time Stash Helper runs. Can disable it in the settings.
 	* Set a 2 second limit between clicks, to prevent mouse wheel button from clicking too many times.
-	* Fix Stash console not showing problem.
+	* Fix Stash console not showing problem. Also fix stash console not closing when exit.
 	* Improve the GetURL and OpenURL ( for the 10th+ time).
+	* Fix Firefox "w3c" wrong argument issue.
+	* Add x64 AutoIt shortcut.
 
 v2.4.6
 	* Auto download the py_common folder and files in Scraper Manager.
