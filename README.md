@@ -2,18 +2,24 @@
 
 ### New Feature: Mid-Mouse-Button shows a menu
 <img src="https://user-images.githubusercontent.com/22040708/210924617-f9d8203f-48d9-4511-aaf4-288df1068518.png" width=300 />
+
 -----
+
 When you click on the middle mouse button in the Stash browser, a mini-menu will show up like above.
 There are a few important features like play, add to playlist, send playlist ... etc.
 If you like some special buttons for certain features, please create an issue here and let me know.
 
 ### Notice: Chrome and Edge users.
+
 -----
+
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
 Btw, the new Stash Helper v2.4.5 has an updated Webdriver, and it supports Opera now.
 
 ### Notice: stash v17 compatibility
+
 -----
+
 Because v17 is using a very different file structure, my Stash_Helper 2.3.12 and below will not work properly with it.
 To use v17 with Stash_Helper, you need Stash_Helper v2.4.1 and above. <p>
 To be perfectly clear:
