@@ -1,10 +1,12 @@
 ## Notice: Stash Helper makes managing Stash and playing media directly in Windows easy, but it won't work for Quest 2 or other standalone VR headsets, neither does it work with Linux or MacOS media players.
 
-### New Feature: Mid-Mouse-Button
+### New Feature: Mid-Mouse-Button shows a menu
+<img src="https://user-images.githubusercontent.com/22040708/210924617-f9d8203f-48d9-4511-aaf4-288df1068518.png" width=300 />
 -----
-For now, click on the mid-mouse-button (or the mouse wheel button) will play the current tab's scene/movie/image/gallery in your favorite media player.
-Hold the Ctrl button and click the Middle-Mouse-Button will add it to the playlist.
-Hope it will simplify things. ( Heard some complaint about the use of shortcut keys. )
+When you click on the middle mouse button in the Stash browser, a mini-menu will show up like above.
+There are a few important features like play, add to playlist, send playlist ... etc.
+If you like some special buttons for certain features, please create an issue here and let me know.
+
 ### Notice: Chrome and Edge users.
 -----
 If Chrome or Edge crashed before, it might still run in the background. If you launch Stash Helper in default profile mode, you might get a "Http 500" error and the program will close down. To fix it, you just need to run Task Manager and end all the chrome and Edge remaining in the memory.
