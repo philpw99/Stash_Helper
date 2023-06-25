@@ -5,7 +5,7 @@
 
 -----
 
-When you click on the middle mouse button in the Stash browser, a mini-menu will show up like above.
+When you click on the middle mouse button plus Ctrl key in the Stash browser, a mini-menu will show up like above.
 There are a few important features like play, add to playlist, send playlist ... etc.
 If you like some special buttons for certain features, please create an issue here and let me know.
 
