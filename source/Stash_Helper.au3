@@ -24,6 +24,7 @@
 #include <Inet.au3>
 #Include <GDIPlus.au3>
 #include <MsgBoxConstants.au3>
+#include <Misc.au3>
 
 ; opt("MustDeclareVars", 1)
 
@@ -57,7 +58,7 @@ DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
 ; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.7"
+Global Const $currentVersion = "v2.4.8"
 
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
@@ -374,7 +375,7 @@ Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 $iTrayIconCount += 1
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
 _TrayMenuAddImage($hIcons[16], 18)
-Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List        Ctrl-MidMouseButton or Ctrl-Alt-A", $trayMenuPlayList)
+Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List        Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList =	TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 		TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 	TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
@@ -445,7 +446,7 @@ If @error <> $_WD_ERROR_Success Then
 		
 	$iConsolePID = _WD_Startup()
 	if @error <> $_WD_ERROR_Success Then
-		BrowserError(@extended, @ScriptLineNumber, "Too bad the web driver still cannot start.")
+		BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad the web driver still cannot start.")
 	EndIf
 EndIf
 
@@ -455,7 +456,8 @@ c("Cap:" & $sDesiredCapabilities)
 
 $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then
-	If @extended >= 500 Then
+	; c("last http result:" & $_WD_HTTPRESULT)
+	If $_WD_HTTPRESULT >= 500 Then
 		MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
 			& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
 		_WD_Shutdown()
@@ -473,20 +475,20 @@ If @error <> $_WD_ERROR_Success Then
 		EndSwitch
 
 		StartBrowser()
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber, "After cap error, still cannot set up the browser.")
+		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "After cap error, still cannot set up the browser.")
 
 		_WD_Startup()
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber, "After cap error, still cannot start up web driver.")
+		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "After cap error, still cannot start up web driver.")
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
-		If @error <> $_WD_ERROR_Success Then BrowserError(@extended, @ScriptLineNumber, "Too bad it still doesn't work. Maybe the " & $stashBrowser &  " browser is frozen." _ 
+		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad it still doesn't work. Maybe the " & $stashBrowser &  " browser is frozen." _ 
 			& @crlf & "Please use task manager to close all browsers that are still running.")
 		
-	ElseIf @extended >= 400 Then
-		BrowserError( @extended,  @ScriptLineNumber, "Web client error.")	; Show error and exit
+	ElseIf $_WD_HTTPRESULT >= 400 Then
+		BrowserError( $_WD_HTTPRESULT,  @ScriptLineNumber, "Web client error.")	; Show error and exit
 	Else
 		; Other errors:
-		BrowserError( @error, @ScriptLineNumber, "Other error. Please use task manager to make sure all browser processes are closed." )	; Show other error and exit.
+		BrowserError( $_WD_HTTPRESULT, @ScriptLineNumber, "Other error. Please use task manager to make sure all browser processes are closed." )	; Show other error and exit.
 	EndIf
 EndIf
 
@@ -496,10 +498,6 @@ c("Session ID:" & $sSession )
 Global $gsBrowserHandle = _WD_Window($sSession, "window")
 ; c( "Browser Handle:" & $gsBrowserHandle )
 
-;~ Local $oStatus = _WD_Status()
-;~ If IsObj($oStatus) Then 
-;~ 	c( "WD Status :" & Json_Encode( $oStatus ) )
-;~ EndIf
 
 #EndRegion Forms and browsers startup globals
 
@@ -742,13 +740,16 @@ EndFunc
 Func MWENT($h,$m,$l)
 	; Not care about button up or down, just track the click
 	; $MWHL=BitShift(DllStructGetData(DllStructCreate("int X;int Y;dword mouseData", $l), 3), 16)/120
-	$MBUT=($m=0x208)
+	; Need control key pressed ("11") at the same time.
+	$MBUT = ($m = 0x208) ? _IsPressed("11") : False
+	; $MBUT=($m=0x208)
 EndFunc	
 
 Func MouseWheelClick($bReset = False)
 	; Add current tab to the play list.
 	Static $hBrowser = 0	; Just need to get the win handle once.
 	Static $hTimer = 0 ; Prevent clicking too many times
+	
 	
 	If $hTimer = 0 Then 
 		$hTimer = TimerInit()	; First time, just start timer. No judgement.
@@ -1876,7 +1877,7 @@ Func AddSceneToList($sID)
 	If $sID = "" then return 0; Just in case.
 	; Now get the info about this scene
 	; $sQuery = '{"query":"{findScene(id:' & $sID & '){title,path,file{duration},paths{stream}}}"}'		; for v16
-	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,files{path,duration},paths{stream}}}"}'		; for v17
+	$sQuery = '{"query":"{findScene(id:' & $sID & '){title,files{path,basename,duration},paths{stream}}}"}'		; for v17
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1890,7 +1891,14 @@ Func AddSceneToList($sID)
 	; $oData.Item("title") $oData.Item("path")
 	$i = UBound($aPlayList)
 	ReDim $aPlayList[$i+1][3]
-	$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("title")
+	If $oData.Item("title") = "" Then 
+		; No title yet
+		$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("files")[0].Item("basename")
+	Else
+		; Has a title.
+		$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("title")
+	EndIf
+	; c( "oData.title=" &  $oData.Item("title") )
 	; $aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("file").Item("duration") )			; for v16
 	$aPlayList[$i][$LIST_DURATION] = Floor( $oData.Item("files")[0].Item("duration") )			; for v17
 	If $stashType = "Local" Then

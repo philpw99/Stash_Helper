@@ -19,7 +19,7 @@ Func MetroPopUpMenu()
 			Case $btnMetroPlay
 				$sCatNo = GetCurrentTabCategoryAndNumber()
 				If StringInStr($sCatNo, "-") = 0 Then 
-					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or movie.")
+					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or movie." )
 				Else
 					$aCatNo = StringSplit($sCatNo, "-")
 					If $aCatNo[0] = 2 and StringIsDigit( $aCatNo[2]) Then 
@@ -37,23 +37,24 @@ Func MetroPopUpMenu()
 				EndIf				
 				
 			Case $btnMetroAddToList
-				$sCatNo = GetCurrentTabCategoryAndNumber()
-				If StringInStr($sCatNo, "-") = 0 Then 
-					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or movie.")
-				Else
-					$aCatNo = StringSplit($sCatNo, "-")
-					If $aCatNo[0] = 2 And StringIsDigit( $aCatNo[2] ) Then 
-						Switch $aCatNo[1]
-							Case "scenes", "movies", "images", "galleries"
-								GUISetState( @SW_HIDE, $guiMetroPopup )
-								AddItemToList()
-								ExitLoop 
-						EndSwitch
-					EndIf 
-					c( "$sCatNo:" & $sCatNo)
-					MsgBox(262192,"Not supported","The current page is not supported.",0)
-					ContinueLoop 
-				EndIf				
+				AddItemToList()
+;~ 				$sCatNo = GetCurrentTabCategoryAndNumber()
+;~ 				If StringInStr($sCatNo, "-") = 0 Then 
+;~ 					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or movie.")
+;~ 				Else
+;~ 					$aCatNo = StringSplit($sCatNo, "-")
+;~ 					If $aCatNo[0] = 2 And StringIsDigit( $aCatNo[2] ) Then 
+;~ 						Switch $aCatNo[1]
+;~ 							Case "scenes", "movies", "images", "galleries"
+;~ 								GUISetState( @SW_HIDE, $guiMetroPopup )
+;~ 								AddItemToList()
+;~ 								ExitLoop 
+;~ 						EndSwitch
+;~ 					EndIf 
+;~ 					c( "$sCatNo:" & $sCatNo)
+;~ 					MsgBox(262192,"Not supported","The current page is not supported.",0)
+;~ 					ContinueLoop 
+;~ 				EndIf				
 				
 			Case $btnMetroSendList
 				GUISetState( @SW_HIDE, $guiMetroPopup )

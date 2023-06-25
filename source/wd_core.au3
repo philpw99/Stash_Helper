@@ -14,7 +14,7 @@
 	*
 	* MIT License
 	*
-	* Copyright (c) 2022 Dan Pollak (@Danp2)
+	* Copyright (c) 2023 Dan Pollak (@Danp2)
 	*
 	* Permission is hereby granted, free of charge, to any person obtaining a copy
 	* of this software and associated documentation files (the "Software"), to deal
@@ -69,11 +69,12 @@
 #EndRegion Many thanks to:
 
 #Region Global Constants
-Global Const $__WDVERSION = "0.11.0"
+Global Const $__WDVERSION = "1.0.3"
 
 Global Const $_WD_ELEMENT_ID = "element-6066-11e4-a52e-4f735466cecf"
 Global Const $_WD_SHADOW_ID = "shadow-6066-11e4-a52e-4f735466cecf"
 Global Const $_WD_EmptyDict = "{}"
+Global Const $_WD_EmptyCaps = '{"capabilities":{}}'
 
 Global Const $_WD_LOCATOR_ByCSSSelector = "css selector"
 Global Const $_WD_LOCATOR_ByXPath = "xpath"
@@ -85,6 +86,9 @@ Global Const $_WD_JSON_Value = "[value]"
 Global Const $_WD_JSON_Element = "[value][" & $_WD_ELEMENT_ID & "]"
 Global Const $_WD_JSON_Shadow = "[value][" & $_WD_SHADOW_ID & "]"
 Global Const $_WD_JSON_Error = "[value][error]"
+Global Const $_WD_JSON_Message = "[value][message]"
+
+Global Const $JSON_MLREFORMAT = 1048576 ; Addition to constants from json.au3
 
 Global Enum _
 		$_WD_DEBUG_None = 0, _ ; No logging
@@ -108,7 +112,9 @@ Global Enum _
 		$_WD_ERROR_NoAlert, _ ; No alert present when calling _WD_Alert
 		$_WD_ERROR_NotFound, _ ; File or registry key not found
 		$_WD_ERROR_ElementIssue, _ ; Problem interacting with element (click intercepted, etc)
+		$_WD_ERROR_SessionNotCreated, _ ; Session not created
 		$_WD_ERROR_SessionInvalid, _ ; Invalid session ID was submitted to webdriver
+		$_WD_ERROR_ContextInvalid, _ ; Invalid browsing context
 		$_WD_ERROR_UnknownCommand, _ ; Unknown command submitted to webdriver
 		$_WD_ERROR_UserAbort, _ ; In case when user abort when @error occurs and $_WD_ERROR_MSGBOX was set
 		$_WD_ERROR_FileIssue, _ ; Errors related to WebDriver EXE File
@@ -133,7 +139,9 @@ Global Const $aWD_ERROR_DESC[$_WD_ERROR__COUNTER] = [ _
 		"No alert present", _
 		"Not found", _
 		"Element interaction issue", _
+		"Session not created", _
 		"Invalid session ID", _
+		"Invalid Browsing Context", _
 		"Unknown Command", _
 		"User Aborted", _
 		"File issue", _
@@ -149,10 +157,14 @@ Global Const $_WD_ErrorJavascript = "javascript error"
 Global Const $_WD_ErrorNoSuchAlert = "no such alert"
 Global Const $_WD_ErrorInvalidSelector = "invalid selector"
 Global Const $_WD_ErrorElementNotFound = "no such element"
+Global Const $_WD_ErrorShadowRootNotFound = "no such shadow root"
 Global Const $_WD_ErrorElementStale = "stale element reference"
 Global Const $_WD_ErrorElementInvalid = "invalid argument"
 Global Const $_WD_ErrorElementIntercept = "element click intercepted"
 Global Const $_WD_ErrorElementNotInteract = "element not interactable"
+Global Const $_WD_ErrorWindowNotFound = "no such window"
+Global Const $_WD_ErrorFrameNotFound = "no such frame"
+Global Const $_WD_ErrorSessionNotCreated = "session not created"
 
 Global Const $_WD_WinHTTPTimeoutMsg = "WinHTTP request timed out before Webdriver"
 
@@ -172,7 +184,8 @@ Global Const $_WD_SupportedBrowsers[][$_WD_BROWSER__COUNTER] = _
 		["chrome", "chrome.exe", "chromedriver.exe", False, "goog:chromeOptions", "'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1)", "", '"https://chromedriver.storage.googleapis.com/" & $sDriverLatest & "/chromedriver_win32.zip"'], _
 		["firefox", "firefox.exe", "geckodriver.exe", True, "moz:firefoxOptions", "https://github.com/mozilla/geckodriver/releases/latest", '<a.*href="\/mozilla\/geckodriver\/releases\/tag\/(?:v)(.*?)"', '"https://github.com/mozilla/geckodriver/releases/download/v" & $sDriverLatest & "/geckodriver-v" & $sDriverLatest & (($bFlag64) ? "-win64.zip" : "-win32.zip")'], _
 		["msedge", "msedge.exe", "msedgedriver.exe", True, "ms:edgeOptions", "'https://msedgedriver.azureedge.net/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1) & '_WINDOWS'", "", '"https://msedgedriver.azureedge.net/" & $sDriverLatest & "/edgedriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")'], _
-		["opera", "opera.exe", "operadriver.exe", True, "goog:chromeOptions", "https://github.com/operasoftware/operachromiumdriver/releases/latest", '<a.*href="\/operasoftware\/operachromiumdriver\/releases\/tag\/(?:v\.)(.*?)"', '"https://github.com/operasoftware/operachromiumdriver/releases/download/v." & $sDriverLatest & "/operadriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")'] _
+		["opera", "opera.exe", "operadriver.exe", True, "goog:chromeOptions", "https://github.com/operasoftware/operachromiumdriver/releases/latest", '<a.*href="\/operasoftware\/operachromiumdriver\/releases\/tag\/(?:v\.)(.*?)"', '"https://github.com/operasoftware/operachromiumdriver/releases/download/v." & $sDriverLatest & "/operadriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")'], _
+		["msedgeie", "msedge.exe", "IEDriverServer.exe", True, "se:ieOptions", "https://github.com/SeleniumHQ/selenium/blob/trunk/cpp/iedriverserver/CHANGELOG", '(?s)(?:major.minor.build.revision.*?v)(\d+\.\d+\.\d+)', '"https://github.com/SeleniumHQ/selenium/releases/download/selenium-" & StringRegExpReplace($sDriverLatest, "(\d+\.\d+)(\.\d+)", "$1") & ".0/IEDriverServer_" & (($bFlag64) ? "x64" : "Win32") & "_" & $sDriverLatest & ".zip"'] _
 		]
 
 #EndRegion Global Constants
@@ -186,7 +199,6 @@ Global $_WD_HTTPRESULT = 0 ; Result of last WinHTTP request
 Global $_WD_HTTPRESPONSE = '' ; Response of last WinHTTP request
 Global $_WD_SESSION_DETAILS = "" ; Response from _WD_CreateSession
 Global $_WD_BFORMAT = $SB_UTF8 ; Binary format
-Global $_WD_ESCAPE_CHARS = '\\"' ; Characters to escape
 Global $_WD_DRIVER_CLOSE = True ; Close prior driver instances before launching new one
 Global $_WD_DRIVER_DETECT = True ; Don't launch new driver instance if one already exists
 Global $_WD_RESPONSE_TRIM = -1 ; Trim response string to given value for debug output
@@ -201,6 +213,7 @@ Global $_WD_DefaultTimeout = 10000 ; 10 seconds
 Global $_WD_WINHTTP_TIMEOUTS = True
 Global $_WD_HTTPTimeOuts[4] = [0, 60000, 30000, 30000]
 Global $_WD_HTTPContentType = "Content-Type: application/json"
+Global $_WD_DetailedErrors = False
 
 #EndRegion Global Variables
 
@@ -208,11 +221,13 @@ Global $_WD_HTTPContentType = "Content-Type: application/json"
 ; Name ..........: _WD_CreateSession
 ; Description ...: Request new session from web driver.
 ; Syntax ........: _WD_CreateSession([$sCapabilities = Default])
-; Parameters ....: $sCapabilities - [optional] Requested features in JSON format. Default is "{}"
+; Parameters ....: $sCapabilities - [optional] Requested features in JSON format. Default is '{"capabilities":{}}'
 ; Return values .: Success - Session ID to be used in future requests to web driver session.
-;                  Failure - "" (empty string) and sets @error to $_WD_ERROR_Exception.
+;                  Failure - "" (empty string) and sets @error to one of the following values:
+;                  - $_WD_ERROR_Exception
+;                  - $_WD_ERROR_SessionNotCreated
 ; Author ........: Danp2
-; Modified ......:
+; Modified ......: mLipok
 ; Remarks .......:
 ; Related .......: _WD_DeleteSession, _WD_LastHTTPResult
 ; Link ..........: https://www.w3.org/TR/webdriver#new-session
@@ -222,26 +237,31 @@ Func _WD_CreateSession($sCapabilities = Default)
 	Local Const $sFuncName = "_WD_CreateSession"
 	Local $sSession = "", $sMessage = ''
 
-	If $sCapabilities = Default Then $sCapabilities = $_WD_EmptyDict
+	If $sCapabilities = Default Then $sCapabilities = $_WD_EmptyCaps
 
+	$_WD_SESSION_DETAILS = '' ; resetting saved response details before making new request
 	Local $sResponse = __WD_Post($_WD_BASE_URL & ":" & $_WD_PORT & "/session", $sCapabilities)
 	Local $iErr = @error
+	Local $oJSON = Json_Decode($sResponse)
 
 	If $iErr = $_WD_ERROR_Success Then
-		Local $oJSON = Json_Decode($sResponse)
 		$sSession = Json_Get($oJSON, "[value][sessionId]")
 
 		If @error Then
-			$sMessage = Json_Get($oJSON, "[value][message]")
+			$sMessage = Json_Get($oJSON, $_WD_JSON_Message)
 			$iErr = $_WD_ERROR_Exception
 		Else
 			$sMessage = $sSession
 
 			; Save response details for future use
-			$_WD_SESSION_DETAILS = $sResponse			
+			$_WD_SESSION_DETAILS = $sResponse
 		EndIf
 	Else
-		$iErr = $_WD_ERROR_Exception
+		If $iErr = $_WD_ERROR_SessionNotCreated Then
+			$sMessage = Json_Get($oJSON, $_WD_JSON_Message)
+		ElseIf Not $_WD_DetailedErrors Then
+			$iErr = $_WD_ERROR_Exception
+		EndIf
 	EndIf
 
 	Return SetError(__WD_Error($sFuncName, $iErr, $sMessage), 0, $sSession)
@@ -264,7 +284,9 @@ EndFunc   ;==>_WD_CreateSession
 Func _WD_DeleteSession($sSession)
 	Local Const $sFuncName = "_WD_DeleteSession"
 	__WD_Delete($_WD_BASE_URL & ":" & $_WD_PORT & "/session/" & $sSession)
-	Local $iErr = (@error) ? ($_WD_ERROR_Exception) : ($_WD_ERROR_Success)
+	Local $iErr = @error
+
+	If $iErr <> $_WD_ERROR_Success And Not $_WD_DetailedErrors Then $iErr = $_WD_ERROR_Exception
 
 	Local $sMessage = ($iErr) ? ('Error occurs when trying to delete session') : ('WebDriver session deleted')
 	Local $iReturn = ($iErr) ? (0) : (1)
@@ -557,6 +579,7 @@ Func _WD_Window($sSession, $sCommand, $sOption = Default)
 			$iErr = @error
 
 		Case 'switch'
+			$sOption = __WD_JsonHandle($sOption)
 			$sResponse = __WD_Post($sURLSession & "window", $sOption)
 			$iErr = @error
 
@@ -564,6 +587,7 @@ Func _WD_Window($sSession, $sCommand, $sOption = Default)
 			If $sOption = '' Then
 				$sResponse = __WD_Get($sURLSession & $sCommand)
 			Else
+				$sOption = __WD_JsonHandle($sOption)
 				$sResponse = __WD_Post($sURLSession & $sCommand, $sOption)
 			EndIf
 
@@ -575,23 +599,18 @@ Func _WD_Window($sSession, $sCommand, $sOption = Default)
 	EndSwitch
 
 	If $iErr = $_WD_ERROR_Success Then
-		If $_WD_HTTPRESULT = $HTTP_STATUS_OK Then
+		Switch $sCommand
+			Case 'close', 'frame', 'fullscreen', 'maximize', 'minimize', 'parent', 'switch'
+				$sResult = $sResponse
 
-			Switch $sCommand
-				Case 'close', 'frame', 'fullscreen', 'maximize', 'minimize', 'parent', 'switch'
-					$sResult = $sResponse
+			Case 'new'
+				$oJSON = Json_Decode($sResponse)
+				$sResult = Json_Get($oJSON, "[value][handle]")
 
-				Case 'new'
-					$oJSON = Json_Decode($sResponse)
-					$sResult = Json_Get($oJSON, "[value][handle]")
-
-				Case Else
-					$oJSON = Json_Decode($sResponse)
-					$sResult = Json_Get($oJSON, $_WD_JSON_Value)
-			EndSwitch
-		Else
-			$iErr = $_WD_ERROR_Exception
-		EndIf
+			Case Else
+				$oJSON = Json_Decode($sResponse)
+				$sResult = Json_Get($oJSON, $_WD_JSON_Value)
+		EndSwitch
 	EndIf
 
 	Return SetError(__WD_Error($sFuncName, $iErr, $sParameters), 0, $sResult)
@@ -605,9 +624,9 @@ EndFunc   ;==>_WD_Window
 ; Parameters ....: $sSession     - Session ID from _WD_CreateSession
 ;                  $sStrategy    - Locator strategy. See defined constant $_WD_LOCATOR_* for allowed values
 ;                  $sSelector    - Indicates how the WebDriver should traverse through the HTML DOM to locate the desired element(s).
-;                  $sStartNodeID - [optional] Element ID to use as starting node. Default is ""
+;                  $sStartNodeID - [optional] Element ID to use as starting HTML node. Default is ""
 ;                  $bMultiple    - [optional] Return multiple matching elements? Default is False
-;                  $bShadowRoot  - [optional] Starting node is a shadow root? Default is False
+;                  $bShadowRoot  - [optional] Starting HTML node is a shadow root? Default is False
 ; Return values .: Success - Element ID(s) returned by web driver.
 ;                  Failure - "" (empty string) and sets @error to one of the following values:
 ;                  - $_WD_ERROR_Exception
@@ -651,32 +670,27 @@ Func _WD_FindElement($sSession, $sStrategy, $sSelector, $sStartNodeID = Default,
 	EndIf
 
 	If $iErr = $_WD_ERROR_Success Then
-		If $_WD_HTTPRESULT = $HTTP_STATUS_OK Then
-			If $bMultiple Then
+		If $bMultiple Then
 
-				$oJSON = Json_Decode($sResponse)
-				$oValues = Json_Get($oJSON, $_WD_JSON_Value)
+			$oJSON = Json_Decode($sResponse)
+			$oValues = Json_Get($oJSON, $_WD_JSON_Value)
 
-				If UBound($oValues) > 0 Then
-					$sKey = "[" & $_WD_ELEMENT_ID & "]"
+			If UBound($oValues) > 0 Then
+				$sKey = "[" & $_WD_ELEMENT_ID & "]"
 
-					Dim $aElements[UBound($oValues)]
+				Dim $aElements[UBound($oValues)]
 
-					For $oValue In $oValues
-						$aElements[$iRow] = Json_Get($oValue, $sKey)
-						$iRow += 1
-					Next
-				Else
-					$iErr = $_WD_ERROR_NoMatch
-				EndIf
+				For $oValue In $oValues
+					$aElements[$iRow] = Json_Get($oValue, $sKey)
+					$iRow += 1
+				Next
 			Else
-				$oJSON = Json_Decode($sResponse)
-
-				$sResult = Json_Get($oJSON, $_WD_JSON_Element)
+				$iErr = $_WD_ERROR_NoMatch
 			EndIf
-
 		Else
-			$iErr = $_WD_ERROR_Exception
+			$oJSON = Json_Decode($sResponse)
+
+			$sResult = Json_Get($oJSON, $_WD_JSON_Element)
 		EndIf
 	EndIf
 
@@ -772,27 +786,21 @@ Func _WD_ElementAction($sSession, $sElement, $sCommand, $sOption = Default)
 	EndSwitch
 
 	If $iErr = $_WD_ERROR_Success Then
-		Switch $_WD_HTTPRESULT
-			Case $HTTP_STATUS_OK
-				Switch $sCommand
-					Case 'clear', 'click', 'shadow'
-						$sResult = $sResponse
+		Switch $sCommand
+			Case 'clear', 'click', 'shadow'
+				$sResult = $sResponse
 
-					Case 'value'
-						If $sOption Then
-							$sResult = $sResponse
-						Else
-							$oJSON = Json_Decode($sResponse)
-							$sResult = Json_Get($oJSON, $_WD_JSON_Value)
-						EndIf
-
-					Case Else
-						$oJSON = Json_Decode($sResponse)
-						$sResult = Json_Get($oJSON, $_WD_JSON_Value)
-				EndSwitch
+			Case 'value'
+				If $sOption Then
+					$sResult = $sResponse
+				Else
+					$oJSON = Json_Decode($sResponse)
+					$sResult = Json_Get($oJSON, $_WD_JSON_Value)
+				EndIf
 
 			Case Else
-				$iErr = $_WD_ERROR_Exception
+				$oJSON = Json_Decode($sResponse)
+				$sResult = Json_Get($oJSON, $_WD_JSON_Value)
 		EndSwitch
 	EndIf
 
@@ -808,9 +816,9 @@ EndFunc   ;==>_WD_ElementAction
 ;                  $sScript    - Javascript command(s) to run
 ;                  $sArguments - [optional] String of arguments in JSON format
 ;                  $bAsync     - [optional] Perform request asyncronously? Default is False
-;                  $vSubNode  - [optional] Return the designated JSON node instead of the entire JSON string. Default is "" (entire response is returned)
+;                  $vSubNode   - [optional] Return the designated JSON node instead of the entire JSON string. Default is "" (entire response is returned)
 ; Return values .: Success - Response from web driver in JSON format or value requested by given $vSubNode
-;                  Failure - Response from web driver in JSON format and sets @error to value returned from __WD_Post()
+;                  Failure - Response from web driver in JSON format and maintains @error value originally set by __WD_Post()
 ;                            If script is executed successfully but $vSubNode isn't found, then "" (empty string) and sets @error to $_WD_ERROR_RetValue
 ;                            If $vSubNode isn't valid, then "" (empty string) and sets @error to _WD_ERROR_InvalidArgue
 ; Author ........: Danp2
@@ -822,7 +830,7 @@ EndFunc   ;==>_WD_ElementAction
 ; ===============================================================================================================================
 Func _WD_ExecuteScript($sSession, $sScript, $sArguments = Default, $bAsync = Default, $vSubNode = Default)
 	Local Const $sFuncName = "_WD_ExecuteScript"
-	Local $sResponse, $sData, $sCmd
+	Local $sResponse, $sData, $sCmd, $sMessage = ""
 	$_WD_HTTPRESULT = 0
 
 	If $sArguments = Default Then $sArguments = ""
@@ -831,29 +839,31 @@ Func _WD_ExecuteScript($sSession, $sScript, $sArguments = Default, $bAsync = Def
 	If IsBool($vSubNode) Then $vSubNode = ($vSubNode) ? $_WD_JSON_Value : "" ; True = the JSON value node is returned , False = entire JSON response is returned
 
 	If IsString($vSubNode) Then
-		$sScript = __WD_EscapeString($sScript)
+		$sScript = __WD_EscapeString($sScript, $JSON_MLREFORMAT)
 
 		$sData = '{"script":"' & $sScript & '", "args":[' & $sArguments & ']}'
 		$sCmd = ($bAsync) ? 'async' : 'sync'
 
 		$sResponse = __WD_Post($_WD_BASE_URL & ":" & $_WD_PORT & "/session/" & $sSession & "/execute/" & $sCmd, $sData)
 		Local $iErr = @error
+		Local $oJSON = Json_Decode($sResponse)
 
 		If $iErr = $_WD_ERROR_Success Then
 			If StringLen($vSubNode) Then
-				Local $oJSON = Json_Decode($sResponse)
 				$sResponse = Json_Get($oJSON, $vSubNode)
 				If @error Then
 					$iErr = $_WD_ERROR_RetValue
+					$sMessage = "Subnode '" & $vSubNode & "' not found."
 				EndIf
 			EndIf
+		Else
+			$sMessage = Json_Get($oJSON, $_WD_JSON_Message)
 		EndIf
 	Else
 		$iErr = $_WD_ERROR_InvalidArgue
 		$sResponse = ""
 	EndIf
 
-	Local $sMessage = ($iErr) ? ("Error occurred when trying to ExecuteScript") : ("")
 	Return SetError(__WD_Error($sFuncName, $iErr, $sMessage), 0, $sResponse)
 EndFunc   ;==>_WD_ExecuteScript
 
@@ -872,6 +882,7 @@ EndFunc   ;==>_WD_ExecuteScript
 ;                  $sOption  - [optional] a string value. Default is ""
 ; Return values .: Success - True/False or requested data returned by web driver.
 ;                  Failure - "" (empty string) and sets @error to one of the following values:
+;                  - $_WD_ERROR_NoAlert
 ;                  - $_WD_ERROR_InvalidDataType
 ; Author ........: Danp2
 ; Modified ......: mLipok
@@ -1035,6 +1046,7 @@ EndFunc   ;==>_WD_Cookies
 ;                  |CONSOLESUFFIX  - Suffix for console output
 ;                  |DEBUGTRIM      - Length of response text written to the debug cocnsole
 ;                  |DEFAULTTIMEOUT - Default timeout (in miliseconds) used by other functions if no other value is supplied
+;                  |DETAILERRORS   - Return detailed error codes? (Boolean)
 ;                  |DRIVER         - Full path name to web driver executable
 ;                  |DRIVERCLOSE    - Close prior driver instances before launching new one (Boolean)
 ;                  |DRIVERDETECT   - Use existing driver instance if it exists (Boolean)
@@ -1100,6 +1112,13 @@ Func _WD_Option($sOption, $vValue = Default)
 				Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, $sParameters & " (Required $vValue type: int)"), 0, 0)
 			EndIf
 			$_WD_DefaultTimeout = $vValue
+
+		Case "detailerrors"
+			If $vValue == "" Then Return $_WD_DetailedErrors
+			If Not IsBool($vValue) Then
+				Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, $sParameters & " (Required $vValue type: bool)"), 0, 0)
+			EndIf
+			$_WD_DetailedErrors = $vValue
 
 		Case "driver"
 			If $vValue == "" Then Return $_WD_DRIVER
@@ -1169,7 +1188,7 @@ Func _WD_Option($sOption, $vValue = Default)
 			Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, $sParameters & " (Required $vValue type: none)"), 0, 0)
 
 		Case Else
-			Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, $sParameters & " (Required $sOption: BaseURL|BinaryFormat|Console|ConsoleSuffix|DebugTrim|DefaultTimeout|Driver|DriverClose|DriverDetect|DriverParams|ErrorMsgBox|HTTPTimeouts|OutputDebug|Port|Sleep|Version)"), 0, 0)
+			Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, $sParameters & " (Required $sOption: BaseURL|BinaryFormat|Console|ConsoleSuffix|DebugTrim|DefaultTimeout|DetailErrors|Driver|DriverClose|DriverDetect|DriverParams|ErrorMsgBox|HTTPTimeouts|OutputDebug|Port|Sleep|Version)"), 0, 0)
 	EndSwitch
 
 	Return SetError(__WD_Error($sFuncName, $_WD_ERROR_Success, $sParameters), 0, 1)
@@ -1195,7 +1214,7 @@ EndFunc   ;==>_WD_Option
 Func _WD_Startup()
 	Local Const $sFuncName = "_WD_Startup"
 	Local $sFunction, $bLatest, $sUpdate, $sFile, $iPID, $iErr = $_WD_ERROR_Success
-	Local $sDriverBitness = "", $sExistingDriver = ""
+	Local $sDriverBitness = "", $sExistingDriver = "", $sPortAvailable = ""
 
 	If $_WD_DRIVER = "" Then
 		Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidValue, "Location for Web Driver not set."), 0, 0)
@@ -1205,13 +1224,31 @@ Func _WD_Startup()
 
 	If $_WD_DRIVER_CLOSE Then __WD_CloseDriver()
 
+	; Attempt to determine the availability of designated port
+	; so that this information can be shown in the logs
+	$sFunction = "_WD_GetFreePort"
+	Call($sFunction, $_WD_PORT)
+
+	Select
+		Case @error = 0xDEAD And @extended = 0xBEEF
+			; function not available
+
+		Case @error = $_WD_ERROR_GeneralError
+			; unable to obtain port status
+			$sPortAvailable = " (Unknown)"
+
+		Case @error = $_WD_ERROR_NotFound
+			; requested port is unavailable
+			$sPortAvailable = " (Unavailable)"
+	EndSelect
+
 	Local $sCommand = StringFormat('"%s" %s ', $_WD_DRIVER, $_WD_DRIVER_PARAMS)
 
 	$sFile = __WD_StripPath($_WD_DRIVER)
 	$iPID = ProcessExists($sFile)
 
 	If $_WD_DRIVER_DETECT And $iPID Then
-		 $sExistingDriver = "Existing instance of " & $sFile & " detected! (PID=" & $iPID & ")"
+		$sExistingDriver = "Existing instance of " & $sFile & " detected! (PID=" & $iPID & ")"
 	Else
 		$iPID = Run($sCommand, "", ($_WD_DEBUG >= $_WD_DEBUG_Info) ? @SW_SHOW : @SW_HIDE)
 		If @error Or ProcessWaitClose($iPID, 1) Then $iErr = $_WD_ERROR_GeneralError
@@ -1244,13 +1281,13 @@ Func _WD_Startup()
 		If _WinAPI_GetBinaryType($_WD_DRIVER) Then _
 				$sDriverBitness = ((@extended = $SCS_64BIT_BINARY) ? (" (64 Bit)") : (" (32 Bit)"))
 
-		__WD_ConsoleWrite($sFuncName & ": OS:" & @TAB & @OSVersion & " " & @OSType & " " & @OSBuild & " " & @OSServicePack)
+		__WD_ConsoleWrite($sFuncName & ": OS:" & @TAB & @OSVersion & " " & @OSArch & " " & @OSBuild & " " & @OSServicePack)
 		__WD_ConsoleWrite($sFuncName & ": AutoIt:" & @TAB & @AutoItVersion)
 		__WD_ConsoleWrite($sFuncName & ": Webdriver UDF:" & @TAB & $__WDVERSION & $sUpdate)
 		__WD_ConsoleWrite($sFuncName & ": WinHTTP:" & @TAB & $sWinHttpVer)
 		__WD_ConsoleWrite($sFuncName & ": Driver:" & @TAB & $_WD_DRIVER & $sDriverBitness)
 		__WD_ConsoleWrite($sFuncName & ": Params:" & @TAB & $_WD_DRIVER_PARAMS)
-		__WD_ConsoleWrite($sFuncName & ": Port:" & @TAB & $_WD_PORT)
+		__WD_ConsoleWrite($sFuncName & ": Port:" & @TAB & $_WD_PORT & $sPortAvailable)
 		__WD_ConsoleWrite($sFuncName & ": Command:" & @TAB & (($sExistingDriver) ? $sExistingDriver : $sCommand))
 	EndIf
 
@@ -1261,8 +1298,9 @@ EndFunc   ;==>_WD_Startup
 ; #FUNCTION# ====================================================================================================================
 ; Name ..........: _WD_Shutdown
 ; Description ...: Kill the web driver console app.
-; Syntax ........: _WD_Shutdown([$vDriver = Default])
+; Syntax ........: _WD_Shutdown([$vDriver = Default[,  $iDelay = Default]])
 ; Parameters ....: $vDriver - [optional] The name or PID of Web driver console to shutdown
+;                  $iDelay  - [optional] Time (in milliseconds) to pause before beginning console shutdown
 ; Return values .: None
 ; Author ........: Danp2
 ; Modified ......:
@@ -1271,7 +1309,13 @@ EndFunc   ;==>_WD_Startup
 ; Link ..........:
 ; Example .......: No
 ; ===============================================================================================================================
-Func _WD_Shutdown($vDriver = Default)
+Func _WD_Shutdown($vDriver = Default, $iDelay = Default)
+	If $iDelay = Default Then $iDelay = 2000
+	If IsInt($iDelay) And $iDelay > 0 Then __WD_Sleep($iDelay)
+
+	; Not checking @error here because we aren't concerned
+	; with user abort during execution of shutdown
+
 	__WD_CloseDriver($vDriver)
 EndFunc   ;==>_WD_Shutdown
 
@@ -1632,20 +1676,26 @@ EndFunc   ;==>__WD_CloseDriver
 ; #INTERNAL_USE_ONLY# ===========================================================================================================
 ; Name ..........: __WD_EscapeString
 ; Description ...: Escapes designated characters in string.
-; Syntax ........: __WD_EscapeString($sData)
-; Parameters ....: $sData - the string to be escaped
-; Return values..: Escaped string.
+; Syntax ........: __WD_EscapeString($sData[, $iOption = 0])
+; Parameters ....: $sData   - the string to be escaped
+;                  $iOption - [optional] Any combination of $JSON_* constants. Default is 0.
 ; Author ........: Danp2
 ; Modified ......:
-; Remarks .......:
+; Remarks .......: $JSON_MLREFORMAT will strip tabs and CR/LFs from a multiline string.
+;                  See $JSON_* constants in json.au3 for other $iOption possibilities.
 ; Related .......:
 ; Link ..........:
 ; Example .......: No
 ; ===============================================================================================================================
-Func __WD_EscapeString($sData)
-	Local $sRegEx = "([" & $_WD_ESCAPE_CHARS & "])"
-	Local $sEscaped = StringRegExpReplace($sData, $sRegEx, "\\$1")
-	Return SetError($_WD_ERROR_Success, 0, $sEscaped)
+Func __WD_EscapeString($sData, $iOption = 0)
+	If BitAND($iOption, $JSON_MLREFORMAT) Then
+		$sData = StringRegExpReplace($sData, '[\v\t]', '') ; Strip tabs and CR/LFs
+		$iOption = BitXOR($iOption, $JSON_MLREFORMAT)      ; Flip bit off
+	Endif
+
+	$sData = Json_StringEncode($sData, $iOption) ; Escape JSON Strings
+
+	Return SetError($_WD_ERROR_Success, 0, $sData)
 EndFunc   ;==>__WD_EscapeString
 
 ; #INTERNAL_USE_ONLY# ===========================================================================================================
@@ -1706,6 +1756,9 @@ Func __WD_DetectError(ByRef $iErr, $vResult)
 		Switch $vResult.item('error')
 			Case ""
 
+			Case $_WD_ErrorSessionNotCreated
+				$iErr = $_WD_ERROR_SessionNotCreated
+
 			Case $_WD_ErrorInvalidSession
 				$iErr = $_WD_ERROR_SessionInvalid
 
@@ -1715,7 +1768,7 @@ Func __WD_DetectError(ByRef $iErr, $vResult)
 			Case $_WD_ErrorTimeout
 				$iErr = $_WD_ERROR_Timeout
 
-			Case $_WD_ErrorElementNotFound, $_WD_ErrorElementStale
+			Case $_WD_ErrorElementNotFound, $_WD_ErrorElementStale, $_WD_ErrorShadowRootNotFound, $_WD_ErrorFrameNotFound
 				$iErr = $_WD_ERROR_NoMatch
 
 			Case $_WD_ErrorElementInvalid
@@ -1736,6 +1789,9 @@ Func __WD_DetectError(ByRef $iErr, $vResult)
 
 			Case $_WD_ErrorInvalidSelector
 				$iErr = $_WD_ERROR_InvalidExpression
+
+			Case $_WD_ErrorWindowNotFound
+				$iErr = $_WD_ERROR_ContextInvalid
 
 			Case Else
 				$iErr = $_WD_ERROR_Exception
@@ -1844,3 +1900,20 @@ Func __WD_Sleep($iPause)
 	$_WD_Sleep($iPause)
 	If @error Then Return SetError($_WD_ERROR_UserAbort)
 EndFunc   ;==>__WD_Sleep
+
+; #INTERNAL_USE_ONLY# ===========================================================================================================
+; Name ..........: __WD_JsonHandle
+; Description ...: Converts a handle into JSON string as needed
+; Syntax ........: __WD_JsonHandle($sHandle)
+; Parameters ....: $sHandle - Element ID from _WD_Window
+; Return values .: Formatted JSON string
+; Author ........: Seadoggie
+; Modified ......:
+; Remarks .......:
+; Related .......: __WD_JsonElement
+; Link ..........:
+; Example .......: No
+; ===============================================================================================================================
+Func __WD_JsonHandle($sHandle)
+	Return (StringLeft($sHandle, 1) <> '{') ? ('{"handle":"' & $sHandle & '"}') : ($sHandle)
+EndFunc   ;==>__WD_JsonHandle
