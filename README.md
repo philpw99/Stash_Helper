@@ -1,6 +1,6 @@
 ## Notice: Stash Helper makes managing Stash and playing media directly in Windows easy, but it won't work for Quest 2 or other standalone VR headsets, neither does it work with Linux or MacOS media players.
 
-### New Feature: Mid-Mouse-Button shows a menu
+### New Feature: Ctrl + Mid-Mouse-Button shows a menu
 <img src="https://user-images.githubusercontent.com/22040708/211052348-b25484a2-90be-48df-8eff-c10056ed5b59.png" width=300 />
 
 -----
