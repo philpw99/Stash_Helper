@@ -1,5 +1,12 @@
-## Notice: Stash Helper makes managing Stash and playing media directly in Windows easy, but it won't work for Quest 2 or other standalone VR headsets, neither does it work with Linux or MacOS media players.
+## Notice #1: Stash Helper makes managing Stash and playing media directly in Windows easy, but it won't work for Quest 2 or other standalone VR headsets, neither does it work with Linux or MacOS media players.
 
+## Notice #2: If you put the installation package to the virustotal.com, it will show some anti-virus programs clain it contains virus.
+This is obviously false positive. You can try it yourself. Download and install the official AutoIt package from AutoItScript.com, then send the AutoIt3.exe from it to the VirusTotal.com, and you will see all the false negatives:
+![AutoIt is virus](https://github.com/philpw99/Stash_Helper/assets/22040708/c70cf907-cfe3-4c11-8688-2ad30da00fa2)
+AutoIt3.exe is the runtime program made by the good folks in AutoItScript.com. My program is nothing but an AutoIt script + AutoIt3.exe.
+So you decide it yourself for the risk of using my program.
+
+## Old news.
 ### New Feature: Ctrl + Mid-Mouse-Button shows a menu
 <img src="https://user-images.githubusercontent.com/22040708/211052348-b25484a2-90be-48df-8eff-c10056ed5b59.png" width=300 />
 
