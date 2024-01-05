@@ -44,7 +44,7 @@
 #ce
 #EndRegion Many thanks to:
 
-#ignorefunc _HtmlTableGetWriteToArray
+#Tidy_Parameters=/tcb=-1
 
 #Region Global Constants
 Global Enum _
@@ -87,13 +87,15 @@ Global Enum _ ; _WD_FrameList() , _WD_FrameListFindElement()
 		$_WD_FRAMELIST_MatchedElements = 6, _ ; array of matched element from _WD_FrameListFindElement()
 		$_WD_FRAMELIST__COUNTER
 
-Global Enum _ ; https://www.w3schools.com/jsref/prop_doc_readystate.asp
+#Tidy_ILC_Pos=42
+Global Enum _                            ; https://www.w3schools.com/jsref/prop_doc_readystate.asp
 		$_WD_READYSTATE_Uninitialized, _ ; Has not started loading
-		$_WD_READYSTATE_Loading, _  ; Is loading
-		$_WD_READYSTATE_Loaded, _  ; Has been loaded
-		$_WD_READYSTATE_Interactive, _  ; Has loaded enough to interact with
-		$_WD_READYSTATE_Complete, _  ; Fully loaded
+		$_WD_READYSTATE_Loading, _       ; Is loading
+		$_WD_READYSTATE_Loaded, _        ; Has been loaded
+		$_WD_READYSTATE_Interactive, _   ; Has loaded enough to interact with
+		$_WD_READYSTATE_Complete, _      ; Fully loaded
 		$_WD_READYSTATE__COUNTER
+#Tidy_ILC_Pos=0
 
 Global Const $aWD_READYSTATE[$_WD_READYSTATE__COUNTER][2] = [ _
 		["uninitialized", "Has not started loading"], _
@@ -292,7 +294,7 @@ EndFunc   ;==>_WD_Attach
 ; #FUNCTION# ====================================================================================================================
 ; Name ..........: _WD_LinkClickByText
 ; Description ...: Simulate a mouse click on a link with text matching the provided string.
-; Syntax ........: _WD_LinkClickByText($sSession,  $sText[,  $bPartial = Default[,  $sStartNodeID = Default]])
+; Syntax ........: _WD_LinkClickByText($sSession, $sText[, $bPartial = Default[, $sStartNodeID = Default]])
 ; Parameters ....: $sSession      - Session ID from _WD_CreateSession
 ;                  $sText         - Text to find in link
 ;                  $bPartial      - [optional] Search by partial text? Default is True
@@ -600,7 +602,9 @@ EndFunc   ;==>_WD_GetMouseElement
 ;                  $iX       - an integer value
 ;                  $iY       - an integer value
 ; Return values .: Success - Element ID returned by web driver.
-;                  Failure - "" (empty string) and @error is set to $_WD_ERROR_RetValue
+;                  Failure - "" (empty string) and @error is set to one of the following values:
+;                  - $_WD_ERROR_RetValue
+;                  - $_WD_ERROR_InvalidArgue
 ; Author ........: Danp2
 ; Modified ......: mLipok
 ; Remarks .......: @extended is set to 1 if the browsing context changed during the function call
@@ -617,7 +621,14 @@ Func _WD_GetElementFromPoint($sSession, $iX, $iY)
 	Local $sScript2 = "return new Array(window.pageXOffset, window.pageYOffset);"
 	Local $iErr = $_WD_ERROR_Success, $sResult, $bIsNull
 
-	While True
+	; https://developer.mozilla.org/en-US/docs/Web/API/Document/elementFromPoint
+	; If the specified point is outside the visible bounds of the document or either
+	; coordinate is negative, the result is null
+	If $iX < 0 Or $iY < 0 Then
+		$iErr = $_WD_ERROR_InvalidArgue
+	EndIf
+
+	While $iErr = $_WD_ERROR_Success
 		$sParams = $iX & ", " & $iY
 		$sResponse = _WD_ExecuteScript($sSession, $sScript1, $sParams)
 		If @error Then
@@ -681,7 +692,7 @@ Func _WD_GetFrameCount($sSession)
 	Local Const $sFuncName = "_WD_GetFrameCount"
 	Local $iValue = _WD_ExecuteScript($sSession, "return window.frames.length", Default, Default, $_WD_JSON_Value)
 	Local $iErr = @error
-	If @error Then $iValue = 0
+	If $iErr Then $iValue = 0
 	Return SetError(__WD_Error($sFuncName, $iErr), 0, Number($iValue))
 EndFunc   ;==>_WD_GetFrameCount
 
@@ -1973,7 +1984,7 @@ Func _WD_SelectFiles($sSession, $sStrategy, $sSelector, $sFilename)
 		If $iErr = $_WD_ERROR_Success Then
 			$sResult = _WD_ExecuteScript($sSession, "return arguments[0].files.length", __WD_JsonElement($sElement), Default, $_WD_JSON_Value)
 			$iErr = @error
-			If @error Then $sResult = "0"
+			If $iErr Then $sResult = "0"
 		EndIf
 	EndIf
 
@@ -2011,7 +2022,8 @@ Func _WD_IsLatestRelease()
 
 		If Not @error Then
 			Local $sLatestWDVersion = $aLatestWDVersion[0]
-			$bResult = ($__WDVERSION == $sLatestWDVersion)
+			Local $nStatus = _VersionCompare($__WDVERSION, $sLatestWDVersion)  ; 0 - Both versions equal ; 1 - Version1 greater ; -1 - Version2 greater
+			$bResult = ($nStatus >= 0)
 		Else
 			$iErr = $_WD_ERROR_Exception
 		EndIf
@@ -2023,28 +2035,31 @@ EndFunc   ;==>_WD_IsLatestRelease
 ; #FUNCTION# ====================================================================================================================
 ; Name ..........: _WD_UpdateDriver
 ; Description ...: Replace web driver with newer version, if available.
-; Syntax ........: _WD_UpdateDriver($sBrowser[, $sInstallDir = Default[, $bFlag64 = Default[, $bForce = Default]]])
+; Syntax ........: _WD_UpdateDriver($sBrowser[, $sInstallDir = Default[, $bFlag64 = Default[, $bForce = Default[, $bDowngrade = Default]]]])
 ; Parameters ....: $sBrowser    - Browser name or full path to browser executable
 ;                  $sInstallDir - [optional] Install directory. Default is @ScriptDir
 ;                  $bFlag64     - [optional] Install 64bit version? Default is current driver architecture or False
 ;                  $bForce      - [optional] Force update? Default is False
+;                  $bDowngrade  - [optional] Downgrade to match browser version if needed? Default is False
 ; Return values .: Success - True (Driver was updated).
 ;                  Failure - False (Driver was not updated) and sets @error to one of the following values:
-;                  - $_WD_ERROR_InvalidValue
-;                  - $_WD_ERROR_GeneralError
-;                  - $_WD_ERROR_NotFound
 ;                  - $_WD_ERROR_FileIssue
-;                  - $_WD_ERROR_UserAbort
+;                  - $_WD_ERROR_GeneralError
+;                  - $_WD_ERROR_InvalidValue
+;                  - $_WD_ERROR_Mismatch
+;                  - $_WD_ERROR_NotFound
 ;                  - $_WD_ERROR_NotSupported
+;                  - $_WD_ERROR_UserAbort
 ; Author ........: Danp2, CyCho
 ; Modified ......: mLipok
 ; Remarks .......: When $bForce = Null, then the function will check for an updated webdriver without actually performing the update.
-;                  In this scenario, the return value indicates if an update is available.
+;                  This can be used in conjunction with $bDowngrade to determine if the existing webdriver is too new for the browser.
+;                  In this scenario, the return value indicates if an update / downgrade is available.
 ; Related .......: _WD_GetBrowserVersion, _WD_GetWebDriverVersion
 ; Link ..........:
 ; Example .......: Local $bResult = _WD_UpdateDriver('FireFox')
 ; ===============================================================================================================================
-Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bForce = Default)
+Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bForce = Default, $bDowngrade = Default)
 	Local Const $sFuncName = "_WD_UpdateDriver"
 	Local $iErr = $_WD_ERROR_Success, $iExt = 0, $sDriverEXE, $sBrowserVersion, $bResult = False
 	Local $sDriverCurrent, $sDriverLatest, $sURLNewDriver
@@ -2057,6 +2072,7 @@ Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bF
 		$bFlag64 = False
 		$bKeepArch = True
 	EndIf
+	If $bDowngrade = Default Then $bDowngrade = False
 
 	$sInstallDir = StringRegExpReplace($sInstallDir, '(?i)(\\)\Z', '') & '\' ; prevent double \\ on the end of directory
 	Local Const $bNoUpdate = (IsKeyword($bForce) = $KEYWORD_NULL) ; Flag to track if updates should be performed
@@ -2098,12 +2114,15 @@ Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bF
 			$sURLNewDriver = $aDriverInfo[0]
 
 			If $iErr = $_WD_ERROR_Success Then
-				Local $bUpdateAvail = (_VersionCompare($sDriverCurrent, $sDriverLatest) < 0) ; 0 - Both versions equal ; 1 - Version1 greater ; -1 - Version2 greater
+				Local $nStatus = _VersionCompare($sDriverCurrent, $sDriverLatest)  ; 0 - Both versions equal ; 1 - Version1 greater ; -1 - Version2 greater
+				Local $bUpdateAvail = ($nStatus < 0)
+				Local $bDowngradable = ($nStatus > 0)
 
 				If $bNoUpdate Then
-					; Set return value to indicate if newer driver is available
-					$bResult = $bUpdateAvail
-				ElseIf $bUpdateAvail Or $bForce Then
+					; Set return value to indicate if newer / downgradable driver is available
+					$bResult = ($bDowngrade) ? $bDowngradable : $bUpdateAvail
+
+				ElseIf $bUpdateAvail Or $bForce Or ($bDowngrade And $bDowngradable) Then
 					; @TempDir should be used to avoid potential AV problems, for example by downloading stuff to @DesktopDir
 					$sTempFile = _TempFile(@TempDir, "webdriver_", ".zip")
 					_WD_DownloadFile($sURLNewDriver, $sTempFile)
@@ -2121,6 +2140,9 @@ Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bF
 						If Not @error Then $bResult = True
 					EndIf
 					FileDelete($sTempFile)
+
+				ElseIf $bDowngradable Then
+					$iErr = $_WD_ERROR_Mismatch
 				EndIf
 			EndIf
 		EndIf
@@ -2223,7 +2245,7 @@ EndFunc   ;==>__WD_UpdateExtractor
 ; Description ...: Get version number of specified browser.
 ; Syntax ........: _WD_GetBrowserVersion($sBrowser)
 ; Parameters ....: $sBrowser - Browser name or full path to browser executable
-; Return values .: Success - Version number ("#.#.#.#" format) returned by FileGetVersion for the browser exe
+; Return values .: Success - Version number ("#.#.#.#" format) and sets @extended to index of $_WD_SupportedBrowsers
 ;                  Failure - "0" and sets @error to one of the following values:
 ;                  - $_WD_ERROR_FileIssue
 ;                  - $_WD_ERROR_NotSupported
@@ -2244,7 +2266,7 @@ Func _WD_GetBrowserVersion($sBrowser)
 	Local $sPath = _WD_GetBrowserPath($sBrowser)
 	$iErr = @error
 	$iExt = @extended
-	If @error Then
+	If $iErr Then
 		; as registry checks fails, now checking if file exist
 		If FileExists($sBrowser) Then
 			; Resetting as we are now checking file instead registry entries
@@ -2856,64 +2878,55 @@ EndFunc   ;==>_WD_DispatchEvent
 
 ; #FUNCTION# ====================================================================================================================
 ; Name ..........: _WD_GetTable
-; Description ...: Return all elements of a table.
-; Syntax ........: _WD_GetTable($sSession, $sBaseElement)
-; Parameters ....: $sSession     - Session ID from _WD_CreateSession
-;                  $sBaseElement - XPath of the table to return
+; Description ...: Retrieve text from all matching elements of a table.
+; Syntax ........: _WD_GetTable($sSession, $sStrategy, $sSelector[, $sRowsSelector = Default[, $sColsSelector = Default]])
+; Parameters ....: $sSession      - Session ID from _WD_CreateSession
+;                  $sStrategy     - Locator strategy. See defined constant $_WD_LOCATOR_* for allowed values
+;                  $sSelector     - Indicates how the WebDriver should traverse through the HTML DOM to locate the desired <table> element.
+;                  $sRowsSelector - [optional] Rows CSS selector. Default is "tr".
+;                  $sColsSelector - [optional] Columns CSS selector. Default is "td, th".
 ; Return values .: Success - 2D array.
 ;                  Failure - "" (empty string) and sets @error to one of the following values:
 ;                  - $_WD_ERROR_Exception
 ;                  - $_WD_ERROR_NoMatch
 ; Author ........: danylarson
-; Modified ......: water, danp2
-; Remarks .......:
+; Modified ......: water, danp2, mLipok
+; Remarks .......: The CSS selectors can be overridden to control the included elements. For example, a modified $sRowsSelector of ":scope > tbody > tr" can be used to bypass nested tables.
 ; Related .......: _WD_FindElement, _WD_ElementAction, _WD_LastHTTPResult
 ; Link ..........: https://www.autoitscript.com/forum/topic/191990-webdriver-udf-w3c-compliant-version-01182020/page/18/?tab=comments#comment-1415164
 ; Example .......: No
 ; ===============================================================================================================================
-Func _WD_GetTable($sSession, $sBaseElement)
+Func _WD_GetTable($sSession, $sStrategy, $sSelector, $sRowsSelector = Default, $sColsSelector = Default)
 	Local Const $sFuncName = "_WD_GetTable"
-	Local $aElements, $sElement, $iLines, $iRow, $iColumns, $iColumn, $sHTML
+	Local Const $sParameters = 'Parameters:   Strategy=' & $sStrategy & '   Selector=' & $sSelector & '   RowsSelector=' & $sRowsSelector & '   ColsSelector=' & $sColsSelector
+	Local $sElement, $aTable = ''
 	$_WD_HTTPRESULT = 0
 	$_WD_HTTPRESPONSE = ''
 
-	; Determine if optional UDF is available
-	Call("_HtmlTableGetWriteToArray", "")
+	If $sRowsSelector = Default Then $sRowsSelector = "tr"
+	If $sColsSelector = Default Then $sColsSelector = "td, th"
 
-	If @error = 0xDEAD And @extended = 0xBEEF Then
-		$aElements = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, $sBaseElement & "/tbody/tr", "", True) ; Retrieve the number of table rows
-		If @error <> $_WD_ERROR_Success Then Return SetError(__WD_Error($sFuncName, @error), 0, "")
+	; Get the table element
+	$sElement = _WD_FindElement($sSession, $sStrategy, $sSelector)
+	Local $iErr = @error
 
-		$iLines = UBound($aElements)
-		$aElements = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, $sBaseElement & "/tbody/tr[1]/td", "", True) ; Retrieve the number of table columns by checking the first table row
-		If @error <> $_WD_ERROR_Success Then Return SetError(__WD_Error($sFuncName, @error), 0, "")
+	If $iErr = $_WD_ERROR_Success Then
+		; https://stackoverflow.com/questions/64842157
+		Local $sScript = "return [...arguments[0].querySelectorAll(arguments[1])]" & _
+				".map(row => [...row.querySelectorAll(arguments[2])]" & _
+				".map(cell => cell.textContent));"
+		Local $sArgs = __WD_JsonElement($sElement) & ', "' & $sRowsSelector & '", "' & $sColsSelector & '"'
+		Local $sResult = _WD_ExecuteScript($sSession, $sScript, $sArgs)
+		$iErr = @error
 
-		$iColumns = UBound($aElements)
-		Local $aTable[$iLines][$iColumns] ; Create the AutoIt array to hold all cells of the table
-		$aElements = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, $sBaseElement & "/tbody/tr/td", "", True) ; Retrieve all table cells
-		If @error <> $_WD_ERROR_Success Then Return SetError(__WD_Error($sFuncName, @error), 0, "")
-
-		For $i = 0 To UBound($aElements) - 1
-			$iRow = Int($i / $iColumns) ; Calculate row/column of the AutoIt array where to store the cells value
-			$iColumn = Mod($i, $iColumns)
-			$aTable[$iRow][$iColumn] = _WD_ElementAction($sSession, $aElements[$i], "Text") ; Retrieve text of each table cell
-			If @error <> $_WD_ERROR_Success Then Return SetError(__WD_Error($sFuncName, @error), 0, "")
-
-		Next
-	Else
-		; Get the table element
-		$sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, $sBaseElement)
-		If @error <> $_WD_ERROR_Success Then Return SetError(__WD_Error($sFuncName, @error), 0, "")
-
-		; Retrieve its HTML
-		$sHTML = _WD_ElementAction($sSession, $sElement, "Property", "outerHTML")
-		If @error <> $_WD_ERROR_Success Then Return SetError(__WD_Error($sFuncName, @error), 0, "")
-
-		; Convert to array
-		$aTable = _HtmlTableGetWriteToArray($sHTML, 1, False, $_WD_IFILTER)
+		If $iErr = $_WD_ERROR_Success Then
+			; Extract target data from results and convert to array
+			Local $sStr = StringMid($sResult, 10, StringLen($sResult) - 10)
+			$aTable = __WD_Make2Array($sStr)
+		EndIf
 	EndIf
 
-	Return $aTable
+	Return SetError(__WD_Error($sFuncName, $iErr, $sParameters), 0, $aTable)
 EndFunc   ;==>_WD_GetTable
 
 ; #FUNCTION# ====================================================================================================================
@@ -3553,6 +3566,8 @@ Func __WD_GetLatestWebdriverInfo($aBrowser, $sBrowserVersion, $bFlag64)
 		$sDriverLatest = StringStripWS(BinaryToString(BinaryMid($sDriverLatest, $iStartPos), $iConversion), $STR_STRIPTRAILING)
 
 		If StringLen($sRegex) Then
+			; Incorporate major version number into regex
+			$sRegex = StringFormat($sRegex, StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1))
 			Local $aResults = StringRegExp($sDriverLatest, $sRegex, $STR_REGEXPARRAYMATCH)
 
 			If @error Then
@@ -3574,3 +3589,31 @@ Func __WD_GetLatestWebdriverInfo($aBrowser, $sBrowserVersion, $bFlag64)
 
 	Return SetError(__WD_Error($sFuncName, $iErr, Default, $iExt), $iExt, $aInfo)
 EndFunc   ;==>__WD_GetLatestWebdriverInfo
+
+; #INTERNAL_USE_ONLY# ===========================================================================================================
+; Name ..........: __WD_Make2Array
+; Description ...: Parse string to array
+; Syntax ........: __WD_Make2Array($s)
+; Parameters ....: $s - String to be parsed
+; Return values .: Generated array
+; Author ........: jguinch
+; Modified ......:
+; Remarks .......:
+; Related .......:
+; Link ..........: https://www.autoitscript.com/forum/topic/179113-is-there-a-easy-way-to-parse-string-to-array
+; Example .......: No
+; ===============================================================================================================================
+Func __WD_Make2Array($s)
+	Local $aLines = StringRegExp($s, "(?<=[\[,])\s*\[(.*?)\]\s*[,\]]", 3), $iCountCols = 0
+	For $i = 0 To UBound($aLines) - 1
+		$aLines[$i] = StringRegExp($aLines[$i], "(?:^|,)\s*(?|'([^']*)'|""([^""]*)""|(.*?))(?=\s*(?:,|$))", 3)
+		If UBound($aLines[$i]) > $iCountCols Then $iCountCols = UBound($aLines[$i])
+	Next
+	Local $aRet[UBound($aLines)][$iCountCols]
+	For $y = 0 To UBound($aLines) - 1
+		For $x = 0 To UBound($aLines[$y]) - 1
+			$aRet[$y][$x] = ($aLines[$y])[$x]
+		Next
+	Next
+	Return $aRet
+EndFunc   ;==>__WD_Make2Array

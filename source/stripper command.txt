@@ -1,0 +1,1 @@
+au3Stripper\au3Stripper.exe Stash_Helper.au3 /MO

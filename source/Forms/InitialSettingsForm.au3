@@ -7,8 +7,13 @@
 #include <EditConstants.au3>
 
 Func InitialSettingsForm()
-	Global $stashFilePath
-
+	
+	; Global $stashType = RegRead($gsRegBase, "StashType")
+	; Global $stashURL = RegRead($gsRegBase, "StashURL")
+	Global $stashBrowser = RegRead($gsRegBase, "Browser")
+	Global $stashFilePath = RegRead($gsRegBase, "StashFilePath")
+	Global $stashURL = RegRead($gsRegBase, "StashURL")
+	
 	; Create the whole initial setting's GUI
 	Local $Initial_Settings = GUICreate("Initial Settings",1326,809,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
@@ -38,18 +43,22 @@ Func InitialSettingsForm()
 	Local $radioLocal = GUICtrlCreateRadio("Local Stash by running stash-win.exe.",219,359,501,42,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"0xFFFFFF")
+	If $stashType =  "Local" Then GUICtrlSetState( -1, $GUI_CHECKED )
+
+	Local $radioRemote = GUICtrlCreateRadio("Remote Stash",219,474,501,51,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
+	GUICtrlSetBkColor(-1,"0xFFFFFF")
+	If $stashType =  "Remote" Then GUICtrlSetState( -1, $GUI_CHECKED )
 
 	Local $stashPath = GUICtrlCreateInput("",409,409,560,40,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetState(-1,BitOr($GUI_SHOW,$GUI_ENABLE))
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 	GUICtrlSetTip(-1,"Please type in the location of stash-win.exe, e.g. c:\stash\stash-win.exe")
+	If $stashFilePath <> "" Then GUICtrlSetData( -1 , $stashFilePath )
 	
 	Local $btnBrowse = GUICtrlCreateButton("Browse",982,408,131,40,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 
-	Local $radioRemote = GUICtrlCreateRadio("Remote Stash",219,474,501,51,-1,-1)
-	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
-	GUICtrlSetBkColor(-1,"0xFFFFFF")
 
 	GUICtrlCreateLabel("Stash URL:",279,539,120,30,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
@@ -58,6 +67,7 @@ Func InitialSettingsForm()
 	$inputStashURL = GUICtrlCreateInput("",409,529,560,40,-1,$WS_EX_CLIENTEDGE)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Please type in the remote URL of Stash, e.g. http://192.168.1.10:9999")
+	if $stashURL <> "" Then GUICtrlSetData( -1,  $stashURL )
 
 	; GUICtrlCreateTabItem("")
 
@@ -74,16 +84,20 @@ Func InitialSettingsForm()
 
 	Local $chooseFirefox = GUICtrlCreateRadio("Firefox",200,325,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-
+	If $stashBrowser = "Firefox" Then GUICtrlSetState( -1,  $GUI_CHECKED)
+	
 	Local $chooseChrome = GUICtrlCreateRadio("Chrome",200,377,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	If $stashBrowser = "Chrome" Then GUICtrlSetState( -1,  $GUI_CHECKED)
 
 	Local $chooseEdge = GUICtrlCreateRadio("MS Edge",200,430,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	If $stashBrowser = "MS Edge" Then GUICtrlSetState( -1,  $GUI_CHECKED)
 
 	Local $chooseOpera = GUICtrlCreateRadio("Opera",200,494,157,48,$BS_AUTORADIOBUTTON,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-
+	If $stashBrowser = "Opera" Then GUICtrlSetState( -1,  $GUI_CHECKED)
+	
 	Local $browserDetails = GUICtrlCreateLabel("",450,339,656,163,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
@@ -111,10 +125,12 @@ Func InitialSettingsForm()
 	; Back to tab 0
 	_GUICtrlTab_SetCurFocus($tab,0)
 
-	; Now run the rest
+	; Now set the setting if it's already there.
+	
+
 	GUISetState(@SW_SHOW, $Initial_Settings)
 	Local $bSettingDone = False, $iSecond = @SEC
-	Local $bPathReady = False , $bBrowserReady = False, $sBrowser
+	Local $bPathReady = False , $bBrowserReady = False, $sBrowser = $stashBrowser
 	While Not $bSettingDone
 		Sleep(10)
 		Local $nMsg = GUIGetMsg()
@@ -136,7 +152,7 @@ Func InitialSettingsForm()
 							RegWrite($gsRegBase, "StashType", "REG_SZ", $stashType)
 							If $stashType = "Local" Then 
 								RegWrite($gsRegBase, "StashFilePath", "REG_SZ", $stashFilePath)
-								$stashURL = "http://localhost:9999/"
+								If $stashURL = "" Then $stashURL = "http://localhost:9999/"
 								RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
 							Else; Remote
 								If StringRight($stashURL, 1) <> "/" Then $stashURL &= "/"
@@ -191,13 +207,13 @@ Func InitialSettingsForm()
 					GUICtrlSetData($btnNext, "Next")
 					Select 
 						Case GUICtrlRead($chooseFirefox) = $GUI_CHECKED
-							GUICtrlSetData($browserDetails, "When launch StashApp with Firefox, you will see a robot icon and address bar turns red, indicating the browser is under my program's control. Other than that, it's all fine.")
+							GUICtrlSetData($browserDetails, "Seems Firefox is the best choice now. Other browsers are having problems from time to time.")
 							$sBrowser = "Firefox"
 						Case GUICtrlRead($chooseChrome) = $GUI_CHECKED
-							GUICtrlSetData($browserDetails, "It works perfectly. You won't see red address bar or anything." )
+							GUICtrlSetData($browserDetails, "It works, but too many updates and different versions sometimes make the web driver crash." )
 							$sBrowser = "Chrome"
 						Case GUICtrlRead($chooseEdge) = $GUI_CHECKED
-							GUICtrlSetData($browserDetails,"It works well, but you probably hate Microsoft so..." )
+							GUICtrlSetData($browserDetails,"It works well, but once it switched to the chrome base, it has the same problem. Plus you probably hate Microsoft so..." )
 							$sBrowser = "Edge"
 						Case GUICtrlRead($chooseOpera) = $GUI_CHECKED
 							GUICtrlSetData($browserDetails,"Never test it myself. It should work though." )
@@ -223,4 +239,7 @@ Func InitialSettingsForm()
 		EndIf
 	Wend
 	GUIDelete($Initial_Settings)
+	; Restart the program.
+	Run( Q( @ScriptDir &  "/AutoIt3.exe") & " " & Q(@ScriptDir & "\Stash_Helper.a3x" ), @ScriptDir )
+	Exit
 EndFunc

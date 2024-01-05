@@ -32,6 +32,8 @@
 
 
 #Region Globals
+Global Const $currentVersion = "v2.4.9"
+Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 ; The scale of the screen. This needs to be called before the "SetProcessDPIAware"
 Global $gdScale = _WinAPI_EnumDisplaySettings('', $ENUM_CURRENT_SETTINGS)[0] / @DesktopWidth
@@ -57,10 +59,7 @@ EndIf
 DllCall("User32.dll","bool","SetProcessDPIAware")
 
 
-; This version only compatible with Stash v17 and above.
-Global Const $currentVersion = "v2.4.8"
 
-Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -155,6 +154,11 @@ EndIf
 
 ; Get the browser type and profile type
 Global $stashBrowser = RegRead($gsRegBase, "Browser")
+If $stashBrowser =  "" Then 
+	InitialSettingsForm()
+	ExitScript()
+EndIf
+
 Global $stashBrowserProfile = RegRead($gsRegBase, "BrowserProfile")
 If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
 
@@ -282,8 +286,7 @@ If @error Then
 			EndIf
 			ExitScript()
 		case 7 ;NO
-		;Your code here...
-		ExitScript()
+			ExitScript()
 	endswitch
 EndIf
 
@@ -428,26 +431,37 @@ Sleep(500)
 
 Global $iConsolePID = _WD_Startup()
 If @error <> $_WD_ERROR_Success Then
-	MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
-		& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
-	_WD_Shutdown()
-	; Not fit, need to update the driver and try it once again.
-	Local $b64 = ( @CPUArch = "X64" )
-	Switch $stashBrowser
-		Case "Firefox"
-			$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
-		Case "Chrome"
-			$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
-		Case "Edge"
-			$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
-		Case "Opera"
-			$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
-	EndSwitch
-		
-	$iConsolePID = _WD_Startup()
-	if @error <> $_WD_ERROR_Success Then
-		BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad the web driver still cannot start.")
-	EndIf
+	$WDErrChoice = MsgBox(275,"Browser Control Error!","The Web Driver has error in startup, which means it cannot control the browser." & @CRLF _
+		& "Do you want to update the web driver for $stashBrowser ?" & @CRLF _
+		& "If you choose Yes, it will do the force update." & @CRLF _
+		& "If you choose No, it will reset the browser settings, so you can choose another browser next time." & @CRLF _
+		& "If you choose cancel, it will continue and try to create a web session anyway.",0)
+	switch $WDErrChoice
+		case 6 ;YES
+			_WD_Shutdown()
+			; Not fit, need to update the driver and try it once again.
+			Local $b64 = ( @CPUArch = "X64" )
+			Switch $stashBrowser
+				Case "Firefox"
+					$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
+				Case "Chrome"
+					$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
+				Case "Edge"
+					$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+				Case "Opera"
+					$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+			EndSwitch
+			$iConsolePID = _WD_Startup()
+			if @error <> $_WD_ERROR_Success Then
+				BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad the web driver still cannot start.")
+			EndIf
+		case 7 ;NO
+			; Set the browser setting to empty so it will run the init dialog next time.
+			RegWrite($gsRegBase, "Browser", "REG_SZ", "")
+			ExitScript()
+		case 2 ;CANCEL
+	endswitch
+
 EndIf
 
 
@@ -458,21 +472,36 @@ $sSession = _WD_CreateSession($sDesiredCapabilities)
 If @error <> $_WD_ERROR_Success Then
 	; c("last http result:" & $_WD_HTTPRESULT)
 	If $_WD_HTTPRESULT >= 500 Then
-		MsgBox(0, "Error in Browser", "Now we are trying a force update of webdriver." & @CRLF _
-			& "Hopefully it will fix the problem. If not, please create an issue in repo, thank you!", 20)
-		_WD_Shutdown()
-		; Not fit, need to update the driver and try it once again.
-		Local $b64 = ( @CPUArch = "X64" )
-		Switch $stashBrowser
-			Case "Firefox"
-				$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
-			Case "Chrome"
-				$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
-			Case "Edge"
-				$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
-			Case "Opera"
-				$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
-		EndSwitch
+		$WDErrChoice = MsgBox(275,"Session Creation Error!","The Web Driver has error in creating a web session." & @CRLF _
+			& "Do you want to update the web driver for $stashBrowser ?" & @CRLF _
+			& "If you choose Yes, it will do the force update." & @CRLF _
+			& "If you choose No, it will reset the browser settings, so you can choose another browser next time." & @CRLF _
+			& "If you choose cancel, it will continue and try to run it anyway.",0)
+		switch $WDErrChoice
+			case 6 ;YES
+				_WD_Shutdown()
+				; Not fit, need to update the driver and try it once again.
+				Local $b64 = ( @CPUArch = "X64" )
+				Switch $stashBrowser
+					Case "Firefox"
+						$bGood = _WD_UPdateDriver ("firefox", @AppDataDir & "\Webdriver" , $b64, True) ; Force update
+					Case "Chrome"
+						$bGood = _WD_UPdateDriver ("chrome", @AppDataDir & "\Webdriver" , Default , True) ; Force update
+					Case "Edge"
+						$bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+					Case "Opera"
+						$bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+				EndSwitch
+				$iConsolePID = _WD_Startup()
+				if @error <> $_WD_ERROR_Success Then
+					BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad the web driver still cannot start.")
+				EndIf
+			case 7 ;NO
+				; Set the browser setting to empty so it will run the init dialog next time.
+				RegWrite($gsRegBase, "Browser", "REG_SZ", "")
+				ExitScript()
+			case 2 ;CANCEL
+		endswitch
 
 		StartBrowser()
 		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "After cap error, still cannot set up the browser.")
@@ -3024,6 +3053,10 @@ Func ExitScript()
 
 	If $iStashPID <> 0 Then
 		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
+	EndIf
+	
+	If $iConsolePID <> 0 Then
+		ProcessClose($iConsolePID)
 	EndIf
 	
 	Exit
