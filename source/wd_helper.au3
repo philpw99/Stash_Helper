@@ -2142,7 +2142,7 @@ Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bF
 					FileDelete($sTempFile)
 
 				ElseIf $bDowngradable Then
-					$iErr = $_WD_ERROR_Mismatch
+					$iErr = $_WD_ERROR_NoMatch
 				EndIf
 			EndIf
 		EndIf

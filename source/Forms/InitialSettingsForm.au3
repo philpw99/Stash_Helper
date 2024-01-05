@@ -240,6 +240,14 @@ Func InitialSettingsForm()
 	Wend
 	GUIDelete($Initial_Settings)
 	; Restart the program.
+	If $iStashPID <> 0 Then
+		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
+	EndIf
+	
+	If $iConsolePID <> 0 Then
+		ProcessClose($iConsolePID)
+	EndIf
+
 	Run( Q( @ScriptDir &  "/AutoIt3.exe") & " " & Q(@ScriptDir & "\Stash_Helper.a3x" ), @ScriptDir )
 	Exit
 EndFunc

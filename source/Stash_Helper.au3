@@ -35,6 +35,8 @@
 Global Const $currentVersion = "v2.4.9"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
+Global $iStashPID = 0, $iConsolePID = 0
+
 ; The scale of the screen. This needs to be called before the "SetProcessDPIAware"
 Global $gdScale = _WinAPI_EnumDisplaySettings('', $ENUM_CURRENT_SETTINGS)[0] / @DesktopWidth
 
@@ -213,7 +215,7 @@ EndIf
 
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
-Global $iStashPID
+
 
 If $stashURL = "" Then
 	If $stashType = "Remote" Then
