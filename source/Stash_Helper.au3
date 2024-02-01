@@ -30,9 +30,8 @@
 
 #include <WinAPIGdi.au3>
 
-
 #Region Globals
-Global Const $currentVersion = "v2.4.9"
+Global Const $currentVersion = "v2.4.10"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 
 Global $iStashPID = 0, $iConsolePID = 0
@@ -192,12 +191,13 @@ Next
 Global $mInfo = ObjCreate("Scripting.Dictionary")
 If @error Then MsgExit("Error Creating global $minfo object.")
 
-; Get global $giBossKey
-Global $giBossKey= RegRead($gsRegBase, "BossKeyEnable")
+; Set Mini Menu shortcut combo
+; If $giMouseButtonRight = 1, use mouse right button instead of middle button.
+Global $giMouseButtonRight = RegRead($gsRegBase, "MouseButtonRight")
 If @error Then 
 	; Default to be enabled.
-	RegWrite( $gsRegBase, "BossKeyEnable", "REG_DWORD", 1)
-	$giBossKey =  1
+	RegWrite( $gsRegBase, "MouseButtonRight", "REG_DWORD", 0)
+	$giMouseButtonRight =  0
 EndIf
 
 #EndRegion Globals
@@ -565,9 +565,6 @@ EndIf
 ; Create the css menu with a function. It can only becalled after ApiKey is checked.
 CreateCSSMenu()
 
-; Ctrl + Enter to close all web sessions and media player
-If  $giBossKey =  1 Then HotKeySet("^{ENTER}", "CloseSession")
-
 ; Ctrl+Alt+A to add scene/movie to the playlist.
 HotKeySet("^!a", "AddItemToList")
 ; Ctrl+Alt+C to clear the playlist.
@@ -581,10 +578,6 @@ HotKeySet("^!b", "BookmarkCurrentTab")
 HotKeySet("^!o", "OpenMediaFolder")
 ; Alt+P to play the media in the current tab.
 HotKeySet("!p", "PlayCurrentTab")
-
-; Initialize mouse wheel click handling
-Global $MWHL, $MBUT,$mwhl_call, $mwhl_back
-MouseWheelInit()
 
 ; Looping to get message
 While True
@@ -737,8 +730,14 @@ While True
 
 	EndSwitch
 	
-	; Check for middle mouse click
-	if $MBUT Then MouseWheelClick()
+	; Check for mini menu combo
+	If $giMouseButtonRight = 1 Then 
+		; Check mouse right button
+		If _IsPressed("02") And _IsPressed("11") Then MouseWheelClick()
+	Else 
+		; Check mouse middle button
+		if _IsPressed("04") And _IsPressed("11") Then MouseWheelClick()
+	EndIf
 
 Wend
 
@@ -748,33 +747,6 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions Region
-
-#cs
-	; From https://www.autoitscript.com/forum/topic/121485-middle-mouse-button-wheel-hook/
-	; Greate and simple mouse wheel handling function.
-	; Returns $MWHL as: 1=up, -1=down, 0=idle
-	; Returns $MBUT as: 1=Click, 0=Not
-
-	; *** EXAMPLE ***
-
-	MouseWheelInit()
-	While GUIGetMsg()<>-3
-		If $MWHL+$MBUT Then MsgBox(0,"",StringMid("UpDownClick",StringInStr("1 -1  2",$MWHL+($MBUT*2),1),3+($MWHL*-1)+($MBUT*2)))
-	WEnd
-#ce
-Func MouseWheelInit()
-	; Global $MWHL, $MBUT,$mwhl_call, $mwhl_back
-	$mwhl_call=DllCall("kernel32.dll","hwnd", "GetModuleHandle","ptr",0)
-	$mwhl_back=DllCall("user32.dll","hwnd","SetWindowsHookEx","int",14,"ptr",DllCallbackGetPtr(DllCallbackRegister("MWENT","int","hwnd;uint;long")),"hwnd",$mwhl_call[0],"dword",0)
-EndFunc
-
-Func MWENT($h,$m,$l)
-	; Not care about button up or down, just track the click
-	; $MWHL=BitShift(DllStructGetData(DllStructCreate("int X;int Y;dword mouseData", $l), 3), 16)/120
-	; Need control key pressed ("11") at the same time.
-	$MBUT = ($m = 0x208) ? _IsPressed("11") : False
-	; $MBUT=($m=0x208)
-EndFunc	
 
 Func MouseWheelClick($bReset = False)
 	; Add current tab to the play list.

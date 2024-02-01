@@ -47,7 +47,7 @@ Func ShowSettings()
 
 	Global $stashBrowser, $stashFilePath, $stashURL, $sMediaPlayerLocation, $stashBrowserProfile
 	Local $sBrowser, $sProfile, $bRestartRequired = False, $sBrowserLocation = "unchanged"
-	Local $guiSettings = GUICreate("Settings",770,962,-1,-1,-1,-1)
+	Local $guiSettings = GUICreate("Settings",770,984,-1,-1,-1,-1)
 	GUISetIcon("helper2.ico")
 	; Disable the tray clicks
 	TraySetClick(0)
@@ -217,18 +217,20 @@ Func ShowSettings()
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"DeoVR the easy and free VR video player. Default SteamVR location.")
 
-	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group media player
-
-	GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",25,852,333,38,-1,-1)
-	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
-	GUICtrlSetBkColor(-1,"-2")
-	
-	$chkBossKey = GUICtrlCreateCheckbox( "Enable", 373, 862, 92, 20, -1, -1 )
-	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
-	If $giBossKey = 1 Then 
-		GUICtrlSetState( $chkBossKey, $GUI_CHECKED)
+	; Mouse button group
+	GUICtrlCreateGroup("Mini Menu Shortcut",20,840,417,121,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"The combo to show the mini-menu in the browser.")
+	Local $radioMouseMiddle = GUICtrlCreateRadio("Ctrl + Mouse Middle Button",53,886,329,20,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	Local $radioMouseRight = GUICtrlCreateRadio("Ctrl + Mouse Right Button",53,918,329,33,-1,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	If $giMouseButtonRight = 1 Then 
+		GUICtrlSetState( $radioMouseRight, $GUI_CHECKED )
+	Else 
+		GUICtrlSetState( $radioMouseMiddle, $GUI_CHECKED )
 	EndIf
-
+	
 	Local $btnDone = GUICtrlCreateButton("Done",546,850,173,63,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 
@@ -272,13 +274,21 @@ Func ShowSettings()
 			Case $radioRemote
 				ChooseType("Remote")
 				
-			Case $chkBossKey
-				
 			Case $radioChooseFirefox, $radioChooseChrome, $radioChooseEdge
 				$sBrowserLocation = ""	; Reset it to default location.
 				GUICtrlSetTip($btnExeLocation,"Currently location: empty" & @CRLF & "Leave it empty to use default location.")
 				
 			Case $btnDone
+				
+				; Set the mouse button setting
+				If GUICtrlRead( $radioMouseRight) = $GUI_CHECKED Then
+					$giMouseButtonRight =  1
+				Else
+					$giMouseButtonRight =  0
+				EndIf 
+				RegWrite($gsRegBase,"MouseButtonRight", "REG_DWORD", $giMouseButtonRight)
+				
+				; Media player setting
 				$sMediaPlayerLocation = GUICtrlRead($inputMediaPlayerLocation)
 				If $sMediaPlayerLocation <> "" Then 
 					; No checking empty string to enable user to clear this setting.
@@ -346,17 +356,7 @@ Func ShowSettings()
 				
 				$stashURL = GUICtrlRead($inputStashURL)
 				RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
-				
-				; Boss key enable/disable
-				If guictrlread($chkBossKey) = $GUI_CHECKED Then 
-					RegWrite( $gsRegBase, "BossKeyEnable", "REG_DWORD", 1)
-					$giBossKey = 1
-					HotKeySet("^{ENTER}", "CloseSession")
-				Else 
-					RegWrite( $gsRegBase, "BossKeyEnable", "REG_DWORD", 0)
-					$giBossKey = 0
-					HotKeySet("^{ENTER}")
-				EndIf
+			
 				
 				; Default browser location
 				If $sBrowserLocation <> "unchanged" Then 

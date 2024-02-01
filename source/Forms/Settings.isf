@@ -7,7 +7,7 @@
 
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
-$Settings = GUICreate("Settings",769,962,-1,-1,-1,-1)
+$Settings = GUICreate("Settings",770,984,-1,-1,-1,-1)
 GUICtrlCreateGroup("Stash Type",33,23,277,90,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $radioLocal = GUICtrlCreateRadio("Local",51,68,85,30,-1,-1)
@@ -29,6 +29,8 @@ GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $chooseChrome = GUICtrlCreateRadio("Chrome",84,216,147,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $chooseEdge = GUICtrlCreateRadio("MS Edge",84,264,147,38,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Tahoma")
+$chooseOpera = GUICtrlCreateRadio("Opera",84,309,147,38,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $updateFirefox = GUICtrlCreateButton("Update",280,173,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
@@ -108,16 +110,19 @@ GUICtrlSetTip(-1,"DeoVR the easy and free VR video player. Default SteamVR locat
 $btnDone = GUICtrlCreateButton("Done",546,850,173,63,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Save the settings.")
-GUICtrlCreateCheckbox("Enable",373,862,104,27,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
-GUICtrlCreateLabel("Boss Coming Key: Ctrl + Enter",25,862,333,38,-1,-1)
+GUICtrlCreateLabel("Menu Button: Ctrl + Mouse",450,520,295,33,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
-$chooseOpera = GUICtrlCreateRadio("Opera",84,309,147,38,-1,-1)
-GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $updateOpera = GUICtrlCreateButton("Update",280,316,112,32,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to update the driver.")
+GUICtrlCreateGroup("Mini Menu Shortcut",20,840,417,121,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+GUICtrlSetTip(-1,"The combo to show the mini-menu in the browser.")
+$radioMouseMiddle = GUICtrlCreateRadio("Ctrl + Mouse Middle Button",53,886,329,20,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
+$radioMouseRight = GUICtrlCreateRadio("Ctrl + Mouse Right Button",53,918,329,33,-1,-1)
+GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 
 
 
@@ -126,8 +131,8 @@ GUICtrlSetTip(-1,"If your browser no longer works, then perhaps you need to upda
 Handle_deklaration=default
 Handle_deklaration_const=false
 title=Settings
-breite=769
-hoehe=962
+breite=770
+hoehe=984
 style=-1
 exstyle=-1
 bgcolour=0xF0F0F0
@@ -141,10 +146,13 @@ ypos=-1
 center_gui=true
 title_textmode=normal
 isf_include_once=false
+isf_no_includes=false
 only_controls_in_isf=false
 const_modus=default
 gui_code_in_function=false
 gui_code_in_function_name=
+gui_code_in_function_mode=gui
+gui_code_in_function_map_name=
 gui_event_close=
 gui_event_minimize=
 gui_event_restore=
@@ -156,40 +164,11 @@ gui_event_secoundarydown=
 gui_event_secoundaryup=
 gui_event_resized=
 gui_event_dropped=
-defaultfont=MS Sans Serif
-defaultfontsize=8
-[0x000C26B6]
+defaultfont=Palatino Linotype
+defaultfontsize=10
+[0x00022086]
 type=label
-handle=433
-locked=0
-resize=
-x=25
-y=862
-width=333
-height=38
-func=
-font=Palatino Linotype
-fontsize=10
-fontstyle=400
-fontattribute=0
-tooltip=
-bgimage=
-textcolour=0x000000
-id=
-text=Boss Coming Key: Ctrl + Enter
-state=$GUI_SHOW+$GUI_ENABLE
-style=
-exstyle=
-bgcolour=-2
-code=
-order=38
-tabpage=-1
-iconindex=
-iconlarge=0
-textmode=text
-[0x000526B8]
-type=label
-handle=434
+handle=446
 locked=0
 resize=
 x=34
@@ -211,14 +190,14 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=17
+order=18
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000526BA]
+[0x00022084]
 type=input
-handle=435
+handle=447
 locked=0
 resize=
 x=34
@@ -240,14 +219,14 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=18
+order=19
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000526BC]
+[0x00022082]
 type=button
-handle=436
+handle=448
 locked=0
 resize=
 x=533
@@ -269,14 +248,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=19
+order=20
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000627AC]
+[0x00022080]
 type=radio
-handle=437
+handle=449
 locked=0
 resize=
 x=84
@@ -303,9 +282,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000727AA]
+[0x0002207E]
 type=group
-handle=438
+handle=450
 locked=0
 resize=
 x=31
@@ -332,9 +311,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00062782]
+[0x0002207C]
 type=radio
-handle=439
+handle=451
 locked=0
 resize=
 x=84
@@ -361,9 +340,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
-[0x0005278C]
+[0x0002207A]
 type=radio
-handle=440
+handle=452
 locked=0
 resize=
 x=84
@@ -390,9 +369,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x000526A2]
+[0x00022078]
 type=button
-handle=441
+handle=453
 locked=0
 resize=
 x=546
@@ -414,14 +393,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=36
+order=37
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000526A0]
+[0x00022076]
 type=button
-handle=442
+handle=454
 locked=0
 resize=
 x=280
@@ -443,14 +422,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=9
+order=10
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C269E]
+[0x00022074]
 type=button
-handle=443
+handle=455
 locked=0
 resize=
 x=280
@@ -476,10 +455,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=10
-[0x00391E02]
+order=11
+[0x00022072]
 type=button
-handle=444
+handle=456
 locked=0
 resize=
 x=280
@@ -505,10 +484,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=11
-[0x000B24AA]
+order=12
+[0x00022070]
 type=checkbox
-handle=446
+handle=457
 locked=0
 resize=
 x=354
@@ -535,9 +514,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x008422EA]
+[0x0002206E]
 type=checkbox
-handle=447
+handle=458
 locked=0
 resize=
 x=354
@@ -564,9 +543,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x006C0C46]
+[0x0002206C]
 type=label
-handle=448
+handle=459
 locked=0
 resize=
 x=38
@@ -592,10 +571,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=23
-[0x00450924]
+order=24
+[0x0002206A]
 type=input
-handle=449
+handle=460
 locked=0
 resize=
 x=38
@@ -621,10 +600,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=24
-[0x00A9056A]
+order=25
+[0x00022068]
 type=button
-handle=450
+handle=461
 locked=0
 resize=
 x=532
@@ -650,10 +629,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=25
-[0x004B0CA2]
+order=26
+[0x00022066]
 type=input
-handle=451
+handle=462
 locked=0
 resize=
 x=36
@@ -679,10 +658,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=21
-[0x006B09B2]
+order=22
+[0x00022064]
 type=label
-handle=452
+handle=463
 locked=0
 resize=
 x=36
@@ -708,10 +687,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=20
-[0x009F217C]
+order=21
+[0x00022062]
 type=button
-handle=453
+handle=464
 locked=0
 resize=
 x=41
@@ -733,14 +712,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=31
+order=32
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x004A0A0A]
+[0x00022060]
 type=label
-handle=454
+handle=465
 locked=0
 resize=
 x=53
@@ -762,14 +741,14 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=26
+order=27
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x005C09F0]
+[0x0009205C]
 type=button
-handle=455
+handle=466
 locked=0
 resize=
 x=164
@@ -795,10 +774,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=32
-[0x008C0AC4]
+order=33
+[0x0002205E]
 type=button
-handle=456
+handle=467
 locked=0
 resize=
 x=287
@@ -824,10 +803,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=33
-[0x003E0A5E]
+order=34
+[0x00041F3C]
 type=button
-handle=457
+handle=468
 locked=0
 resize=
 x=411
@@ -853,10 +832,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=34
-[0x00FF20FA]
+order=35
+[0x00041F9E]
 type=button
-handle=458
+handle=469
 locked=0
 resize=
 x=530
@@ -882,10 +861,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=35
-[0x00670C54]
+order=36
+[0x00041CD4]
 type=checkbox
-handle=459
+handle=470
 locked=0
 resize=
 x=255
@@ -907,14 +886,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=27
+order=28
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00300964]
+[0x00032088]
 type=label
-handle=460
+handle=471
 locked=0
 resize=
 x=374
@@ -936,14 +915,14 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=28
+order=29
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00921D46]
+[0x0002208C]
 type=input
-handle=461
+handle=472
 locked=0
 resize=
 x=559
@@ -965,14 +944,14 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=29
+order=30
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00052692]
+[0x0001208E]
 type=label
-handle=462
+handle=473
 locked=0
 resize=
 x=635
@@ -994,14 +973,14 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=30
+order=31
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0005268C]
+[0x00012090]
 type=radio
-handle=463
+handle=474
 locked=0
 resize=
 x=504
@@ -1023,14 +1002,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=14
+order=15
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00052694]
+[0x00012092]
 type=radio
-handle=464
+handle=475
 locked=0
 resize=
 x=504
@@ -1052,14 +1031,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=15
+order=16
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00052696]
+[0x00012094]
 type=group
-handle=465
+handle=476
 locked=0
 resize=
 x=477
@@ -1081,14 +1060,14 @@ style=$BS_CENTER
 exstyle=
 bgcolour=
 code=
-order=13
+order=14
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00052698]
+[0x00012096]
 type=radio
-handle=466
+handle=477
 locked=0
 resize=
 x=51
@@ -1115,9 +1094,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000C269C]
+[0x00012098]
 type=group
-handle=467
+handle=478
 locked=0
 resize=
 x=33
@@ -1144,9 +1123,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0005269A]
+[0x0001209A]
 type=radio
-handle=468
+handle=479
 locked=0
 resize=
 x=181
@@ -1173,38 +1152,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000625B4]
-type=checkbox
-handle=469
-locked=0
-resize=
-x=373
-y=862
-width=104
-height=27
-func=
-font=Palatino Linotype
-fontsize=10
-fontstyle=400
-fontattribute=0
-tooltip=
-bgimage=
-textcolour=0x000000
-id=
-text=Enable
-state=$GUI_SHOW+$GUI_ENABLE
-style=
-exstyle=
-bgcolour=
-code=
-order=37
-tabpage=-1
-iconindex=
-iconlarge=0
-textmode=text
-[0x00072624]
+[0x0001209E]
 type=button
-handle=470
+handle=481
 locked=0
 resize=
 x=84
@@ -1226,14 +1176,14 @@ style=
 exstyle=
 bgcolour=
 code=
-order=12
+order=13
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00102386]
+[0x000120A0]
 type=group
-handle=471
+handle=482
 locked=0
 resize=
 x=20
@@ -1255,14 +1205,14 @@ style=$BS_CENTER
 exstyle=
 bgcolour=
 code=
-order=22
+order=23
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x003E2734]
+[0x000120A2]
 type=radio
-handle=445
+handle=483
 locked=0
 resize=
 x=84
@@ -1288,10 +1238,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=39
-[0x003D2736]
+order=9
+[0x000120A4]
 type=button
-handle=472
+handle=484
 locked=0
 resize=
 x=280
@@ -1317,10 +1267,10 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=40
-[0x00630BE8]
+order=39
+[0x000120A6]
 type=checkbox
-handle=473
+handle=485
 locked=0
 resize=
 x=477
@@ -1342,7 +1292,123 @@ style=
 exstyle=
 bgcolour=
 code=
-order=16
+order=17
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x0009209C]
+type=label
+handle=492
+locked=0
+resize=
+x=450
+y=520
+width=295
+height=33
+func=
+font=Palatino Linotype
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Menu Button: Ctrl + Mouse
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=38
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00210678]
+type=radio
+handle=493
+locked=0
+resize=
+x=53
+y=886
+width=329
+height=20
+func=
+font=Palatino Linotype
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$radioMouseMiddle
+text=Ctrl + Mouse Middle Button
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=41
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000C20DA]
+type=radio
+handle=494
+locked=0
+resize=
+x=53
+y=918
+width=329
+height=33
+func=
+font=Palatino Linotype
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$radioMouseRight
+text=Ctrl + Mouse Right Button
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=42
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x001420E0]
+type=group
+handle=495
+locked=0
+resize=
+x=20
+y=840
+width=417
+height=121
+func=
+font=Palatino Linotype
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=The combo to show the mini-menu in the browser.
+bgimage=
+textcolour=0x000000
+id=
+text=Mini Menu Shortcut
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=40
 tabpage=-1
 iconindex=
 iconlarge=0
