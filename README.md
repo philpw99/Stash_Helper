@@ -7,7 +7,7 @@ AutoIt3.exe is the runtime program made by the good folks in AutoItScript.com. M
 So you decide it yourself for the risk of using my program.
 
 ## Old news.
-### New Feature: Ctrl + Mid-Mouse-Button shows a menu
+### New Feature: Ctrl + Mid-Mouse-Button Or Ctrl + Mouse-Right-Button to show a mini-menu
 <img src="https://user-images.githubusercontent.com/22040708/211052348-b25484a2-90be-48df-8eff-c10056ed5b59.png" width=300 />
 
 -----
