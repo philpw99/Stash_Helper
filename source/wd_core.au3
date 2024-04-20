@@ -37,6 +37,8 @@
 #EndRegion Copyright
 
 #ignorefunc _WD_IsLatestRelease
+#Tidy_Parameters=/tcb=-1
+
 #Region Description
 ; ==============================================================================
 ; UDF ...........: WD_Core.au3
@@ -47,7 +49,7 @@
 ;                  https://www.autoitscript.com/forum/topic/84133-winhttp-functions/
 ;
 ;                  WebDriver for desired browser
-;                  Chrome WebDriver https://sites.google.com/a/chromium.org/chromedriver/downloads
+;                  Chrome WebDriver https://sites.google.com/chromium.org/driver/
 ;                  FireFox WebDriver https://github.com/mozilla/geckodriver/releases
 ;                  Edge WebDriver https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
 ;
@@ -69,7 +71,7 @@
 #EndRegion Many thanks to:
 
 #Region Global Constants
-Global Const $__WDVERSION = "1.0.3"
+Global Const $__WDVERSION = "1.3.1"
 
 Global Const $_WD_ELEMENT_ID = "element-6066-11e4-a52e-4f735466cecf"
 Global Const $_WD_SHADOW_ID = "shadow-6066-11e4-a52e-4f735466cecf"
@@ -88,40 +90,42 @@ Global Const $_WD_JSON_Shadow = "[value][" & $_WD_SHADOW_ID & "]"
 Global Const $_WD_JSON_Error = "[value][error]"
 Global Const $_WD_JSON_Message = "[value][message]"
 
-Global Const $JSON_MLREFORMAT = 1048576 ; Addition to constants from json.au3
-
+#Tidy_ILC_Pos=32
 Global Enum _
 		$_WD_DEBUG_None = 0, _ ; No logging
 		$_WD_DEBUG_Error, _    ; logging in case of Error
 		$_WD_DEBUG_Info, _     ; logging with additional information
 		$_WD_DEBUG_Full        ; logging with full details for developers
 
+#Tidy_ILC_Pos=42
 Global Enum _
-		$_WD_ERROR_Success = 0, _ ; No error
-		$_WD_ERROR_GeneralError, _ ; General error
-		$_WD_ERROR_SocketError, _ ; No socket
-		$_WD_ERROR_InvalidDataType, _ ; Invalid data type (IP, URL, Port ...)
-		$_WD_ERROR_InvalidValue, _ ; Invalid value in function-call
-		$_WD_ERROR_InvalidArgue, _ ; Invalid argument in function-call
-		$_WD_ERROR_SendRecv, _ ; Send / Recv Error
-		$_WD_ERROR_Timeout, _ ; Connection / Send / Recv timeout
-		$_WD_ERROR_NoMatch, _ ; No match for _WDAction-find/search _WDGetElement...
-		$_WD_ERROR_RetValue, _ ; Error echo from Repl e.g. _WDAction("fullscreen","true") <> "true"
-		$_WD_ERROR_Exception, _ ; Exception from web driver
-		$_WD_ERROR_InvalidExpression, _ ; Invalid expression in XPath query, CSSSelector query or RegEx
-		$_WD_ERROR_NoAlert, _ ; No alert present when calling _WD_Alert
-		$_WD_ERROR_NotFound, _ ; File or registry key not found
-		$_WD_ERROR_ElementIssue, _ ; Problem interacting with element (click intercepted, etc)
-		$_WD_ERROR_SessionNotCreated, _ ; Session not created
-		$_WD_ERROR_SessionInvalid, _ ; Invalid session ID was submitted to webdriver
-		$_WD_ERROR_ContextInvalid, _ ; Invalid browsing context
-		$_WD_ERROR_UnknownCommand, _ ; Unknown command submitted to webdriver
-		$_WD_ERROR_UserAbort, _ ; In case when user abort when @error occurs and $_WD_ERROR_MSGBOX was set
-		$_WD_ERROR_FileIssue, _ ; Errors related to WebDriver EXE File
-		$_WD_ERROR_NotSupported, _ ; When user try to use unsupported browser or capability
-		$_WD_ERROR_AlreadyDefined, _ ; Capability previously defined
-		$_WD_ERROR_Javascript, _ ; Javascript error
-		$_WD_ERROR__COUNTER ; Defines row count for $aWD_ERROR_DESC
+		$_WD_ERROR_Success = 0, _        ; No error
+		$_WD_ERROR_GeneralError, _       ; General error
+		$_WD_ERROR_SocketError, _        ; No socket
+		$_WD_ERROR_InvalidDataType, _    ; Invalid data type (IP, URL, Port ...)
+		$_WD_ERROR_InvalidValue, _       ; Invalid value in function-call
+		$_WD_ERROR_InvalidArgue, _       ; Invalid argument in function-call
+		$_WD_ERROR_SendRecv, _           ; Send / Recv Error
+		$_WD_ERROR_Timeout, _            ; Connection / Send / Recv timeout
+		$_WD_ERROR_NoMatch, _            ; No match for _WDAction-find/search _WDGetElement...
+		$_WD_ERROR_RetValue, _           ; Error echo from Repl e.g. _WDAction("fullscreen","true") <> "true"
+		$_WD_ERROR_Exception, _          ; Exception from web driver
+		$_WD_ERROR_InvalidExpression, _  ; Invalid expression in XPath query, CSSSelector query or RegEx
+		$_WD_ERROR_NoAlert, _            ; No alert present when calling _WD_Alert
+		$_WD_ERROR_NotFound, _           ; File or registry key not found
+		$_WD_ERROR_ElementIssue, _       ; Problem interacting with element (click intercepted, etc)
+		$_WD_ERROR_SessionNotCreated, _  ; Session not created
+		$_WD_ERROR_SessionInvalid, _     ; Invalid session ID was submitted to webdriver
+		$_WD_ERROR_ContextInvalid, _     ; Invalid browsing context
+		$_WD_ERROR_UnknownCommand, _     ; Unknown command submitted to webdriver
+		$_WD_ERROR_UserAbort, _          ; In case when user abort when @error occurs and $_WD_ERROR_MSGBOX was set
+		$_WD_ERROR_FileIssue, _          ; Errors related to WebDriver EXE File
+		$_WD_ERROR_NotSupported, _       ; When user try to use unsupported browser or capability
+		$_WD_ERROR_AlreadyDefined, _     ; Capability previously defined
+		$_WD_ERROR_Javascript, _         ; Javascript error
+		$_WD_ERROR_Mismatch, _           ; Version mismatch
+		$_WD_ERROR__COUNTER              ; Defines row count for $aWD_ERROR_DESC
+#Tidy_ILC_Pos=0
 
 Global Const $aWD_ERROR_DESC[$_WD_ERROR__COUNTER] = [ _
 		"Success", _
@@ -147,7 +151,8 @@ Global Const $aWD_ERROR_DESC[$_WD_ERROR__COUNTER] = [ _
 		"File issue", _
 		"Browser or feature not supported", _
 		"Capability or value already defined", _
-		"Javascript Exception" _
+		"Javascript Exception", _
+		"Version mismatch" _
 		]
 
 Global Const $_WD_ErrorInvalidSession = "invalid session id"
@@ -179,41 +184,99 @@ Global Enum _ ; Column positions of $_WD_SupportedBrowsers
 		$_WD_BROWSER_NewDriverURL, _
 		$_WD_BROWSER__COUNTER
 
+#Tidy_Off
 Global Const $_WD_SupportedBrowsers[][$_WD_BROWSER__COUNTER] = _
 		[ _
-		["chrome", "chrome.exe", "chromedriver.exe", False, "goog:chromeOptions", "'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1)", "", '"https://chromedriver.storage.googleapis.com/" & $sDriverLatest & "/chromedriver_win32.zip"'], _
-		["firefox", "firefox.exe", "geckodriver.exe", True, "moz:firefoxOptions", "https://github.com/mozilla/geckodriver/releases/latest", '<a.*href="\/mozilla\/geckodriver\/releases\/tag\/(?:v)(.*?)"', '"https://github.com/mozilla/geckodriver/releases/download/v" & $sDriverLatest & "/geckodriver-v" & $sDriverLatest & (($bFlag64) ? "-win64.zip" : "-win32.zip")'], _
-		["msedge", "msedge.exe", "msedgedriver.exe", True, "ms:edgeOptions", "'https://msedgedriver.azureedge.net/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1) & '_WINDOWS'", "", '"https://msedgedriver.azureedge.net/" & $sDriverLatest & "/edgedriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")'], _
-		["opera", "opera.exe", "operadriver.exe", True, "goog:chromeOptions", "https://github.com/operasoftware/operachromiumdriver/releases/latest", '<a.*href="\/operasoftware\/operachromiumdriver\/releases\/tag\/(?:v\.)(.*?)"', '"https://github.com/operasoftware/operachromiumdriver/releases/download/v." & $sDriverLatest & "/operadriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")'], _
-		["msedgeie", "msedge.exe", "IEDriverServer.exe", True, "se:ieOptions", "https://github.com/SeleniumHQ/selenium/blob/trunk/cpp/iedriverserver/CHANGELOG", '(?s)(?:major.minor.build.revision.*?v)(\d+\.\d+\.\d+)', '"https://github.com/SeleniumHQ/selenium/releases/download/selenium-" & StringRegExpReplace($sDriverLatest, "(\d+\.\d+)(\.\d+)", "$1") & ".0/IEDriverServer_" & (($bFlag64) ? "x64" : "Win32") & "_" & $sDriverLatest & ".zip"'] _
+			[ _
+				"chrome", _
+				"chrome.exe", _
+				"chromedriver.exe", _
+				True,  _
+				"goog:chromeOptions", _
+				"https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone-with-downloads.json", _
+				'{"milestone":"%s","version":"(\d+.\d+.\d+.\d+)"', _
+				'"https://storage.googleapis.com/chrome-for-testing-public/" & $sDriverLatest & (($bFlag64) ? "/win64/chromedriver-win64.zip" : "/win32/chromedriver-win32.zip")' _
+			], _
+			[ _
+				"chrome_legacy", _ ; Prior to v115
+				"chrome.exe", _
+				"chromedriver.exe", _
+				False, _
+				"goog:chromeOptions", _
+				"'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1)", _
+				"", _
+				'"https://chromedriver.storage.googleapis.com/" & $sDriverLatest & "/chromedriver_win32.zip"' _
+			], _
+			[ _
+				"firefox", _
+				"firefox.exe", _
+				"geckodriver.exe", _
+				True,  _
+				"moz:firefoxOptions", _
+				"https://github.com/mozilla/geckodriver/releases/latest", _
+				'<a.*href="\/mozilla\/geckodriver\/releases\/tag\/(?:v)(.*?)"', _
+				'"https://github.com/mozilla/geckodriver/releases/download/v" & $sDriverLatest & "/geckodriver-v" & $sDriverLatest & (($bFlag64) ? "-win64.zip" : "-win32.zip")' _
+			], _
+			[ _
+				"msedge", _
+				"msedge.exe", _
+				"msedgedriver.exe", _
+				True,  _
+				"ms:edgeOptions", _
+				"'https://msedgedriver.azureedge.net/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1) & '_WINDOWS'", _
+				"", _
+				'"https://msedgedriver.azureedge.net/" & $sDriverLatest & "/edgedriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")' _
+			], _
+			[ _
+				"opera", _
+				"opera.exe", _
+				"operadriver.exe", _
+				True,  _
+				"goog:chromeOptions", _
+				"https://github.com/operasoftware/operachromiumdriver/releases/latest", _
+				'<a.*href="\/operasoftware\/operachromiumdriver\/releases\/tag\/(?:v\.)(.*?)"',  _
+				'"https://github.com/operasoftware/operachromiumdriver/releases/download/v." & $sDriverLatest & "/operadriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")' _
+			], _
+			[ _
+				"msedgeie", _
+				"msedge.exe", _
+				"IEDriverServer.exe", _
+				True,  _
+				"se:ieOptions", _
+				"https://github.com/SeleniumHQ/selenium/blob/trunk/cpp/iedriverserver/CHANGELOG", _
+				'(?s)(?:major.minor.build.revision.*?v)(\d+\.\d+\.\d+)', _
+				'"https://github.com/SeleniumHQ/selenium/releases/download/selenium-" & StringRegExpReplace($sDriverLatest, "(\d+\.\d+)(\.\d+)", "$1") & ".0/IEDriverServer_" & (($bFlag64) ? "x64" : "Win32") & "_" & $sDriverLatest & ".zip"' _
+			] _
 		]
+#Tidy_On
 
 #EndRegion Global Constants
 
 #Region Global Variables
-Global $_WD_DRIVER = "" ; Path to web driver executable
-Global $_WD_DRIVER_PARAMS = "" ; Parameters to pass to web driver executable
+#Tidy_ILC_Pos=44
+Global $_WD_DRIVER = ""                    ; Path to web driver executable
+Global $_WD_DRIVER_PARAMS = ""             ; Parameters to pass to web driver executable
 Global $_WD_BASE_URL = "HTTP://127.0.0.1"
-Global $_WD_PORT = 0 ; Port used for web driver communication
-Global $_WD_HTTPRESULT = 0 ; Result of last WinHTTP request
-Global $_WD_HTTPRESPONSE = '' ; Response of last WinHTTP request
-Global $_WD_SESSION_DETAILS = "" ; Response from _WD_CreateSession
-Global $_WD_BFORMAT = $SB_UTF8 ; Binary format
-Global $_WD_DRIVER_CLOSE = True ; Close prior driver instances before launching new one
-Global $_WD_DRIVER_DETECT = True ; Don't launch new driver instance if one already exists
-Global $_WD_RESPONSE_TRIM = -1 ; Trim response string to given value for debug output
-Global $_WD_ERROR_MSGBOX = False ; Shows in compiled scripts error messages in msgboxes
-Global $_WD_ERROR_OUTPUTDEBUG = False ; Log errors to "OutputDebugString"
-Global $_WD_DEBUG = $_WD_DEBUG_Info ; Trace to console and show web driver app
-Global $_WD_CONSOLE = ConsoleWrite ; Destination for console output
-Global $_WD_CONSOLE_Suffix = @CRLF ; Suffix added to the end of Message in $_WD_CONSOLE function
-Global $_WD_IFILTER = 16 ; Passed to _HtmlTableGetWriteToArray to control filtering
-Global $_WD_Sleep = Sleep ; Default to calling standard Sleep function
-Global $_WD_DefaultTimeout = 10000 ; 10 seconds
+Global $_WD_PORT = 0                       ; Port used for web driver communication
+Global $_WD_HTTPRESULT = 0                 ; Result of last WinHTTP request
+Global $_WD_HTTPRESPONSE = ''              ; Response of last WinHTTP request
+Global $_WD_SESSION_DETAILS = ""           ; Response from _WD_CreateSession
+Global $_WD_BFORMAT = $SB_UTF8             ; Binary format
+Global $_WD_DRIVER_CLOSE = True            ; Close prior driver instances before launching new one
+Global $_WD_DRIVER_DETECT = True           ; Don't launch new driver instance if one already exists
+Global $_WD_RESPONSE_TRIM = -1             ; Trim response string to given value for debug output
+Global $_WD_ERROR_MSGBOX = False           ; Shows in compiled scripts error messages in msgboxes
+Global $_WD_ERROR_OUTPUTDEBUG = False      ; Log errors to "OutputDebugString"
+Global $_WD_DEBUG = $_WD_DEBUG_Info        ; Trace to console and show web driver app
+Global $_WD_CONSOLE = ConsoleWrite         ; Destination for console output
+Global $_WD_CONSOLE_Suffix = @CRLF         ; Suffix added to the end of Message in $_WD_CONSOLE function
+Global $_WD_Sleep = Sleep                  ; Default to calling standard Sleep function
+Global $_WD_DefaultTimeout = 10000         ; 10 seconds
 Global $_WD_WINHTTP_TIMEOUTS = True
 Global $_WD_HTTPTimeOuts[4] = [0, 60000, 30000, 30000]
 Global $_WD_HTTPContentType = "Content-Type: application/json"
 Global $_WD_DetailedErrors = False
+#Tidy_ILC_Pos=0
 
 #EndRegion Global Variables
 
@@ -839,7 +902,7 @@ Func _WD_ExecuteScript($sSession, $sScript, $sArguments = Default, $bAsync = Def
 	If IsBool($vSubNode) Then $vSubNode = ($vSubNode) ? $_WD_JSON_Value : "" ; True = the JSON value node is returned , False = entire JSON response is returned
 
 	If IsString($vSubNode) Then
-		$sScript = __WD_EscapeString($sScript, $JSON_MLREFORMAT)
+		$sScript = __WD_EscapeString($sScript)
 
 		$sData = '{"script":"' & $sScript & '", "args":[' & $sArguments & ']}'
 		$sCmd = ($bAsync) ? 'async' : 'sync'
@@ -1679,23 +1742,21 @@ EndFunc   ;==>__WD_CloseDriver
 ; Syntax ........: __WD_EscapeString($sData[, $iOption = 0])
 ; Parameters ....: $sData   - the string to be escaped
 ;                  $iOption - [optional] Any combination of $JSON_* constants. Default is 0.
+; Return values..: Success - Escaped string
+;                  Failure - Response from JSON UDF and sets @error to $_WD_ERROR_GeneralError
 ; Author ........: Danp2
 ; Modified ......:
-; Remarks .......: $JSON_MLREFORMAT will strip tabs and CR/LFs from a multiline string.
-;                  See $JSON_* constants in json.au3 for other $iOption possibilities.
+; Remarks .......:  See $JSON_* constants in json.au3 for the possible $iOption combinations.
 ; Related .......:
 ; Link ..........:
 ; Example .......: No
 ; ===============================================================================================================================
 Func __WD_EscapeString($sData, $iOption = 0)
-	If BitAND($iOption, $JSON_MLREFORMAT) Then
-		$sData = StringRegExpReplace($sData, '[\v\t]', '') ; Strip tabs and CR/LFs
-		$iOption = BitXOR($iOption, $JSON_MLREFORMAT)      ; Flip bit off
-	Endif
-
+	Local $iErr = $_WD_ERROR_Success
 	$sData = Json_StringEncode($sData, $iOption) ; Escape JSON Strings
 
-	Return SetError($_WD_ERROR_Success, 0, $sData)
+	If @error Then $iErr = $_WD_ERROR_GeneralError
+	Return SetError($iErr, 0, $sData)
 EndFunc   ;==>__WD_EscapeString
 
 ; #INTERNAL_USE_ONLY# ===========================================================================================================

@@ -31,8 +31,9 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.4.10"
+Global Const $currentVersion = "v2.4.11"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
+Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
 Global $iStashPID = 0, $iConsolePID = 0
 
@@ -114,6 +115,11 @@ Global $aStashURL =  _WinHttpCrackUrl($stashURL)
 ;                  |$array[5] - password
 ;                  |$array[6] - URL path  Note: relative path. Default is "/"
 ;                  |$array[7] - extra information
+
+If @error Then 
+	RegWrite($gsRegBase, "StashURL", "REG_SZ", "")
+	MsgExit("Error in StashURL: " & $stashURL & @CRLF & "Resetting it.")
+EndIf
 
 ; Have to decleare the following, otherwise the setting form will fail.
 Global $stashFilePath = RegRead($gsRegBase, "StashFilePath")
@@ -236,8 +242,16 @@ If $stashURL = "" Then
 Else
 	; StashURL already saved. Launch it only when it's local.
 	If $stashType = "Local" Then
-		Local $aStr = StringRegExp($stashURL, "\:\/\/(.*)\:(\d+)", $STR_REGEXPARRAYMATCH )
-		Local $sHost = $aStr[0], $sPort = $aStr[1]
+		; Use previous $aStashURL
+		If UBound($aStashURL) = 0 Then
+			$aStashURL = _WinHttpCrackUrl($stashURL)
+			If @error Then
+				RegWrite($gsRegBase, "StashURL", "REG_SZ", "")
+				MsgExit( "Error parsing StashURL:" & $stashURL & @CRLF & "Resetting it again.")
+			EndIf
+		EndIf
+		
+		Local $sHost = $aStashURL[2], $sPort = $aStashURL[3]
 		If $sHost = "localhost" or $sHost = "127.0.0.1" Then
 			; All below is just to get the right PID for stash, in case two stashes are running at the same time.
 			$iStashPID = ProcessExists("stash-win.exe")
@@ -475,6 +489,7 @@ If @error <> $_WD_ERROR_Success Then
 	; c("last http result:" & $_WD_HTTPRESULT)
 	If $_WD_HTTPRESULT >= 500 Then
 		$WDErrChoice = MsgBox(275,"Session Creation Error!","The Web Driver has error in creating a web session." & @CRLF _
+			& "Details: " & @CRLF & GetLastHttpMessage() & @CRLF & @CRLF _
 			& "Do you want to update the web driver for $stashBrowser ?" & @CRLF _
 			& "If you choose Yes, it will do the force update." & @CRLF _
 			& "If you choose No, it will reset the browser settings, so you can choose another browser next time." & @CRLF _
@@ -496,7 +511,9 @@ If @error <> $_WD_ERROR_Success Then
 				EndSwitch
 				$iConsolePID = _WD_Startup()
 				if @error <> $_WD_ERROR_Success Then
-					BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad the web driver still cannot start.")
+					BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad the web driver still cannot start." & @CRLF _
+						 & "Detals:" & @CRLF _
+						 & GetLastHttpMessage() )
 				EndIf
 			case 7 ;NO
 				; Set the browser setting to empty so it will run the init dialog next time.
@@ -512,8 +529,7 @@ If @error <> $_WD_ERROR_Success Then
 		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "After cap error, still cannot start up web driver.")
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
-		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad it still doesn't work. Maybe the " & $stashBrowser &  " browser is frozen." _ 
-			& @crlf & "Please use task manager to close all browsers that are still running.")
+		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad it still doesn't work.")
 		
 	ElseIf $_WD_HTTPRESULT >= 400 Then
 		BrowserError( $_WD_HTTPRESULT,  @ScriptLineNumber, "Web client error.")	; Show error and exit
@@ -747,6 +763,12 @@ Exit
 #EndRegion Tray menu
 
 #Region Functions Region
+
+Func GetLastHttpMessage()
+	; Get the last messsage from WebDriver about the last HTTP Response
+	Local $oJSON = Json_Decode($_WD_HTTPRESPONSE)
+	Return Json_Get($oJSON, $_WD_JSON_Message)
+EndFunc
 
 Func MouseWheelClick($bReset = False)
 	; Add current tab to the play list.
@@ -1040,6 +1062,9 @@ Func AddToList($sList, $sItem, $sep = "|" )
 EndFunc
 
 Func StartBrowser()
+	If Not FileExists($gsWebDriverPath) Then 
+		DirCreate($gsWebDriverPath)
+	EndIf
 	Switch StringLower($stashBrowser)
 		Case "firefox"
 			SetupFirefox()
@@ -2311,7 +2336,7 @@ Func PlayCurrentScene()
 		EndIf
 	ElseIf $stashType = "Remote" Then
 		; Get the scene's stream as the "file"
-		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){path, paths{stream}}}"}'
+		$sQuery = '{"query": "{findScene(id:' & $aMatch[0] & '){paths{stream}}}"}'
 		c("scene query:" & $sQuery)
 
 		; This will query the graphql and get the path info
@@ -2438,21 +2463,20 @@ Func GetDefaultFFProfile()
 EndFunc
 
 Func SetupChrome()
-	Local $sChromeDriverPath = @AppDataDir & "\Webdriver"
-	If Not FileExists( $sChromeDriverPath & "\chromedriver.exe" ) Then
-		Local $bGood = _WD_UPdateDriver ("chrome",  $sChromeDriverPath , Default, True) ; Force update
+	If Not FileExists( $gsWebDriverPath & "\chromedriver.exe" ) Then
+		Local $bGood = _WD_UPdateDriver ("chrome",  $gsWebDriverPath , Default, True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting Chrome Driver", _
-			"There is an error getting the driver for Firefox. Maybe your Internet is down?" _
+			"There is an error getting the driver for Chrome. Maybe your Internet is down?" _
 				& @CRLF & "The program will try to get the driver again next time you launch it.",0)
 			Exit
 		EndIf
 	EndIf
 
-	_WD_Option('Driver', $sChromeDriverPath & '\chromedriver.exe')
+	_WD_Option('Driver', $gsWebDriverPath & '\chromedriver.exe')
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & $sChromeDriverPath & '\chrome.log"')
+	_WD_Option('DriverParams', '--verbose --log-path="' & $gsWebDriverPath & '\chrome.log"')
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
@@ -2506,9 +2530,9 @@ Func GetDefaultChromeProfile()
 EndFunc
 
 Func SetupEdge()
-	If Not FileExists(@AppDataDir & "\Webdriver\" & "msedgedriver.exe") Then
+	If Not FileExists($gsWebDriverPath & "\msedgedriver.exe") Then
 		Local $b64 = ( @CPUArch = "X64" )
-		Local $bGood = _WD_UPdateDriver ("msedge", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		Local $bGood = _WD_UPdateDriver ("msedge", $gsWebDriverPath , $b64 , True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting MS Edge Driver", _
 			"There is an error getting the driver for MS Edge. Maybe your Internet is down?" _
@@ -2518,10 +2542,10 @@ Func SetupEdge()
 	EndIf
 
 
-	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'msedgedriver.exe')
+	_WD_Option('Driver', $gsWebDriverPath & "\msedgedriver.exe")
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\msedge.log")
+	_WD_Option('DriverParams', '--verbose --log-path="' & $gsWebDriverPath & '\msedge.log"')
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
@@ -2563,9 +2587,9 @@ Func GetDefaultEdgeProfile()
 EndFunc
 
 Func SetupOpera()
-	If Not FileExists(@AppDataDir & "\Webdriver\" & "operadriver.exe") Then
+	If Not FileExists( $gsWebDriverPath & "\operadriver.exe") Then
 		Local $b64 = ( @CPUArch = "X64" )
-		Local $bGood = _WD_UPdateDriver ("opera", @AppDataDir & "\Webdriver" , $b64 , True) ; Force update
+		Local $bGood = _WD_UPdateDriver ("opera", $gsWebDriverPath , $b64 , True) ; Force update
 		If Not $bGood Then
 			MsgBox(48,"Error Getting Opera Driver", _
 			"There is an error getting the driver for Opera browser. Maybe your Internet is down?" _
@@ -2575,10 +2599,10 @@ Func SetupOpera()
 	EndIf
 
 
-	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'operadriver.exe')
+	_WD_Option('Driver', $gsWebDriverPath & '\operadriver.exe')
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & @AppDataDir & "\Webdriver\opera.log")
+	_WD_Option('DriverParams', '--verbose --log-path="' & $gsWebDriverPath & "\opera.log")
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
@@ -2612,7 +2636,9 @@ EndFunc
 
 Func BrowserError($code, $sLine, $sDetails = "")
 	MsgBox(48,"Oops !","Something wrong with the browser's driver. Cannot continue." _
-		 & @CRLF & "WinHTTP status code:" & $code & @CRLF & "Script Line:" & $sLine & @CRLF & $sDetails)
+		 & @CRLF & "WinHTTP status code:" & $code & @CRLF & "Script Line:" & $sLine & @CRLF & $sDetails & @CRLF _
+		 & "Last Message From WebDrive:" &  @CRLF _
+		 & GetLastHttpMessage() )
 	ExitScript()
 EndFunc
 
