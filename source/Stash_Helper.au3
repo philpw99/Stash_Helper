@@ -31,7 +31,7 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.4.11"
+Global Const $currentVersion = "v2.4.12"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
@@ -1119,10 +1119,6 @@ EndFunc
 Func InitCSSArray(ByRef $a)
 	; Global $trayCSSItems[0][4]
 	; Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE
-	AddCSStoArray($a, "Scene - Fit More Thumbnails on Each Row.", ".grid { padding: 0px !important; }" )
-
-	AddCSStoArray($a,  "Scene - Longer Studio Text in Scene Cards", _
-		".scene-studio-overlay { font-weight: 600 !important; opacity: 1 !important; width: 60% !important; text-overflow: ellipsis !important;}" )
 
 	AddCSStoArray($a, "Scene - Hide Scene Specs from Scene Cards", ".scene-specs-overlay{display: none;}" )
 
@@ -1131,52 +1127,24 @@ Func InitCSSArray(ByRef $a)
 	AddCSStoArray($a, "Scene - Tags use less width", ".bs-popover-bottom{max-width: 500px}" )
 
 	AddCSStoArray($a, "Scene - Swap Studio and Specs in Scene Cards", _
-		".scene-studio-overlay{bottom: 1rem; right: 0.7rem; height: inherit; top: inherit;}" & @LF _
+		".studio-overlay{bottom: 1rem; right: 0.7rem; height: inherit; top: inherit;}" & @LF _
 		& ".scene-specs-overlay { right: 0.7rem; top: 0.7rem; bottom: inherit;}" )
-
-	AddCSStoArray($a, "Scene - Adjust Mouse Over Behavior in Wall Mode", _
-		"@media (min-width: 576px) { .wall-item:hover::before { opacity: 0; }" & @LF _
-		& ".wall-item:hover .wall-item-container { transform: scale(1.5); }}" )
 
 	AddCSStoArray($a, "Scene - Disable Zoom on Hover in Wall Mode", _
 		".wall-item:hover .wall-item-container {transform: none;} " & @LF _
 		& ".wall-item:before { opacity: 0 !important;}" )
 
-	AddCSStoArray($a, "Scene - Hide the Scene Scrubber", ".scrubber-wrapper { display: none;}" )
-
-	AddCSStoArray($a, "Performer - Show Entire Performer's Image", ".performer.image { background-size: contain !important;}" )
-
-	AddCSStoArray($a, "Performer - Larger Image for desktop", _
-		".performer-image-container{ flex: 0 0 50%; max-width: 50%;}" & @LF _
-		& ".col-md-8 {flex: 0 0 50%; max-width: 50%;}" )
-
-	AddCSStoArray($a, "Performer - Larger Images in performers list", ".performer-card-image{ height: 45rem; min-width: 20rem;}" )
-
-	AddCSStoArray($a, "Performer - Move Edit Buttons to the Top", _
-		"form#performer-edit {display: flex; flex-direction: column;}" & @LF _
-		& "#performer-edit > .row { order: 1;}" & @LF _
-		& "#performer-edit > .row:last-child { order: 0; margin-bottom: 1rem;}" )
-
-	AddCSStoArray($a, "Gallery - Grid View for Galleries", _
-		".col.col-sm-6.mx-auto.table .d-none.d-sm-block { display: none !important;}" & @LF _
-		& ".col.col-sm-6.mx-auto.table .w-100.w-sm-auto { width: 175px !important; background-color: rgba(0, 0, 0, .45); box-shadow: 0 0 2px rgba(0, 0, 0, .35);}" & @LF _
-		& ".col.col-sm-6.mx-auto.table tr { display: inline-table;}" )
+	AddCSStoArray($a, "Performer - Show Larger Performer's Image", "#performer-page .detail-header-image img { max-width: 30rem;}" )
 
 	AddCSStoArray($a, "Images - Disable Lightbox Animation", ".Lightbox-carousel { transition: none;}" )
 
-	AddCSStoArray($a, "Images - Don't Crop Preview Thumbnails", ".flexbin > * > img { object-fit: inherit; max-width: none; min-width: initial;}" )
-
 	AddCSStoArray($a, "Movies - Better Layout for Desktops 1 - Regular Posters", _
-		".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex: 0 0 70%; max-width: 70%}" & @LF _
-		& ".col-xl-8.col-lg-6{ flex: 0 0 30%; max-width: 30% }" & @LF _
-		& ".movie-images{  flex-wrap: wrap}" & @LF _
-		& ".movie-image-container { flex: 0 0 500px}" )
+		"#movie-page .detail-header-image { max-width: 80%;}" & @LF _
+		& "#movie-page .detail-header-image .movie-images img {max-width:50rem;}" )
 
 	AddCSStoArray($a, "Movies - Better Layout for Desktops 2 - Larger Posters", _
-		".movie-details.mb-3.col.col-xl-4.col-lg-6 { flex:0 0 70%; max-width: 70%}" & @LF _
-		& ".col-xl-8.col-lg-6{ flex: 0 0 30%; max-width: 30% }" & @LF _
-		& ".movie-images{ flex-direction: column; flex-wrap: wrap}" & @LF _
-		& ".movie-image-container { flex: 1 1 700px}" )
+		"#movie-page .detail-header-image { max-width: 80%;}" & @LF _
+		& "#movie-page .detail-header-image .movie-images img {max-width:100rem;}" )
 
 	AddCSStoArray($a, "Global - Hide the Donation Button", ".btn-primary.btn.donate.minimal { display: none;}" )
 
@@ -1189,8 +1157,6 @@ Func InitCSSArray(ByRef $a)
 		& ".scene-card-video {filter: blur(13px);}" & @LF _
 		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
 		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }" )
-
-
 
 	$sCSS = GetCSSstring()
 	If @error Then Return SetError(2)
