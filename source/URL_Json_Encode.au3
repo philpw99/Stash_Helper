@@ -77,7 +77,7 @@ EndFunc
 Func _JsonStringEscape($InputStr)
     $StrLength = StringLen($InputStr)
     Local $EncodedString = ""
-	Local $sExemptChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !#$%&'()-_.+*,;?:@=<>{}^`~"
+	Local $sExemptChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !#$%&'()-_.+*,;?:@=<>{}[]^`~"
     For $i = 1 To $StrLength
         Local $sChar = StringMid($InputStr, $i, 1)
         If StringInStr( $sExemptChars, $sChar, 1) Then
@@ -99,7 +99,7 @@ Func _JsonStringEscape($InputStr)
 				Case ChrW(9)	; Tab
 					$EncodedString &= "\t"
 				Case Else 
-					$EncodedString &= '\u' & StringToBinary($sChar, 3)	; Always Big Endian if using \uXXXX
+					$EncodedString &= '\u' & Hex( StringToBinary($sChar, 3), 4 )	; Always Big Endian if using \uXXXX
 			EndSwitch
         EndIf
     Next

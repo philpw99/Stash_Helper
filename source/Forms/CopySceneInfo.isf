@@ -1,0 +1,455 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GuiListView.au3>
+#include <EditConstants.au3>
+
+Func _guiCopySceneInfo()
+	Local $mguiCopySceneInfo[]
+	$guiCopySceneInfo = GUICreate("Copy Scene Information From another Scene",923,1200,-1,-1,BitOr($WS_SIZEBOX,$WS_SYSMENU,$WS_DLGFRAME,$WS_BORDER),$WS_EX_TOPMOST)
+	$mguiCopySceneInfo["guiCopySceneInfo"] = $guiCopySceneInfo
+	GUICtrlCreateLabel("1. Find the scene ID you want to copy from."&@crlf&"For example, if a scene's URL is 'http://localhost:9999/scenes/123', then the scene ID is '123'.",40,110,866,117,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,550)
+	GUICtrlCreateLabel("Scene ID",101,234,121,41,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,546)
+	$inputSceneID = GUICtrlCreateInput("1",237,230,215,45,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,802)
+	$mguiCopySceneInfo["inputSceneID"] = $inputSceneID
+	$lbCurrentSceneID = GUICtrlCreateLabel("Current Scene ID:",40,9,851,43,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,550)
+	$mguiCopySceneInfo["lbCurrentSceneID"] = $lbCurrentSceneID
+	$lbCurrentTitle = GUICtrlCreateLabel("Current Title:",40,55,851,43,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,550)
+	$mguiCopySceneInfo["lbCurrentTitle"] = $lbCurrentTitle
+	GUICtrlCreateLabel("2. Choose the info you want to copy over.",46,300,791,46,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,802)
+	$lvSceneValues = GUICtrlCreatelistview("#|Property|Value",50,360,798,407,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,550)
+	$mguiCopySceneInfo["lvSceneValues"] = $lvSceneValues
+	GUICtrlCreateCheckbox("Cover",58,790,164,40,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,34)
+	$imgCover = GUICtrlCreatePic("",58,843,514,306,-1,$WS_EX_STATICEDGE)
+	GUICtrlSetResizing(-1,102)
+	$mguiCopySceneInfo["imgCover"] = $imgCover
+	$btnOK = GUICtrlCreateButton("OK",640,997,208,61,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Copy the info you choose to the current scene.")
+	GUICtrlSetResizing(-1,836)
+	$mguiCopySceneInfo["btnOK"] = $btnOK
+	$btnCancel = GUICtrlCreateButton("Cancel",640,1088,208,61,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,836)
+	$mguiCopySceneInfo["btnCancel"] = $btnCancel
+	$btnGetInfo = GUICtrlCreateButton("Get Info",480,227,184,43,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,802)
+	$mguiCopySceneInfo["btnGetInfo"] = $btnGetInfo
+	return $mguiCopySceneInfo
+EndFunc
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Copy Scene Information From another Scene
+breite=923
+hoehe=1200
+style=$WS_SIZEBOX+$WS_SYSMENU+$WS_DLGFRAME+$WS_BORDER
+exstyle=$WS_EX_TOPMOST
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$guiCopySceneInfo
+parent=
+code=
+codebeforegui=
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+isf_no_includes=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=true
+gui_code_in_function_name=_guiCopySceneInfo()
+gui_code_in_function_mode=map
+gui_code_in_function_map_name=$mguiCopySceneInfo
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x000B2BE0]
+type=label
+handle=445
+locked=0
+resize=550
+x=40
+y=110
+width=866
+height=117
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=1. Find the scene ID you want to copy from.[BREAK]For example, if a scene's URL is 'http://localhost:9999/scenes/123', then the scene ID is '123'.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00032BDE]
+type=label
+handle=446
+locked=0
+resize=546
+x=101
+y=234
+width=121
+height=41
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Scene ID
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=2
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00022BDC]
+type=input
+handle=447
+locked=0
+resize=802
+x=237
+y=230
+width=215
+height=45
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$inputSceneID
+text=1
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+order=3
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00022C18]
+type=label
+handle=448
+locked=0
+resize=550
+x=40
+y=9
+width=851
+height=43
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$lbCurrentSceneID
+text=Current Scene ID:
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=4
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00022C1A]
+type=label
+handle=449
+locked=0
+resize=550
+x=40
+y=55
+width=851
+height=43
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$lbCurrentTitle
+text=Current Title:
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=5
+[0x00092C1C]
+type=label
+handle=450
+locked=0
+resize=802
+x=46
+y=300
+width=791
+height=46
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=2. Choose the info you want to copy over.
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=-2
+code=
+order=6
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00D7099A]
+type=listview
+handle=451
+locked=0
+resize=550
+x=50
+y=360
+width=798
+height=407
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$lvSceneValues
+text=#|Property|Value
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+order=7
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00AE0784]
+type=checkbox
+handle=452
+locked=0
+resize=34
+x=58
+y=790
+width=164
+height=40
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Cover
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=8
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00291658]
+type=image
+handle=453
+locked=0
+resize=102
+x=58
+y=843
+width=514
+height=306
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$imgCover
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_STATICEDGE
+bgcolour=0xC0C0C0
+code=
+order=9
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00211ED0]
+type=button
+handle=454
+locked=0
+resize=836
+x=640
+y=997
+width=208
+height=61
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Copy the info you choose to the current scene.
+bgimage=
+textcolour=0x000000
+id=$btnOK
+text=OK
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=10
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x004E2098]
+type=button
+handle=455
+locked=0
+resize=836
+x=640
+y=1088
+width=208
+height=61
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnCancel
+text=Cancel
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=11
+[0x010D065A]
+type=button
+handle=456
+locked=0
+resize=802
+x=480
+y=227
+width=184
+height=43
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnGetInfo
+text=Get Info
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=12
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+#ce

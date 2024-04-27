@@ -1,5 +1,5 @@
 ; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
-Local $guiMetroPopup = GUICreate( "MetroPopup", 433, 337, $iGuiX, $iGuiY, -2143289216, 9 )
+Local $guiMetroPopup = GUICreate( "MetroPopup", 436, 346, $iGuiX, $iGuiY, -2143289216, 9 )
 GUISetBkColor( 0x808080 )
 Local $btnMetroPlay = GUICtrlCreateButton("Play In External Player",3,0,426,48,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
@@ -26,11 +26,11 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
 GUICtrlSetBkColor(-1,"0x202B33")
 GUICtrlSetTip(-1,"Create a movie from this scene. Or create movies.")
-Local $btnMetroFetchInfo = GUICtrlCreateButton("Fetch Scene Info from StashDB",3,240,426,48,-1,-1)
+Local $btnMetroCopyScene = GUICtrlCreateButton("Copy Info From Another Scene",3,240,426,48,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
 GUICtrlSetBkColor(-1,"0x202B33")
-GUICtrlSetTip(-1,"Retrieve Scene information from StashDB. The scene need to have a Phash ID.")
+GUICtrlSetTip(-1,"Copy Scene information from another scene by ID and apply to the current scene.")
 Local $btnMetroCancel = GUICtrlCreateButton("Cancel",3,288,426,48,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
@@ -44,8 +44,8 @@ GUICtrlSetTip(-1,"Close this menu.")
 Handle_deklaration=local
 Handle_deklaration_const=false
 title=MetroPopup
-breite=433
-hoehe=337
+breite=436
+hoehe=346
 style=$WS_POPUP+$WS_DLGFRAME+$DS_MODALFRAME
 exstyle=$WS_EX_TOPMOST+$WS_EX_DLGMODALFRAME
 bgcolour=0x444444
@@ -59,10 +59,13 @@ ypos=0
 center_gui=false
 title_textmode=normal
 isf_include_once=false
+isf_no_includes=false
 only_controls_in_isf=true
 const_modus=numbers
 gui_code_in_function=false
 gui_code_in_function_name=
+gui_code_in_function_mode=gui
+gui_code_in_function_map_name=
 gui_event_close=
 gui_event_minimize=
 gui_event_restore=
@@ -76,9 +79,9 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x0012285A]
+[0x000A27EE]
 type=button
-handle=433
+handle=445
 locked=0
 resize=
 x=3
@@ -105,9 +108,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000B2856]
+[0x000227EC]
 type=button
-handle=434
+handle=446
 locked=0
 resize=
 x=3
@@ -134,9 +137,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=2
-[0x000A2854]
+[0x00022828]
 type=button
-handle=435
+handle=447
 locked=0
 resize=
 x=3
@@ -163,9 +166,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=3
-[0x0009284E]
+[0x0002282A]
 type=button
-handle=436
+handle=448
 locked=0
 resize=
 x=3
@@ -192,9 +195,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x0008284A]
+[0x0009282C]
 type=button
-handle=437
+handle=449
 locked=0
 resize=
 x=3
@@ -221,9 +224,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
-[0x00082858]
+[0x000A1F2A]
 type=button
-handle=438
+handle=450
 locked=0
 resize=
 x=3
@@ -235,11 +238,11 @@ font=Tahoma
 fontsize=12
 fontstyle=400
 fontattribute=0
-tooltip=Retrieve Scene information from StashDB. The scene need to have a Phash ID.
+tooltip=Copy Scene information from another scene by ID and apply to the current scene.
 bgimage=
 textcolour=0xFFFFFF
-id=$btnMetroFetchInfo
-text=Fetch Scene Info from StashDB
+id=$btnMetroCopyScene
+text=Copy Info From Another Scene
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -250,9 +253,9 @@ iconindex=
 iconlarge=0
 textmode=text
 order=6
-[0x000D28B6]
+[0x000E1E58]
 type=button
-handle=439
+handle=451
 locked=0
 resize=
 x=3

@@ -215,6 +215,7 @@ EndIf
 #include <Forms\CustomizeForm.au3>
 #include <Forms\ScrapersForm.au3>
 #include <Forms\SceneToMovieForm.au3>
+#include <Forms\CopySceneInfo.au3>
 #include <Forms\ManagePlayListForm.au3>
 #include <Forms\MergePerformers.au3>
 ; Seems special scraper is no longer needed when visible CDP works much better.
@@ -1932,15 +1933,13 @@ Func TimeConvertBack($str)
 EndFunc
 
 Func GetNumber($sURL, $sCategory)
-	$iPos1 = StringInStr($sURL, "/" & $sCategory & "/", 2) + StringLen($sCategory) +2  ; beginning of the movie number
-	$iPos2 = StringInStr($sURL, "?", 2) ; the ? position
-	If  $iPos2 = 0 Then
-		; with no query mark ?
-		return  StringMid($sURL, $iPos1)
-	Else
-		; with query mark ?
-		return  StringMid($sURL, $iPos1, $iPos2-$iPos1)
-	EndIf
+	Local $iPos1 = StringInStr($sURL, "/" & $sCategory & "/", 2)
+	If $iPos1 = 0 Then Return SetError(1)
+	Local $str =  StringMid($sURL, $iPos1 + StringLen($sCategory) + 2 ) ; rest of the url after /
+	Local $aMatch = StringRegExp( $str, "^\d+", $STR_REGEXPARRAYMATCH )
+	if @error Then Return SetError(2)
+	
+	Return $aMatch[0]
 	; like "589" in string mode.
 EndFunc
 

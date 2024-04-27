@@ -8,7 +8,7 @@ Func MetroPopUpMenu()
 	Local $iGuiX = $aPos[0], $iGuiY = $aPos[1]
 	#include "MetroPopup.isf"
 	Local $aButtonIDs = [ $btnMetroPlay, $btnMetroAddToList, $btnMetroSendList, _
-						$btnMetroEditList, $btnMetroCreateMovie, $btnMetroFetchInfo, $btnMetroCancel]
+						$btnMetroEditList, $btnMetroCreateMovie, $btnMetroCopyScene, $btnMetroCancel]
 	GUISetIcon("helper2.ico")
 	GUISetState()
 	While True 
@@ -79,10 +79,24 @@ Func MetroPopUpMenu()
 							MsgBox(262192,"Not supported","The current category: " & $aCatNo[1] & " is not supported.",0)
 							ContinueLoop 
 					EndIf 
-				EndIf				
-			Case $btnMetroFetchInfo
-				MsgBox(0, "In progress...", "Working on this feature.", 10)
-				ExitLoop 
+				EndIf
+			Case $btnMetroCopyScene
+				$sCatNo = GetCurrentTabCategoryAndNumber()
+				If StringInStr($sCatNo, "-") = 0 Then 
+					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene.")
+				Else
+					$aCatNo = StringSplit($sCatNo, "-")
+					If $aCatNo[0] = 2 And $aCatNo[1] = "scenes" And StringIsDigit( $aCatNo[2] ) Then 
+							GUISetState( @SW_HIDE, $guiMetroPopup )
+							CopySceneInfo()
+							ExitLoop 
+					Else
+							c( "$sCatNo:" & $sCatNo)
+							MsgBox(262192,"Not supported","The current category: " & $aCatNo[1] & " is not supported.",0)
+							ContinueLoop 
+					EndIf 
+				EndIf
+
 		EndSwitch
 		If Not WinActive($guiMetroPopup) Then WinActivate($guiMetroPopup)
 		MetroHover( $guiMetroPopup )
@@ -91,6 +105,9 @@ Func MetroPopUpMenu()
 	GUIDelete($guiMetroPopup)
 	MetroHover( $guiMetroPopup, True) ; Reset hover 
 EndFunc
+
+
+
 
 ; Set the hover effect for the metro buttons.
 ; $aButtonIDs are the array of button control ids.
