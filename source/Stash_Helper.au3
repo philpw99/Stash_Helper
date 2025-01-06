@@ -2368,8 +2368,7 @@ Func SetupFirefox()
 	EndIf
 
 	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'geckodriver.exe')
-	Local $iPort =  _WD_GetFreePort( 4444, 4500 )
-	if @error Then Return SetError( @error, @extended, 0)
+	Local $iPort = 4444
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', $iPort )
 	_WD_Option('DriverParams', '--port=' &  $iPort & ' --log trace')
@@ -2471,7 +2470,7 @@ Func SetupChrome()
 
 	_WD_Option('Driver', $gsWebDriverPath & '\chromedriver.exe')
 	_WD_Option('DriverClose', True)
-	Local $iPort =  _WD_GetFreePort( 5555, 5600 )
+	Local $iPort =  5555
 	_WD_Option('Port', $iPort)
 	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\chrome.log"')
 	
@@ -2557,7 +2556,7 @@ Func SetupEdge()
 	EndIf
 
 	_WD_Option('Driver', $gsWebDriverPath & "\msedgedriver.exe")
-	Local $iPort =  _WD_GetFreePort( 9515, 9900 )
+	Local $iPort = 9515
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', $iPort)
 	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\msedge.log"')
