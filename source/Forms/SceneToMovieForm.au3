@@ -227,12 +227,13 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	ConsoleWrite("check state:" & GUICtrlGetState($chkCover))
 	Local $bGetCover = ( GUICtrlRead($chkCover) = $GUI_CHECKED )
 	; c("get cover?" & $bGetCover)
-	Local $input = ""
-
-	If Not $bGetTitle Then 
-		; Title was not checked, get the title from user.
+	Local $input = "", $sTitle = $bGetTitle ? $mInfo.Item("Title") : ""
+	If $sTitle = "" Then 
+		; Title is empty, get the title from user.
+		$sTitle = $mInfo.Item("BaseName")	; Get the filename as suggested title.
 		While $input = ""
-			$input = InputBox("Must have a name", "The movie must have a title.", $mInfo.Item("Title") )
+			$input = InputBox("Must have a name", "The movie must have a title.", $sTitle )
+			if @error =  1 Then Return SetError(1)  ; Cancelled.
 		WEnd
 		$mInfo.Item("Title") = $input
 	EndIf
@@ -289,7 +290,7 @@ Func GetSceneInfo($nSceneNo)
 	; clear out the dictionary object
 	$mInfo.RemoveAll
 	
-	Local $sQuery = '{"query": "{findScene(id:' & $nSceneNo & '){title,details,urls,date,paths{screenshot},files{duration},studio{id,name}}}" }'
+	Local $sQuery = '{"query": "{findScene(id:' & $nSceneNo & '){title,details,urls,date,paths{screenshot},files{basename,duration},studio{id,name}}}" }'
 	Local $sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -305,9 +306,12 @@ Func GetSceneInfo($nSceneNo)
 	$mInfo.Add("SceneID", $nSceneNo)
 	$mInfo.Add("Title", $oData.Item("title") )
 	$mInfo.Add("Details", $oData.Item("details") )
-	$mInfo.Add("URL", $oData.Item("urls")[0] ) ; Since movie has only one URL, use the first one.
+	Local $aURL = $oData.Item("urls")
+	$mInfo.Add("URL", UBound($aURL)=0 ? "": $aURL[0] ); Since movie has only one URL, use the first one, or empty
 	$mInfo.Add("Date", $oData.Item("date") )
-	$mInfo.Add("Duration", Floor( $oData.Item("files")[0].Item("duration") ) ) ; duration in seconds.
+	Local $aFiles = $oData.Item("files")
+	$mInfo.Add("BaseName", UBound($aFiles) = 0 ? "" : $aFiles[0].Item("basename") )
+	$mInfo.Add("Duration", UBound($aFiles) = 0 ? 0 : Floor($aFiles[0].Item("duration") ) ) ; duration in seconds.
 	; Special handling with studio
 	If $oData.Item("studio") = Null Then
 		$mInfo.Add("StudioID", Null)

@@ -2035,12 +2035,13 @@ EndFunc   ;==>_WD_IsLatestRelease
 ; #FUNCTION# ====================================================================================================================
 ; Name ..........: _WD_UpdateDriver
 ; Description ...: Replace web driver with newer version, if available.
-; Syntax ........: _WD_UpdateDriver($sBrowser[, $sInstallDir = Default[, $bFlag64 = Default[, $bForce = Default[, $bDowngrade = Default]]]])
-; Parameters ....: $sBrowser    - Browser name or full path to browser executable
-;                  $sInstallDir - [optional] Install directory. Default is @ScriptDir
-;                  $bFlag64     - [optional] Install 64bit version? Default is current driver architecture or False
-;                  $bForce      - [optional] Force update? Default is False
-;                  $bDowngrade  - [optional] Downgrade to match browser version if needed? Default is False
+; Syntax ........: _WD_UpdateDriver($sBrowser[, $sInstallDir = Default[, $bFlag64 = Default[, $bForce = Default[, $bDowngrade = Default[, $sBrowserVersion = Default]]]]])
+; Parameters ....: $sBrowser        - Browser name or full path to browser executable
+;                  $sInstallDir     - [optional] Install directory. Default is @ScriptDir
+;                  $bFlag64         - [optional] Install 64bit version? Default is current driver architecture or False
+;                  $bForce          - [optional] Force update? Default is False
+;                  $bDowngrade      - [optional] Downgrade to match browser version if needed? Default is False
+;                  $sBrowserVersion - [optional] Force desired browser version
 ; Return values .: Success - True (Driver was updated).
 ;                  Failure - False (Driver was not updated) and sets @error to one of the following values:
 ;                  - $_WD_ERROR_FileIssue
@@ -2055,13 +2056,14 @@ EndFunc   ;==>_WD_IsLatestRelease
 ; Remarks .......: When $bForce = Null, then the function will check for an updated webdriver without actually performing the update.
 ;                  This can be used in conjunction with $bDowngrade to determine if the existing webdriver is too new for the browser.
 ;                  In this scenario, the return value indicates if an update / downgrade is available.
+;                  Using $sBrowserVersion you can provide desired browser version from computer not connected to internet saved earlier by _WD_GetBrowserVersion()
 ; Related .......: _WD_GetBrowserVersion, _WD_GetWebDriverVersion
 ; Link ..........:
 ; Example .......: Local $bResult = _WD_UpdateDriver('FireFox')
 ; ===============================================================================================================================
-Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bForce = Default, $bDowngrade = Default)
+Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bForce = Default, $bDowngrade = Default, $sBrowserVersion = Default)
 	Local Const $sFuncName = "_WD_UpdateDriver"
-	Local $iErr = $_WD_ERROR_Success, $iExt = 0, $sDriverEXE, $sBrowserVersion, $bResult = False
+	Local $iErr = $_WD_ERROR_Success, $iExt = 0, $sDriverEXE, $bResult = False
 	Local $sDriverCurrent, $sDriverLatest, $sURLNewDriver
 	Local $sTempFile
 	Local $bKeepArch = False
@@ -2085,9 +2087,11 @@ Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bF
 		Local $WDDebugSave = $_WD_DEBUG
 		If $_WD_DEBUG <> $_WD_DEBUG_Full Then $_WD_DEBUG = $_WD_DEBUG_None
 
-		$sBrowserVersion = _WD_GetBrowserVersion($sBrowser)
-		$iErr = @error
-		$iExt = @extended
+		If $sBrowserVersion = Default Then
+			$sBrowserVersion = _WD_GetBrowserVersion($sBrowser)
+			$iErr = @error
+			$iExt = @extended
+		EndIf
 
 		If $iErr = $_WD_ERROR_Success Then
 			Local $iIndex = @extended
@@ -2151,7 +2155,7 @@ Func _WD_UpdateDriver($sBrowser, $sInstallDir = Default, $bFlag64 = Default, $bF
 		$_WD_DEBUG = $WDDebugSave
 	EndIf
 
-	Local $sMessage = 'DriverCurrent = ' & $sDriverCurrent & ' : DriverLatest = ' & $sDriverLatest
+	Local $sMessage = 'DriverCurrent = ' & $sDriverCurrent & ' : DriverLatest = ' & $sDriverLatest & ' : $sInstallDir = ' & $sInstallDir
 	Return SetError(__WD_Error($sFuncName, $iErr, $sMessage, $iExt), $iExt, $bResult)
 EndFunc   ;==>_WD_UpdateDriver
 
@@ -2308,7 +2312,6 @@ EndFunc   ;==>_WD_GetBrowserVersion
 ; Parameters ....: $sBrowser - Name of browser
 ; Return values .: Success - Full path to browser executable and sets @extended to index of $_WD_SupportedBrowsers
 ;                  Failure - "" and sets @error to one of the following values:
-;                  - $_WD_ERROR_InvalidValue
 ;                  - $_WD_ERROR_NotSupported
 ;                  - $_WD_ERROR_NotFound
 ; Author ........: Danp2
@@ -2914,7 +2917,7 @@ Func _WD_GetTable($sSession, $sStrategy, $sSelector, $sRowsSelector = Default, $
 		; https://stackoverflow.com/questions/64842157
 		Local $sScript = "return [...arguments[0].querySelectorAll(arguments[1])]" & _
 				".map(row => [...row.querySelectorAll(arguments[2])]" & _
-				".map(cell => cell.textContent));"
+				".map(cell => cell.textContent.trim()));"
 		Local $sArgs = __WD_JsonElement($sElement) & ', "' & $sRowsSelector & '", "' & $sColsSelector & '"'
 		Local $sResult = _WD_ExecuteScript($sSession, $sScript, $sArgs)
 		$iErr = @error
@@ -3222,6 +3225,12 @@ Func _WD_JsonActionKey($sType, $sKey, $iSuffix = Default)
 	Json_Put($vData, '.actions[0].type', $sType)
 	Json_Put($vData, '.actions[0].value', $sKey)
 	Local $sJSON = Json_Encode($vData)
+
+	; Don't encode backslash of Unicode character
+	If StringLeft($sKey, 2) = '\u' Then
+		$sJSON = StringReplace($sJSON, "\\u", "\u")
+	EndIf
+
 	Return SetError(__WD_Error($sFuncName, 0, $sJSON), 0, $sJSON)
 EndFunc   ;==>_WD_JsonActionKey
 
@@ -3478,9 +3487,9 @@ EndFunc   ;==>__WD_Base64Decode
 
 ; #INTERNAL_USE_ONLY# ===========================================================================================================
 ; Name ..........: __WD_ErrHnd
-; Description ...: Dummy error handler
-; Syntax ........: __WD_ErrHnd()
-; Parameters ....: None
+; Description ...: COM Error handler
+; Syntax ........: __WD_ErrHnd($oError)
+; Parameters ....: $oError              - Error object.
 ; Return values .: None
 ; Author ........: mLipok
 ; Modified ......:
@@ -3489,8 +3498,8 @@ EndFunc   ;==>__WD_Base64Decode
 ; Link ..........:
 ; Example .......: No
 ; ===============================================================================================================================
-Func __WD_ErrHnd()
-
+Func __WD_ErrHnd($oError)
+	__WD_Error($oError.source, $_WD_ERROR_GeneralError, " err.number: " & $oError.number & " err.windescription: " & $oError.windescription & " err.description is: " & $oError.description, $oError.scriptline)
 EndFunc   ;==>__WD_ErrHnd
 
 ; #INTERNAL_USE_ONLY# ===========================================================================================================

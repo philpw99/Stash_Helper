@@ -3,13 +3,15 @@
 #include "WinHttp_WebSocket.au3" ; https://github.com/Danp2/autoit-websocket
 #include <APIErrorsConstants.au3>
 
+#Tidy_Parameters=/tcb=-1
+
 #Region Copyright
 #cs
 	* WD_CDP.au3
 	*
 	* MIT License
 	*
-	* Copyright (c) 2022 Dan Pollak
+	* Copyright (c) 2023 Dan Pollak
 	*
 	* Permission is hereby granted, free of charge, to any person obtaining a copy
 	* of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +47,9 @@
 ; Modified ......: Danp2
 ; Remarks .......: The original version of this function is specific to ChromeDriver, you can execute "Chrome DevTools Protocol"
 ;                  commands by using this function, for all available commands see: https://chromedevtools.github.io/devtools-protocol/tot/
-;+
+;
 ;                  The revised version uses websockets to provide CDP access for all compatible browsers. However, it
-;                  will only with an OS that natively supports WebSockets (Windows 8, Windows Server 2012, or newer)
+;                  will only work with an OS that natively supports WebSockets (Windows 8, Windows Server 2012, or newer)
 ; Related .......: _WD_LastHTTPResult
 ; Link ..........:
 ; Example .......: No
@@ -234,7 +236,7 @@ Func _WD_CDPExecuteCommand($sSession, $sCommand, $oParams, $sWebSocketURL = Defa
 			$sMessage &= " ResponseText=" & $sRecv
 		EndIf
 	EndIf
-	Return SetError(__WD_Error($sFuncName, $_WD_ERROR_Success, $sMessage), 0, $sRecv)		
+	Return SetError(__WD_Error($sFuncName, $_WD_ERROR_Success, $sMessage), 0, $sRecv)
 EndFunc   ;==>_WD_CDPExecuteCommand
 
 ; #FUNCTION# ====================================================================================================================
@@ -245,7 +247,7 @@ EndFunc   ;==>_WD_CDPExecuteCommand
 ;                  $sOption  - one of the following:
 ;                  |DEBUGGER - Returns the Websocket target originally returned by _WD_CreateSession
 ;                  |LIST - Lists websocket targets
-;                  |VERSION - Reurns an array containing version metadata
+;                  |VERSION - Returns an array containing version metadata
 ; Return values .: Success - The returned value depends on the selected $sOption.
 ;                  |DEBUGGER: Websocket target originally returned by _WD_CreateSession
 ;                  |LIST: Array containing websocket targets
@@ -339,5 +341,5 @@ Func _WD_CDPGetSettings($sSession, $sOption)
 	If $iErr Then
 		Return SetError(__WD_Error($sFuncName, $iErr), 0, "")
 	EndIf
-	Return SetError(__WD_Error($sFuncName, $_WD_ERROR_Success), 0, $vResult)	
+	Return SetError(__WD_Error($sFuncName, $_WD_ERROR_Success), 0, $vResult)
 EndFunc   ;==>_WD_CDPGetSettings

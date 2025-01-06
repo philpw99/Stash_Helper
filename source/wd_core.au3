@@ -71,7 +71,7 @@
 #EndRegion Many thanks to:
 
 #Region Global Constants
-Global Const $__WDVERSION = "1.3.1"
+Global Const $__WDVERSION = "1.4.0"
 
 Global Const $_WD_ELEMENT_ID = "element-6066-11e4-a52e-4f735466cecf"
 Global Const $_WD_SHADOW_ID = "shadow-6066-11e4-a52e-4f735466cecf"
@@ -500,7 +500,7 @@ EndFunc   ;==>_WD_Navigate
 ;                  |FORWARD - Causes the browser to traverse one step forwards in the joint session history of the current top-level browsing context
 ;                  |REFRESH - Causes the browser to reload the page in current top-level browsing context
 ;                  |TITLE   - Returns the document title of the current top-level browsing context
-;                  |URL     - Protocol binding to load the URL of the browser. If a baseUrl is specified in the config, it will be prepended to the url parameter. Calling this function with the same url as last time will trigger a page reload
+;                  |URL     - Returns the URL of the current top-level browsing context
 ;                  $sOption  - [optional] a JSON string of actions to perform. Default is ""
 ; Return values .: Success - Return value from web driver (could be an empty string).
 ;                  Failure - "" (empty string) and sets @error to one of the following values:
@@ -573,6 +573,7 @@ EndFunc   ;==>_WD_Action
 ;                  |PARENT     - Switch to parent frame
 ;                  |PRINT      - Generate PDF representation of the paginated document
 ;                  |RECT       - Get or set the window's size & position
+;                  |RESTORE    - Restore window size
 ;                  |SCREENSHOT - Take screenshot of window
 ;                  |SWITCH     - Switch to designated tab
 ;                  |WINDOW     - Get or set the current window
@@ -582,7 +583,7 @@ EndFunc   ;==>_WD_Action
 ;                  - $_WD_ERROR_Exception
 ;                  - $_WD_ERROR_InvalidDataType
 ; Author ........: Danp2
-; Modified ......:
+; Modified ......: Sven Seyfert (SOLVE-SMART)
 ; Remarks .......:
 ; Related .......: _WD_LastHTTPResult
 ; Link ..........: https://www.w3.org/TR/webdriver/#contexts
@@ -591,6 +592,7 @@ EndFunc   ;==>_WD_Action
 Func _WD_Window($sSession, $sCommand, $sOption = Default)
 	Local Const $sFuncName = "_WD_Window"
 	Local Const $sParameters = 'Parameters:   Command=' & $sCommand & '   Option=' & $sOption
+	Local Const $sRestoreParameters = '{"x": null, "y": null, "width": null, "height": null}'
 	Local $sResponse, $oJSON, $sResult = "", $iErr
 	$_WD_HTTPRESULT = 0
 
@@ -605,6 +607,10 @@ Func _WD_Window($sSession, $sCommand, $sOption = Default)
 
 		Case 'fullscreen', 'maximize', 'minimize'
 			$sResponse = __WD_Post($sURLSession & "window/" & $sCommand, $_WD_EmptyDict)
+			$iErr = @error
+
+		Case 'restore'
+			$sResponse = __WD_Post($sURLSession & "window/rect", $sRestoreParameters)
 			$iErr = @error
 
 		Case 'handles'
@@ -657,8 +663,7 @@ Func _WD_Window($sSession, $sCommand, $sOption = Default)
 			$iErr = @error
 
 		Case Else
-			Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, "(Close|Frame|Fullscreen|Handles|Maximize|Minimize|New|Parent|Print|Rect|Screenshot|Switch|Window) $sCommand=>" & $sCommand), 0, "")
-
+			Return SetError(__WD_Error($sFuncName, $_WD_ERROR_InvalidDataType, "(Close|Frame|Fullscreen|Handles|Maximize|Minimize|New|Parent|Print|Rect|Restore|Screenshot|Switch|Window) $sCommand=>" & $sCommand), 0, "")
 	EndSwitch
 
 	If $iErr = $_WD_ERROR_Success Then

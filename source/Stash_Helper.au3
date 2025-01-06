@@ -31,7 +31,7 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.4.12"
+Global Const $currentVersion = "v2.4.13"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
@@ -59,9 +59,6 @@ EndIf
 ; If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 DllCall("User32.dll","bool","SetProcessDPIAware")
-
-
-
 
 Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wang." _
 				& @CRLF & "Hopefully this little program will make you navigate the powerful Stash App more easily." _
@@ -238,8 +235,8 @@ If $stashURL = "" Then
 	RegWrite($gsRegBase, "StashType", "REG_SZ", "Local")
 	$iStashPID = ProcessExists("stash-win.exe")
 	If $iStashPID <> 0 Then ProcessClose($iStashPID) ; Just in case.
-	; Run it for the first time. Merged.
-	$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE, $STDERR_MERGED)
+	; Run it for the first time.
+	$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 Else
 	; StashURL already saved. Launch it only when it's local.
 	If $stashType = "Local" Then
@@ -259,9 +256,9 @@ Else
 			If $iStashPID = 0 Then
 				; Not running. Launch it.
 				If $showStashConsole Then
-					Run(@ComSpec & ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW)
+					Run(@ComSpec & ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW )
 					$iStashPID = ProcessWait( "stash-win.exe", 5 )
-					c( "console pid:" & $iStashPID)
+					c( "console pid:" & $iStashPID )
 				Else
 					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
 				EndIf
@@ -286,11 +283,27 @@ Else
 	EndIf
 EndIf
 
-; This must run after $stashURL is set
+; Test the StashURL with TCPConnect for 10 seconds.
+TCPStartup()
+; Get IP for host
+$sIP = _IsIP( $aStashURL[2] ) ? $aStashURL[2] : TCPNameToIP( $aStashURL[2] )
+; c( "stash IP:" & $sIP & @CRLF & " Port:" & $aStashURL[3] )
+Local $Timer = TimerInit(), $iSocket, $bTcpConnect = False
+While TimerDiff($Timer) < 10000
+	$iSocket = TCPConnect( $sIP, $aStashURL[3] )
+	If @error Then
+		c( "Error in TCPConnect:" & @error )
+		Sleep( 1000 )
+		; Try again
+	Else
+		TCPCloseSocket( $iSocket )
+		$bTcpConnect = True
+	EndIf
+Wend
+TCPShutdown()
+c( "Done Tcp listening at " & TimerDiff($Timer) & "ms" )
 
-; Test the StashURL
-$sRet = InetRead($stashURL, 3)
-If @error Then
+If Not $bTcpConnect Then
 	$reply = MsgBox(20,"Stash is Not Running","Something is wrong with Stash. It appears to be not running." _
 		 & @CRLF & "Here is the URL:" & @CRLF & $stashURL _
 		 & @CRLF & "Do you want to set the Stash URL yourself?",0)
@@ -303,7 +316,7 @@ If @error Then
 			EndIf
 			ExitScript()
 		case 7 ;NO
-			ExitScript()
+			; Just continue and try.
 	endswitch
 EndIf
 
@@ -2355,9 +2368,11 @@ Func SetupFirefox()
 	EndIf
 
 	_WD_Option('Driver', @AppDataDir & "\Webdriver\" & 'geckodriver.exe')
+	Local $iPort =  _WD_GetFreePort( 4444, 4500 )
+	if @error Then Return SetError( @error, @extended, 0)
 	_WD_Option('DriverClose', True)
-	_WD_Option('DriverParams', '--log trace')
-	_WD_Option('Port', 4444)
+	_WD_Option('Port', $iPort )
+	_WD_Option('DriverParams', '--port=' &  $iPort & ' --log trace')
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
@@ -2405,7 +2420,7 @@ Func SetupFirefox()
 ;~ 			
 ;~ 	EndSwitch
 
-EndFunc   ;==>SetupGecko
+EndFunc   ;==>SetupFirefox
 
 Func GetDefaultFFProfile()
 	Local $sDefault, $sProfilePath = ''
@@ -2437,15 +2452,32 @@ Func SetupChrome()
 			Exit
 		EndIf
 	EndIf
+	
+	If ProcessExists( "chrome.exe") Then 
+		$iReply = MsgBox(52,"Other Chrome Browser Is Running","This program need other Chrome browsers to close to run properly." _ 
+					& @CRLF & "Do you want to close them now?" _
+					& @CRLF & "Click Yes to force close them all. Click No to exit this program.",0)
+		switch $iReply
+			case 6 ;YES
+				Local $iPid = ProcessExists("chrome.exe"), $iTimer = TimerInit()
+				While $iPID <> 0 And TimerDiff( $iTimer ) < 20000	; give it 20 seconds.
+					ProcessClose( $iPid)
+					Sleep(500)
+				Wend
+			case 7 ;NO
+				ExitScript()		
+		endswitch
+	EndIf
 
 	_WD_Option('Driver', $gsWebDriverPath & '\chromedriver.exe')
 	_WD_Option('DriverClose', True)
-	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & $gsWebDriverPath & '\chrome.log"')
+	Local $iPort =  _WD_GetFreePort( 5555, 5600 )
+	_WD_Option('Port', $iPort)
+	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\chrome.log"')
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
-	_WD_CapabilitiesAdd("firstMatch", "chrome")
+	_WD_CapabilitiesAdd("alwaysMatch", "chrome")
 	_WD_CapabilitiesAdd("browserName", "chrome")
 	_WD_CapabilitiesAdd("w3c", True)
 	_WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
@@ -2456,6 +2488,7 @@ Func SetupChrome()
 
 	If $stashBrowserProfile = "Default" Then 
 		_WD_CapabilitiesAdd( "args", "--no-sandbox")
+		; _WD_CapabilitiesAdd( "args", "--disable-dev-shm-usage")
 		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultChromeProfile() )
 		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
 	Else
@@ -2505,16 +2538,33 @@ Func SetupEdge()
 			Exit
 		EndIf
 	EndIf
+	
+	If ProcessExists( "msedge.exe") Then 
+		$iReply = MsgBox(52,"Other Edge Browser Is Running","This program need other Edge browsers to close to run properly." _
+						& @CRLF & "Do you want to close them now?" _
+						& @CRLF & "Click Yes to force close them all. Click No to exit this program.",0)
+		switch $iReply
+			case 6 ;YES
+				Local $iPid = ProcessExists("msedge.exe"), $iTimer = TimerInit()
+				While $iPID <> 0 And TimerDiff( $iTimer ) < 20000	; give it 20 seconds.
+					ProcessClose( $iPid)
+					Sleep(500)
+				Wend
+			case 7 ;NO
+				ExitScript()		
+		endswitch
 
+	EndIf
 
 	_WD_Option('Driver', $gsWebDriverPath & "\msedgedriver.exe")
+	Local $iPort =  _WD_GetFreePort( 9515, 9900 )
 	_WD_Option('DriverClose', True)
-	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & $gsWebDriverPath & '\msedge.log"')
+	_WD_Option('Port', $iPort)
+	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\msedge.log"')
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
-	_WD_CapabilitiesAdd("firstMatch", "msedge")
+	_WD_CapabilitiesAdd("alwaysMatch", "msedge")
 	_WD_CapabilitiesAdd("browserName", "msedge")
 	_WD_CapabilitiesAdd("w3c", True)
 	_WD_CapabilitiesAdd("excludeSwitches", "enable-automation")
@@ -2523,7 +2573,9 @@ Func SetupEdge()
 		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
 	EndIf
 
-	If $stashBrowserProfile = "Default" Then 
+	If $stashBrowserProfile = "Default" Then
+		_WD_CapabilitiesAdd("binary", "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" )
+		_WD_CapabilitiesAdd( "args", "--no-sandbox")
 		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultEdgeProfile() )
 		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
 	Else
@@ -2534,6 +2586,7 @@ Func SetupEdge()
 	
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
+	; c( "Browser Path:" & _WD_GetBrowserPath('msedge') )
 	; The old way
 ;~ 	Switch $stashBrowserProfile
 ;~ 		Case "Private"
@@ -2566,8 +2619,9 @@ Func SetupOpera()
 
 	_WD_Option('Driver', $gsWebDriverPath & '\operadriver.exe')
 	_WD_Option('DriverClose', True)
-	_WD_Option('Port', 9515)
-	_WD_Option('DriverParams', '--verbose --log-path="' & $gsWebDriverPath & "\opera.log")
+	Local $iPort = _WD_GetFreePort( 9515, 9600 )
+	_WD_Option('Port', $iPort)
+	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\opera.log"')
 	
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
@@ -2998,7 +3052,7 @@ Func Q2($str)
 EndFunc
 
 Func ExitScript()
-	If $giSaveLastURL Then
+	If $giSaveLastURL and $sSession Then
 		If CurrentBrowserWinHandle() <> 0 Then 
 			; The browser is still running.
 			$sURL = GetURL()
@@ -3031,6 +3085,10 @@ Func c($str)
 	ConsoleWrite($str & @CRLF)
 EndFunc
 
+Func _IsIP($ip)
+	; Return true if $ip is like 1.2.3.4
+    Return StringRegExp ($ip, "^(?:(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(?1)$")
+EndFunc
 Func MsgExit($str)
 	; For serious problems that has to exit.
 	MsgBox(16,"Error !",$str,0)
