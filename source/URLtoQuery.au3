@@ -65,21 +65,21 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 			Case "id", "count"
 				return "home"
 			Case "scenescount"
-				Return '{findScenes(scene_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
+				Return '{findScenes(scene_filter:{path:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
 			Case "scenesid"
-				Return '{findScenes(scene_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, scenes {id ' & $sQueryExtra & '}}}'
+				Return '{findScenes(scene_filter:{path:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, scenes {id ' & $sQueryExtra & '}}}'
 			Case "imagescount"
-				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
+				Return '{findImages(image_filter:{path:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
 			Case "imagesid"
-				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, images {id ' & $sQueryExtra & '}}}'
+				Return '{findImages(image_filter:{path:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, images {id ' & $sQueryExtra & '}}}'
 			Case "groupscount"
 				Return '{findGroups(group_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
 			Case "groupsid"
 				Return '{findGroups(group_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, groups {id ' & $sQueryExtra & '}}}'
 			Case "galleriescount"
-				Return '{findGalleries(gallery_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
+				Return '{findGalleries(gallery_filter:{path:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
 			Case "galleriesid"
-				Return '{findGalleries(gallery_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count,galleries {id ' & $sQueryExtra & '}}}'
+				Return '{findGalleries(gallery_filter:{path:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count,galleries {id ' & $sQueryExtra & '}}}'
 			Case Else
 				Return 'not support'
 		EndSwitch
@@ -119,6 +119,8 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 	If UBound($aCQuery) > 0 Then 
 		; Have to check before this for...in...
 		For $sCQuery In $aCQuery
+			; Convert it from ("type":"path","modifier": ...) to {"type":"path, "modifier": xxx}
+			$sCQuery = "{" & StringMid($sCQuery, 2, StringLen($sCQuery)-2) & "}"
 			c("$sCQuery:" & $sCQuery)
 			Local $oCriteria =  Json_Decode($sCQuery)
 			If @error Or ( Not IsObj($oCriteria)) Then

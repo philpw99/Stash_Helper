@@ -2,6 +2,8 @@ v2.5.1
 	* Update Webdriver to 2025-09 version.
 	* Change all "movie" instance to "group".
 	* Test running helper with Stash that requires user/pass.
+	* Allow install to different folder.
+	* Now you can add multiple scenes in a page to the playlist again.
 v2.4.7
 	* Change Middle Mouse Button to show a mini menu in browser.
 	* Remember the last visited page and open it next time Stash Helper runs. Can disable it in the settings.

@@ -77,9 +77,9 @@ gui_event_secoundarydown=
 gui_event_secoundaryup=
 gui_event_resized=
 gui_event_dropped=
-defaultfont=MS Sans Serif
-defaultfontsize=8
-[0x00092052]
+defaultfont=Tahoma
+defaultfontsize=11
+[0x00122026]
 type=button
 handle=445
 locked=0
@@ -108,7 +108,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00022050]
+[0x0012202C]
 type=button
 handle=446
 locked=0
@@ -137,7 +137,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=2
-[0x0002204E]
+[0x00171EE8]
 type=button
 handle=447
 locked=0
@@ -166,7 +166,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=3
-[0x0002204C]
+[0x000A2028]
 type=button
 handle=448
 locked=0
@@ -195,7 +195,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x0002204A]
+[0x000A202A]
 type=button
 handle=449
 locked=0
@@ -224,7 +224,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
-[0x00022048]
+[0x00102002]
 type=button
 handle=450
 locked=0
@@ -253,7 +253,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=6
-[0x00022046]
+[0x000E2010]
 type=button
 handle=451
 locked=0

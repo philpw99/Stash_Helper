@@ -89,9 +89,6 @@ Func MetroPopUpMenu()
 	MetroHover( $guiMetroPopup, True) ; Reset hover 
 EndFunc
 
-
-
-
 ; Set the hover effect for the metro buttons.
 ; $aButtonIDs are the array of button control ids.
 Func MetroHover( $guiMetro, $bReset = False )
