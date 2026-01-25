@@ -122,7 +122,7 @@ Func MergePerformers()
 
 				$hMsgDone = MsgBox(262436,"Transfer Done", "Now info from " & $sP1 & " is transfered to " & $sP2 & ", and " _ 
 					& @CRLF & $sP1 & " is now an alias of " & $sP2 & @CRLF _ 
-					& "and all the " & $sP1 & "'s scenes and movies are updated and added " & $sP2 & " to them as well." & @CRLF _ 
+					& "and all the " & $sP1 & "'s scenes and groups are updated and added " & $sP2 & " to them as well." & @CRLF _ 
 					& "Right now " & $sP1 & " is unchanged, but do you want to delete this performer to make it final?",0)
 				If $hMsgDone = $IDYES Then 
 					; Delete Performer 1

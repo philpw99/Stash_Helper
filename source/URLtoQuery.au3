@@ -40,7 +40,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				$aCQuery[$iU] = PairValue($aStr[$i])
 				$bHaveQuery = True 
 			Case Else
-				; Save the other part of URLs to $aStrOut, like ['movies','123']
+				; Save the other part of URLs to $aStrOut, like ['group','123']
 				Local $iUB = UBound($aStrOut)
 				ReDim $aStrOut[ $iUB+1 ]
 				$aStrOut[$iUB] = $aStr[$i]
@@ -72,10 +72,10 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
 			Case "imagesid"
 				Return '{findImages(image_filter:{title:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, images {id ' & $sQueryExtra & '}}}'
-			Case "moviescount"
-				Return '{findMovies(movie_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
-			Case "moviesid"
-				Return '{findMovies(movie_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, movies {id ' & $sQueryExtra & '}}}'
+			Case "groupscount"
+				Return '{findGroups(group_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }}){count ' & $sQueryExtra & '}}'
+			Case "groupsid"
+				Return '{findGroups(group_filter:{name:{value: \".+\" modifier: MATCHES_REGEX }} ' & $sFilter & '){count, groups {id ' & $sQueryExtra & '}}}'
 			Case "galleriescount"
 				Return '{findGalleries(gallery_filter:{title:{value: \".+\" modifier: MATCHES_REGEX}}){count ' & $sQueryExtra & '}}'
 			Case "galleriesid"
@@ -87,11 +87,11 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 	; c ("icount =" & $iCount & " is digit?" & StringIsDigit($aStr[1]))
 	
 	If Not $bHaveQuery And StringIsDigit($aStr[1]) Then
-		; Specified image, gallery, scene or movie
+		; Specified image, gallery, scene or group
 		Switch $aStr[0] & $sQueryType
-			Case "scenescount", "imagescount", "moviescount", "galleriescount"
+			Case "scenescount", "imagescount", "groupscount", "galleriescount"
 				Return "1"
-			Case "scenesid", "imagesid", "moviesid", "galleriesid"
+			Case "scenesid", "imagesid", "groupsid", "galleriesid"
 				; return a single scene id
 				If  $sQueryExtra = "" Then 
 					Return 'id='& $aStr[1]
@@ -99,15 +99,14 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 					; With extra request
 					Switch $aStr[0]
 						Case "scenes" 
-							Return '{findScene(id:' & $aStr[1]& '){id '& $sQueryExtra& '}}'
-						Case "movies"
-							; Cannot use findMovies with  movie id
-							Return '{findMovie('& $aStr[1]& '){id ' & $sQueryExtra & '}}'
+							Return '{findScene(id:' & $aStr[1] & '){id ' & $sQueryExtra & '}}'
+						Case "groups"
+							Return '{findGroup(id:' & $aStr[1] & '){id ' & $sQueryExtra & '}}'
 						Case "images"
-							Return '{findImage(id:'& $aStr[1]& '){id '& $sQueryExtra & '}}'
+							Return '{findImage(id:' & $aStr[1] & '){id ' & $sQueryExtra & '}}'
 						Case "galleries"
 							; Cannot use findGalleries with gallery id either.
-							Return '{findGallery(id:'& $aStr[1] & '){id '& $sQueryExtra & '}}'
+							Return '{findGallery(id:' & $aStr[1] & '){id ' & $sQueryExtra & '}}'
 					EndSwitch
 				EndIf 
 			Case Else
@@ -126,7 +125,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 				ContinueLoop
 			Else 
 				Switch $oCriteria.item("type")
-					Case "sceneChecksum", "movieChecksum", "galleryChecksum", "imageChecksum"
+					Case "sceneChecksum", "groupChecksum", "galleryChecksum", "imageChecksum"
 						$sCriteria &= MakeCriteria("checksum", QueryQ($oCriteria.Item("value")), $oCriteria.Item("modifier") )
 					Case "details"
 						$sCriteria &= MakeCriteria("details", QueryQ($oCriteria.Item("value")), $oCriteria.Item("modifier") )
@@ -145,27 +144,27 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 						$sCriteria &= MakeCriteria("oshash", QueryQ($oCriteria.Item("value")) , $oCriteria.Item("modifier") )
 					Case "interactive"
 						$sCriteria &= MakeCriteria2("interactive", $oCriteria.Item("value")) ; Now this type is set to boolean, which is right.
-					Case "sceneIsMissing", "movieIsMissing", "galleryIsMissing", "imageIsMissing"
+					Case "sceneIsMissing", "groupIsMissing", "galleryIsMissing", "imageIsMissing"
 						$sCriteria &= MakeCriteria2("is_missing", QueryQ($oCriteria.Item("value")) )
-					Case "movies"  ; This is only in scenes
+					Case "groups"  ; This is only in scenes
 						Switch $oCriteria.item("modifier")
 							Case "IS_NULL", "NOT_NULL"
-								$sCriteria &= MakeCriteria("movies", $oCriteria.Item("value"), $oCriteria.Item("modifier") )
+								$sCriteria &= MakeCriteria("groups", $oCriteria.Item("value"), $oCriteria.Item("modifier") )
 							Case Else
-								; The value is a movie array, convert it to "[123, 124...]" format
-								Local $aMovies = $oCriteria.item("value")
+								; The value is an array, convert it to "[123, 124...]" format
+								Local $aGroups = $oCriteria.item("value")
 								Local $sIDs = "["
-								If UBound($aMovies)> 0 Then  ; Just in case
-									For $oMovie In $aMovies
+								If UBound($aGroups)> 0 Then  ; Just in case
+									For $oGroup In $aGroups
 										If $sIDs = "[" Then 
-											$sIDs &= $oMovie.Item("id")
+											$sIDs &= $oGroup.Item("id")
 										Else 
-											$sIDs &= "," & $oMovie.Item("id")
+											$sIDs &= "," & $oGroup.Item("id")
 										EndIf
 									Next
 									$sIDs &= "]"
 								EndIf
-								$sCriteria &= MakeCriteria("movies", $sIDs, $oCriteria.Item("modifier") )
+								$sCriteria &= MakeCriteria("groups", $sIDs, $oCriteria.Item("modifier") )
 						EndSwitch
 					Case "o_counter"
 						Switch $oCriteria.item("modifier")
@@ -194,7 +193,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 							Case "IS_NULL", "NOT_NULL"
 								$sCriteria &= MakeCriteria("performer_tags", $oCriteria.Item("value"), $oCriteria.Item("modifier") )
 							Case Else
-								; The value is a movie array, convert it to "[123, 124...]" format
+								; The value is an array, convert it to "[123, 124...]" format
 								Local $aTags = $oCriteria.item("value").item("items")
 								Local $sIDs = "["
 								If UBound($aTags)> 0 Then  ; Just in case
@@ -216,7 +215,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 							Case "IS_NULL", "NOT_NULL"
 								$sCriteria &= MakeCriteria("performers", $oCriteria.Item("value"), $oCriteria.Item("modifier") )
 							Case Else
-								; The value is a movie array, convert it to "[123, 124...]" format
+								; The value is an array, convert it to "[123, 124...]" format
 								Local $aPerformers = $oCriteria.item("value")
 								Local $sIDs = "["
 								If UBound($aPerformers)> 0 Then  ; Just in case
@@ -251,7 +250,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 							Case "IS_NULL", "NOT_NULL"
 								$sCriteria &= MakeCriteria("studios", $oCriteria.Item("value"), $oCriteria.Item("modifier") )
 							Case Else
-								; The value is a movie array, convert it to "[123, 124...]" format
+								; The value is an array, convert it to "[123, 124...]" format
 								Local $aStudios = $oCriteria.item("value").item("items")
 								Local $sIDs = "["
 								If UBound($aStudios)> 0 Then  ; Just in case
@@ -282,7 +281,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 							Case "IS_NULL", "NOT_NULL"
 								$sCriteria &= MakeCriteria("tags", $oCriteria.Item("value"), $oCriteria.Item("modifier") )
 							Case Else
-								; The value is a movie array, convert it to "[123, 124...]" format
+								; The value is an array, convert it to "[123, 124...]" format
 								Local $aTags = $oCriteria.item("value").item("items")
 								Local $sIDs = "["
 								If UBound($aTags)> 0 Then  ; Just in case
@@ -303,7 +302,7 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 						$sCriteria &= MakeCriteria("title", QueryQ($oCriteria.Item("value")), $oCriteria.Item("modifier") )
 					Case "url"
 						$sCriteria &= MakeCriteria("url", QueryQ($oCriteria.Item("value")), $oCriteria.Item("modifier") )
-					; Now it's the movie's specific criteria
+					; Now it's the group's specific criteria
 					Case "director"
 						$sCriteria &= MakeCriteria("director", QueryQ($oCriteria.Item("value")), $oCriteria.Item("modifier") )
 					Case "name"
@@ -340,15 +339,15 @@ Func URLtoQuery($sURL, $sQueryType = "id", $sQueryExtra = "")
 			If $sCriteria <> "" Then $sQString &= "scene_filter: {" & $sCriteria & "} "
 			$sQString &= $sFilter & '){count,scenes{id '& $sQueryExtra & '}}}'
 			Return $sQString
-		Case "moviescount"
-			$sQString = '{findMovies('
-			If $sCriteria <> "" Then $sQString &= "movie_filter: {" & $sCriteria & "} "
+		Case "groupscount"
+			$sQString = '{findGroups('
+			If $sCriteria <> "" Then $sQString &= "group_filter: {" & $sCriteria & "} "
 			$sQString &= $sFilter & '){count '& $sQueryExtra & '}}'
 			Return $sQString
-		Case "moviesid"
-			$sQString = '{findMovies('
-			If $sCriteria <> "" Then $sQString &= "movie_filter: {" & $sCriteria & "} "
-			$sQString &= $sFilter & '){count,movies{id '& $sQueryExtra & '}}}'
+		Case "groupsid"
+			$sQString = '{findGroups('
+			If $sCriteria <> "" Then $sQString &= "group_filter: {" & $sCriteria & "} "
+			$sQString &= $sFilter & '){count,groups{id '& $sQueryExtra & '}}}'
 			Return $sQString
 		Case "imagescount"
 			$sQString = '{findImages('

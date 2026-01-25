@@ -9,7 +9,7 @@
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
 $Scrapers = GUICreate("Scrapers Management",1703,1031,-1,-1,BitOr($WS_SIZEBOX,$WS_SYSMENU),-1)
-$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
+$scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Group|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$LVS_EX_DOUBLEBUFFER,$WS_EX_CLIENTEDGE))
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetResizing(-1,102)
 ; Website
@@ -78,10 +78,13 @@ ypos=-1
 center_gui=true
 title_textmode=normal
 isf_include_once=false
+isf_no_includes=false
 only_controls_in_isf=false
 const_modus=default
 gui_code_in_function=false
 gui_code_in_function_name=
+gui_code_in_function_mode=gui
+gui_code_in_function_map_name=
 gui_event_close=
 gui_event_minimize=
 gui_event_restore=
@@ -95,9 +98,9 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00082646]
+[0x000F2034]
 type=listview
-handle=433
+handle=445
 locked=0
 resize=102
 x=40
@@ -113,7 +116,7 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=$scraperList
-text=Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents
+text=Website|Scraper|Scene|Gallery|Group|Performers|Installed|ExtraReq|Contents
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES+$LVS_EX_CHECKBOXES+$LVS_EX_DOUBLEBUFFER+$WS_EX_CLIENTEDGE
@@ -124,9 +127,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0003264C]
+[0x00152022]
 type=label
-handle=434
+handle=446
 locked=0
 resize=38
 x=54
@@ -153,9 +156,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001264E]
+[0x00092026]
 type=button
-handle=435
+handle=447
 locked=0
 resize=804
 x=1065
@@ -182,9 +185,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012650]
+[0x0010202C]
 type=button
-handle=436
+handle=448
 locked=0
 resize=804
 x=1298
@@ -211,9 +214,9 @@ order=4
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012652]
+[0x00151EE8]
 type=input
-handle=437
+handle=449
 locked=0
 resize=550
 x=42
@@ -240,9 +243,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012654]
+[0x00082028]
 type=button
-handle=438
+handle=450
 locked=0
 resize=804
 x=640
@@ -269,9 +272,9 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012656]
+[0x0008202A]
 type=button
-handle=439
+handle=451
 locked=0
 resize=804
 x=1494

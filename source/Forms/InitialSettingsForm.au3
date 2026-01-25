@@ -112,7 +112,7 @@ Func InitialSettingsForm()
 	GUICtrlSetFont(-1,16,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 
-	GUICtrlCreateLabel("Note: If this is the first time you run StashApp, it will ask you a question about where to store the config file. Since this is windows, you should choose -> 'In the current working directory.'"&@crlf&""&@crlf&"*** After you finish the wizard, you should click on 'Tasks' then 'Scan' to get your files recognized by Stash."&@crlf&"No movies? No Studio and Performers? No problem. This program will help you along the way.",201,290,895,307,-1,-1)
+	GUICtrlCreateLabel("Note: If this is the first time you run StashApp, it will ask you a question about where to store the config file. Since this is windows, you should choose -> 'In the current working directory.'"&@crlf&""&@crlf&"*** After you finish the wizard, you should click on 'Tasks' then 'Scan' to get your files recognized by Stash."&@crlf&"No Studio and Performers? No problem. This program will help you along the way.",201,290,895,307,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Palatino Linotype")
 	GUICtrlSetBkColor(-1,"-2")
 

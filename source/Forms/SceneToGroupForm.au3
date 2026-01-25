@@ -1,4 +1,4 @@
-Func Scene2Movie()
+Func Scene2Group()
 	Global $mInfo
 	; First to switch to the scene tab. * Disabled, no need to switch
 	; SwitchToTab("scenes")
@@ -11,8 +11,8 @@ Func Scene2Movie()
 	If @error Then Return SetError(3)
 
 	; Now show a GUI and ask which info to copy over.
-	Global $guiScene2Movie = GUICreate("Copy Scene Info To Movie",766,968,-1,-1,$WS_SIZEBOX,-1)
-	GUICtrlCreateLabel("Please choose the information you like to transfer to the movie.",80,19,698,80,-1,-1)
+	Global $guiScene2Group = GUICreate("Copy Scene Info To Group",766,968,-1,-1,$WS_SIZEBOX,-1)
+	GUICtrlCreateLabel("Please choose the information you like to transfer to the group.",80,19,698,80,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetBkColor(-1,"-2")
 	GUICtrlSetResizing(-1,550)
@@ -40,15 +40,15 @@ Func Scene2Movie()
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,804)
 	
-	local $btnBatchCreateStudio = GUICtrlCreateButton("Create movies for scenes in same Studio",100,780,555,51,-1,-1)
+	local $btnBatchCreateStudio = GUICtrlCreateButton("Create groups for scenes in same Studio",100,780,555,51,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Create movies for all other scenes in the same studio that don't link to a movie yet.")
+	GUICtrlSetTip(-1,"Create groups for all other scenes in the same studio that don't link to a group yet.")
 	GUICtrlSetResizing(-1,836)
 
 	
-	Local $btnBatchCreate = GUICtrlCreateButton("Create movies for all other scenes",100,846,555,51,-1,-1)
+	Local $btnBatchCreate = GUICtrlCreateButton("Create groups for all other scenes",100,846,555,51,-1,-1)
 	GUICtrlSetFont(-1,12,400,0,"Tahoma")
-	GUICtrlSetTip(-1,"Create movies for all other scenes which have no movies yet. Following the checked items here.")
+	GUICtrlSetTip(-1,"Create groups for all other scenes which have no groups yet. Following the checked items here.")
 	GUICtrlSetResizing(-1,836)
 	
 	; Download the image to temp folder.
@@ -66,19 +66,19 @@ Func Scene2Movie()
 	; Disable the tray clicks
 	TraySetClick(0)
 
-	GUISetState(@SW_SHOW, $guiScene2Movie)
+	GUISetState(@SW_SHOW, $guiScene2Group)
 	While True 
 		; if click on tray icon, activate the current GUI
 		Local $nTrayMsg = TrayGetMsg()
 		Switch $nTrayMsg
 			Case $TRAY_EVENT_PRIMARYDOWN, $TRAY_EVENT_SECONDARYDOWN
-				WinActivate($guiScene2Movie)
+				WinActivate($guiScene2Group)
  		EndSwitch 
 
 		Local $nMsg = GUIGetMsg()
 		Switch $nMsg
 			Case $btnOK
-				CreateSingleMovie($lvValues, $chkCover)
+				CreateSingleGroup($lvValues, $chkCover)
 				RefreshAllTabs()
 				ExitLoop
 			Case $btnBatchCreate
@@ -100,7 +100,7 @@ Func Scene2Movie()
 				ExitLoop 
 		EndSwitch
 	Wend
-	GUIDelete($guiScene2Movie)
+	GUIDelete($guiScene2Group)
 	; restore the tray icon functions.
 	TraySetClick(9)
 EndFunc
@@ -108,9 +108,9 @@ EndFunc
 Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 	; Global $mInfo, it should be a dictionary object
 	
-	Local $reply = MsgBox(262449,"Warning.","This function will create one movie for every scene that's not linked to a movie yet." _ 
+	Local $reply = MsgBox(262449,"Warning.","This function will create one group for every scene that's not linked to a group yet." _ 
 		& @CRLF & "Also it will follow the check boxes here to only retrieve the information you specified." _
-		& @CRLF & "However, it might create a lot of movies in the process. The problem is more serious when you have multiple scenes meant for the same movie." _
+		& @CRLF & "However, it might create a lot of groups in the process. The problem is more serious when you have multiple scenes meant for the same group." _
 		& @CRLF & "So are you sure you want to continue?",0)
 	If $reply = 2 Then Return 
 	
@@ -128,8 +128,8 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 		Return
 	EndIf
 	
-	; Now get the list of all scenes without a movie
-	local $sQuery = '{ "query": "{findScenes(scene_filter:{is_missing: \"movie\"' _ 
+	; Now get the list of all scenes without a group
+	local $sQuery = '{ "query": "{findScenes(scene_filter:{is_missing: \"group\"' _ 
 		& $sFilter & '}filter:{per_page:-1}){count,scenes{id}}}" }'
 	Local $sResult = Query($sQuery)
 	If @error Then Return SetError(1)
@@ -143,7 +143,7 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 	Local $iCount = $oData.Item("count")
 
 	If $iCount = "" Or $iCount = 0 Then
-		MsgBox(0, "No scenes", "There is no scenes to create movies.")
+		MsgBox(0, "No scenes", "There is no scenes to create groups.")
 		Return
 	EndIf
 	Local $aScenes = Json_ObjGet($oData, "scenes")
@@ -160,13 +160,13 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 		$aIDs[$i] = $aScenes[$i].Item("id")
 	Next
 	
-	; Batch create movies
+	; Batch create groups
 	
 	; Set mouse cursor to wait.
 	Local $old_cursor = MouseGetCursor()
-	GUISetCursor(15, 1, $guiScene2Movie)
+	GUISetCursor(15, 1, $guiScene2Group)
 
-	Local $iMovieCreated = 0
+	Local $iGroupCreated = 0
 	For $i = 0 to $iCount-1
 		; Set the scene info in $mInfo
 		GetSceneInfo($aIDs[$i])
@@ -177,16 +177,16 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 		If Not $bGetStudio Then $mInfo.Item("StudioID") = Null 
 		If Not $bGetCover Then $mInfo.Item("ScreenShot") = Null
 		; Now the info is ready.
-		$sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & $mInfo.Item("Title") & '\",' & _
+		$sQuery =  '{"query": "mutation{ groupCreate(input:{name: \"' & $mInfo.Item("Title") & '\",' & _
 			($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date") & '\",' ) & _
 			($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& $mInfo.Item("Details") & '\",' ) & _
-			($mInfo.Item("URL") = Null ? "" : 'url: \"' & $mInfo.Item("URL") & '\",' ) & _
+			($mInfo.Item("URL") = Null ? "" : 'urls: [\"' & $mInfo.Item("URL") & '\"],' ) & _
 			($mInfo.Item("StudioID") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
 			($mInfo.Item("ScreenShot") = Null ? "" : 'front_image:\"' & $mInfo.Item("ScreenShot") & '\",' )& _
 			($mInfo.Item("Duration") = 0 ? "" : 'duration: ' & $mInfo.Item("Duration") ) & _
 			'}){id} }"}'
 		
-		; OK, now create a new movie base on the above.
+		; OK, now create a new group base on the above.
 		$sResult = Query($sQuery)
 		If @error Then ExitLoop 
 		
@@ -195,28 +195,27 @@ Func BatchCreate($lvValues, $chkCover, $sFilter = "")
 			MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
 			Return SetError(1)
 		EndIf
-		$mInfo.Item("MovieID") = Json_ObjGet($oResult, "data.movieCreate.id")
-		; c ( "ID:" & $sMovieID)
+		$mInfo.Item("GroupID") = Json_ObjGet($oResult, "data.groupCreate.id")
 		
 		; Now update the scene
-		$sQuery = '{"query":"mutation{sceneUpdate(input:{id:' & $mInfo.Item("SceneID") & ',movies:{movie_id:' _ 
-			& $mInfo.Item("MovieID") & '}}){id}}"}'
+		$sQuery = '{"query":"mutation{sceneUpdate(input:{id:' & $mInfo.Item("SceneID") & ',groups:{group_id:' _ 
+			& $mInfo.Item("GroupID") & '}}){id}}"}'
 		$sResult = Query($sQuery)
 		If @error Then ExitLoop 
 
-		$iMovieCreated += 1
+		$iGroupCreated += 1
 	Next
 	
 	; Set cursor back.
-	GUISetCursor($old_cursor, 1, $guiScene2Movie)
+	GUISetCursor($old_cursor, 1, $guiScene2Group)
 
 	_WD_Action($sSession, 'refresh')
-	MsgBox(0, "Job Done", "Total movie created: " & $iMovieCreated)
+	MsgBox(0, "Job Done", "Total group created: " & $iGroupCreated)
 	
 EndFunc
 
 
-Func CreateSingleMovie($lvValues, $chkCover)
+Func CreateSingleGroup($lvValues, $chkCover)
 	; Global $mInfo
 	Local $bGetTitle = _GUICtrlListView_GetItemChecked($lvValues, 0)
 	Local $bGetUrl = _GUICtrlListView_GetItemChecked($lvValues, 1)
@@ -224,7 +223,7 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	local $bGetDuration = _GUICtrlListView_GetItemChecked($lvValues, 3)
 	Local $bGetDetails = _GUICtrlListView_GetItemChecked($lvValues, 4)
 	Local $bGetStudio = _GUICtrlListView_GetItemChecked($lvValues, 5)
-	ConsoleWrite("check state:" & GUICtrlGetState($chkCover))
+	; ConsoleWrite("check state:" & GUICtrlGetState($chkCover))
 	Local $bGetCover = ( GUICtrlRead($chkCover) = $GUI_CHECKED )
 	; c("get cover?" & $bGetCover)
 	Local $input = "", $sTitle = $bGetTitle ? $mInfo.Item("Title") : ""
@@ -232,7 +231,7 @@ Func CreateSingleMovie($lvValues, $chkCover)
 		; Title is empty, get the title from user.
 		$sTitle = $mInfo.Item("BaseName")	; Get the filename as suggested title.
 		While $input = ""
-			$input = InputBox("Must have a name", "The movie must have a title.", $sTitle )
+			$input = InputBox("Must have a name", "The group must have a title.", $sTitle )
 			if @error =  1 Then Return SetError(1)  ; Cancelled.
 		WEnd
 		$mInfo.Item("Title") = $input
@@ -247,19 +246,16 @@ Func CreateSingleMovie($lvValues, $chkCover)
 	; c ("ScreenShot:" & $mInfo.Item("ScreenShot") )
 
 	; Now the info is ready.
-	Local $sQuery =  '{"query": "mutation{ movieCreate(input:{name: \"' & _JsonStringEscape( $mInfo.Item("Title") ) & '\",' & _
+	Local $sQuery =  '{"query": "mutation{ groupCreate(input:{name: \"' & _JsonStringEscape( $mInfo.Item("Title") ) & '\",' & _
 		($mInfo.Item("Date") = Null ? "" : 'date: \"' & $mInfo.Item("Date")  & '\",' ) & _
 		($mInfo.Item("Details") = Null ? "" : 'synopsis: \"'& _JsonStringEscape( $mInfo.Item("Details") ) & '\",' ) & _
-		($mInfo.Item("URL") = Null ? "" : 'url: \"' & $mInfo.Item("URL") & '\",' ) & _
+		($mInfo.Item("URL") = Null ? "" : 'urls: [\"' & $mInfo.Item("URL") & '\"],' ) & _
 		($mInfo.Item("StudioID") = Null ? "" : 'studio_id:' & $mInfo.Item("StudioID") & ',' )& _
 		($mInfo.Item("ScreenShot") = Null ? "" : 'front_image:\"' & $mInfo.Item("ScreenShot") & '\",' )& _
 		($mInfo.Item("Duration") = 0 ? "" : 'duration: ' & $mInfo.Item("Duration") ) & _
 		'}){id} }"}'
 	
-	; ClipPut( $sQuery)
-	; c( "movie query in the clipboard.")
-	
-	; OK, now create a new movie base on the above.
+	; OK, now create a new group base on the above.
 	Local $sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -268,20 +264,17 @@ Func CreateSingleMovie($lvValues, $chkCover)
 		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
 		Return SetError(1)
 	EndIf
-	$mInfo.Item("MovieID") = Json_ObjGet($oResult, "data.movieCreate.id")
-	; c ( "ID:" & $sMovieID)
+	$mInfo.Item("GroupID") = Json_ObjGet($oResult, "data.groupCreate.id")
 	
 	; Now update the scene
-	$sQuery = '{"query":"mutation{sceneUpdate(input:{id:' & $mInfo.Item("SceneID") & ',movies:{movie_id:' & $mInfo.Item("MovieID") & '}}){id}}"}'
+	$sQuery = '{"query":"mutation{sceneUpdate(input:{id:' & $mInfo.Item("SceneID") & ',groups:{group_id:' & $mInfo.Item("GroupID") & '}}){id}}"}'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
 	_WD_Action($sSession, 'refresh')
 	Sleep(1000)
-	OpenURL($stashURL & "movies/" & $mInfo.Item("MovieID") )
-	; Sleep(2000)
-	; Alert("Movie created.")
-	
+	OpenURL($stashURL & "groups/" & $mInfo.Item("GroupID") )
+
 EndFunc
 
 
@@ -307,7 +300,7 @@ Func GetSceneInfo($nSceneNo)
 	$mInfo.Add("Title", $oData.Item("title") )
 	$mInfo.Add("Details", $oData.Item("details") )
 	Local $aURL = $oData.Item("urls")
-	$mInfo.Add("URL", UBound($aURL)=0 ? "": $aURL[0] ); Since movie has only one URL, use the first one, or empty
+	$mInfo.Add("URL", UBound($aURL)=0 ? "": $aURL[0] )  ; Previously movie/group has only one URL, use the first one, or empty
 	$mInfo.Add("Date", $oData.Item("date") )
 	Local $aFiles = $oData.Item("files")
 	$mInfo.Add("BaseName", UBound($aFiles) = 0 ? "" : $aFiles[0].Item("basename") )

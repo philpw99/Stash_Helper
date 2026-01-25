@@ -7,8 +7,8 @@
 
 If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
 
-$Scene2Movie = GUICreate("Copy Scene Info To Movie",766,968,-1,-1,$WS_SIZEBOX,-1)
-GUICtrlCreateLabel("Please choose the information you like to transfer to the movie.",32,23,698,80,-1,-1)
+$Scene2Group = GUICreate("Copy Scene Info To Group",766,968,-1,-1,$WS_SIZEBOX,-1)
+GUICtrlCreateLabel("Please choose the information you like to transfer to the group.",32,23,698,80,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetBkColor(-1,"-2")
 GUICtrlSetResizing(-1,550)
@@ -32,13 +32,13 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetResizing(-1,804)
 $imgCover = GUICtrlCreatePic("",29,448,455,314,-1,$WS_EX_STATICEDGE)
 GUICtrlSetResizing(-1,102)
-$btnBatchCreateStudio = GUICtrlCreateButton("Create movies for scenes in same Studio",100,780,555,51,-1,-1)
+$btnBatchCreateStudio = GUICtrlCreateButton("Create groups for scenes in same Studio",100,780,555,51,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlSetTip(-1,"Create movies for all other scenes in the same studio that don't link to a movie yet.")
+GUICtrlSetTip(-1,"Create movies for all other scenes in the same studio that don't link to a group yet.")
 GUICtrlSetResizing(-1,836)
-$btnBatchCreate = GUICtrlCreateButton("Create movies for all other scenes",100,846,555,51,-1,-1)
+$btnBatchCreate = GUICtrlCreateButton("Create groups for all other scenes",100,846,555,51,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
-GUICtrlSetTip(-1,"Create movies for all other scenes that don't link to a movie yet.")
+GUICtrlSetTip(-1,"Create movies for all other scenes that don't link to a group yet.")
 GUICtrlSetResizing(-1,836)
 $chkCover = GUICtrlCreateCheckbox("Cover",39,405,150,33,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
@@ -50,14 +50,14 @@ GUICtrlSetResizing(-1,802)
 [gui]
 Handle_deklaration=default
 Handle_deklaration_const=false
-title=Copy Scene Info To Movie
+title=Copy Scene Info To Group
 breite=766
 hoehe=968
 style=$WS_SIZEBOX
 exstyle=-1
 bgcolour=0xF0F0F0
 bgimage=none
-handle=$Scene2Movie
+handle=$Scene2Group
 parent=
 code=
 codebeforegui=If Not (@Compiled ) Then DllCall("User32.dll","bool","SetProcessDPIAware")
@@ -86,7 +86,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x0008282E]
+[0x00141EE8]
 type=listview
 handle=445
 locked=0
@@ -115,7 +115,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00032834]
+[0x000F202C]
 type=label
 handle=446
 locked=0
@@ -133,7 +133,7 @@ tooltip=
 bgimage=
 textcolour=0x000000
 id=
-text=Please choose the information you like to transfer to the movie.
+text=Please choose the information you like to transfer to the group.
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -144,7 +144,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012836]
+[0x00082026]
 type=button
 handle=447
 locked=0
@@ -173,7 +173,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012838]
+[0x00122022]
 type=button
 handle=448
 locked=0
@@ -202,7 +202,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
-[0x0001283A]
+[0x00121FBE]
 type=checkbox
 handle=449
 locked=0
@@ -231,7 +231,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001283C]
+[0x000E1EF4]
 type=image
 handle=450
 locked=0
@@ -260,7 +260,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001283E]
+[0x00072034]
 type=button
 handle=451
 locked=0
@@ -274,11 +274,11 @@ font=Tahoma
 fontsize=12
 fontstyle=400
 fontattribute=0
-tooltip=Create movies for all other scenes that don't link to a movie yet.
+tooltip=Create movies for all other scenes that don't link to a group yet.
 bgimage=
 textcolour=0x000000
 id=$btnBatchCreate
-text=Create movies for all other scenes
+text=Create groups for all other scenes
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -289,7 +289,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012840]
+[0x000E1F1C]
 type=button
 handle=452
 locked=0
@@ -303,11 +303,11 @@ font=Tahoma
 fontsize=12
 fontstyle=400
 fontattribute=0
-tooltip=Create movies for all other scenes in the same studio that don't link to a movie yet.
+tooltip=Create movies for all other scenes in the same studio that don't link to a group yet.
 bgimage=
 textcolour=0x000000
 id=$btnBatchCreateStudio
-text=Create movies for scenes in same Studio
+text=Create groups for scenes in same Studio
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=

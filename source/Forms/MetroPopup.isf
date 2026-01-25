@@ -21,7 +21,7 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
 GUICtrlSetBkColor(-1,"0x202B33")
 GUICtrlSetTip(-1,"Edit current playlist.")
-Local $btnMetroCreateMovie = GUICtrlCreateButton("Create Movie from this Scene",3,192,426,48,-1,-1)
+Local $btnMetroCreateGroup = GUICtrlCreateButton("Create Group from this Scene",3,192,426,48,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
 GUICtrlSetBkColor(-1,"0x202B33")
@@ -79,7 +79,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x000A27EE]
+[0x00092052]
 type=button
 handle=445
 locked=0
@@ -108,7 +108,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x000227EC]
+[0x00022050]
 type=button
 handle=446
 locked=0
@@ -137,7 +137,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=2
-[0x00022828]
+[0x0002204E]
 type=button
 handle=447
 locked=0
@@ -166,7 +166,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=3
-[0x0002282A]
+[0x0002204C]
 type=button
 handle=448
 locked=0
@@ -195,7 +195,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x0009282C]
+[0x0002204A]
 type=button
 handle=449
 locked=0
@@ -212,8 +212,8 @@ fontattribute=0
 tooltip=Create a movie from this scene. Or create movies.
 bgimage=
 textcolour=0xFFFFFF
-id=$btnMetroCreateMovie
-text=Create Movie from this Scene
+id=$btnMetroCreateGroup
+text=Create Group from this Scene
 state=$GUI_SHOW+$GUI_ENABLE
 style=
 exstyle=
@@ -224,7 +224,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
-[0x000A1F2A]
+[0x00022048]
 type=button
 handle=450
 locked=0
@@ -253,7 +253,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=6
-[0x000E1E58]
+[0x00022046]
 type=button
 handle=451
 locked=0

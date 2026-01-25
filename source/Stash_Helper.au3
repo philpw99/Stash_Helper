@@ -17,9 +17,9 @@
 #include <GuiTab.au3>
 #include <GuiListBox.au3>
 #include <EditConstants.au3>
-#include <wd_core.au3>
-#include <wd_helper.au3>
-#include <wd_capabilities.au3>
+#include "webdriver\wd_core.au3"	; Includes json.au3 and winhttp.au3
+#include "webdriver\wd_helper.au3"
+#include "webdriver\wd_capabilities.au3"
 #include <Array.au3>
 #include <Inet.au3>
 #Include <GDIPlus.au3>
@@ -31,7 +31,7 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.4.13"
+Global Const $currentVersion = "v2.5.1"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
@@ -69,8 +69,8 @@ Global $sAboutText = "Stash helper " & $currentVersion & ", written by Philip Wa
 				& @CRLF & "and thank you gamerjax for your play list suggestions!" _
 				& @CRLF & "Wraithstalker90, you made my program more solid, thank you !" _
 				& @CRLF & "Also thank you EoinBurke93 for your play current tab suggestions!" _
-				& @CRLF & "githubxnoob, thank you for suggesting the ApiKey fix!"
-
+				& @CRLF & "githubxnoob, thank you for suggesting the ApiKey fix!" _
+				& @CRLF & "and PalmerRobbie, who consistantly wanted it to work!"
 
 ; This already declared in Custom.au3
 Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
@@ -190,7 +190,7 @@ For $i = 0 to 20
 	$hIcons[$i] = _LoadImage($sIconPath & $i & ".bmp", $IMAGE_BITMAP)
 Next
 
-; For SceneToMovieForm.
+; For SceneToGroupForm.
 Global $mInfo = ObjCreate("Scripting.Dictionary")
 If @error Then MsgExit("Error Creating global $minfo object.")
 
@@ -203,15 +203,16 @@ If @error Then
 	$giMouseButtonRight =  0
 EndIf
 
+; Is the Stash-Win.exe was launched from Stash_helper?
+Global $gbRunStashFromHelper = False
 #EndRegion Globals
 
-#Region Forms and browsers startup globals
-
+#Region Load Forms
 ; All forms.
 #include <Forms\SettingsForm.au3>
 #include <Forms\CustomizeForm.au3>
 #include <Forms\ScrapersForm.au3>
-#include <Forms\SceneToMovieForm.au3>
+#include <Forms\SceneToGroupForm.au3>
 #include <Forms\CopySceneInfo.au3>
 #include <Forms\ManagePlayListForm.au3>
 #include <Forms\MergePerformers.au3>
@@ -219,8 +220,9 @@ EndIf
 
 ; Now this is running in the tray
 ; First run the Stash-Win program $sStashPath
+#EndRegion
 
-
+#Region Launching Stash-Win.exe if necessary.
 If $stashURL = "" Then
 	If $stashType = "Remote" Then
 		; Shouldn't be in this situation. Reset.
@@ -258,9 +260,11 @@ Else
 				If $showStashConsole Then
 					Run(@ComSpec & ' /C ' & $stashFilePath & $gsNoBrowser, $stashPath, @SW_SHOW )
 					$iStashPID = ProcessWait( "stash-win.exe", 5 )
+					$gbRunStashFromHelper = True
 					c( "console pid:" & $iStashPID )
 				Else
 					$iStashPID = Run($stashFilePath & $gsNoBrowser, $stashPath, @SW_HIDE)
+					$gbRunStashFromHelper = True
 				EndIf
 			Else
 				; Already running. Get the PID which is listening to that port
@@ -282,47 +286,58 @@ Else
 		EndIf
 	EndIf
 EndIf
+#EndRegion
+
+#Region TCP Connect test
+; Too bad that using TCPConncet doesn't work any more. So have to skip the check.
 
 ; Test the StashURL with TCPConnect for 10 seconds.
-TCPStartup()
-; Get IP for host
-$sIP = _IsIP( $aStashURL[2] ) ? $aStashURL[2] : TCPNameToIP( $aStashURL[2] )
-; c( "stash IP:" & $sIP & @CRLF & " Port:" & $aStashURL[3] )
-Local $Timer = TimerInit(), $iSocket, $bTcpConnect = False
-While TimerDiff($Timer) < 10000
-	$iSocket = TCPConnect( $sIP, $aStashURL[3] )
-	If @error Then
-		c( "Error in TCPConnect:" & @error )
-		Sleep( 1000 )
-		; Try again
-	Else
-		TCPCloseSocket( $iSocket )
-		$bTcpConnect = True
-	EndIf
-Wend
-TCPShutdown()
-c( "Done Tcp listening at " & TimerDiff($Timer) & "ms" )
+;~ TCPStartup()
+;~ ; Get IP for host
+;~ opt("TCPTimeout",  2000 )
+;~ $sIP = _IsIP( $aStashURL[2] ) ? $aStashURL[2] : TCPNameToIP( $aStashURL[2] )
+;~ c( "stash IP:" & $sIP & " Port:" & $aStashURL[3] )
+;~ Local $Timer = TimerInit(), $iSocket, $bTcpConnect = False
+;~ While TimerDiff($Timer) < 10000
+;~ 	$iSocket = TCPConnect( $sIP, $aStashURL[3])
+;~ 	If @error Then
+;~ 		c( "Error in TCPConnect:" & @error )
+;~ 		Sleep( 1000 )
+;~ 		; Try again
+;~ 	Else
+;~ 		TCPCloseSocket( $iSocket )
+;~ 		$bTcpConnect = True
+;~ 	EndIf
+;~ Wend
+;~ TCPShutdown()
 
-If Not $bTcpConnect Then
-	$reply = MsgBox(20,"Stash is Not Running","Something is wrong with Stash. It appears to be not running." _
-		 & @CRLF & "Here is the URL:" & @CRLF & $stashURL _
-		 & @CRLF & "Do you want to set the Stash URL yourself?",0)
-	switch $reply
-		case 6 ;YES
-			$stashURL = InputBox("Stash URL Manual input", "Please type the stash URL below", $stashURL)
-			If Not @error Then
-				RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
-				MsgBox(0, "Setting written", "Setting is saved. You need to restart Stash Helper.")
-			EndIf
-			ExitScript()
-		case 7 ;NO
-			; Just continue and try.
-	endswitch
-EndIf
+;~ If Not $bTcpConnect Then
+;~ 	$reply = MsgBox(20,"Stash is Not Running","Something is wrong with Stash. It appears to be not running." _
+;~ 		 & @CRLF & "Here is the URL:" & @CRLF & $stashURL _
+;~ 		 & @CRLF & "Do you want to set the Stash URL yourself?",0)
+;~ 	switch $reply
+;~ 		case 6 ;YES
+;~ 			$stashURL = InputBox("Stash URL Manual input", "Please type the stash URL below", $stashURL)
+;~ 			If Not @error Then
+;~ 				RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)
+;~ 				MsgBox(0, "Setting written", "Setting is saved. You need to restart Stash Helper.")
+;~ 			EndIf
+;~ 			ExitScript()
+;~ 		case 7 ;NO
+;~ 			; Just continue and try.
+;~ 	endswitch
+;~ Else
+;~ 	c( "tcp connect:" &  $bTcpConnect )
+;~ 	c( "Done Tcp listening at " & TimerDiff($Timer) & "ms" )	
+;~ EndIf
+#EndRegion
+
 
 #include "URLtoQuery.au3"
 #include "CurrentImagesViewer.au3"
 
+
+#Region Initialize tray menus
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
 ; Now create the top level tray menu items.
 
@@ -338,7 +353,7 @@ Global $trayMenuImages = TrayCreateMenu("Images")		; 3
 _TrayMenuAddImage($hIcons[1], $iTrayIconCount)
 
 $iTrayIconCount += 1
-Global $trayMenuMovies = TrayCreateMenu("Movies")		; 4
+Global $trayMenuGroups = TrayCreateMenu("Groups")		; 4
 _TrayMenuAddImage($hIcons[2], $iTrayIconCount)
 
 $iTrayIconCount += 1
@@ -369,7 +384,7 @@ $iTrayIconCount += 1
 TrayCreateItem("")										; 11
 
 $iTrayIconCount += 1
-Global $trayPlayTab = TrayCreateItem("Play Current Scene/Movie...   MidMouseButton or Alt-P") ;12
+Global $trayPlayTab = TrayCreateItem("Play Current Scene/Group...   MidMouseButton or Alt-P") ;12
 ; GUICtrlSetTip(-1, "Play the current scene with external media player specified in the settings.")
 _TrayMenuAddImage($hIcons[12], $iTrayIconCount)
 
@@ -384,9 +399,9 @@ _TrayMenuAddImage($hIcons[14], $iTrayIconCount)
 ; GUICtrlSetTip(-1,"Let Stash scans for any new files added to your locations.")
 
 $iTrayIconCount += 1
-Global $trayMovie2Scene = TrayCreateItem("Create movie from scene...") ; 15
+Global $trayGroup2Scene = TrayCreateItem("Create group from scene...") ; 15
 _TrayMenuAddImage($hIcons[15], $iTrayIconCount)
-; GUICtrlSetTip(-1,"Create a movie from current scene.")
+; GUICtrlSetTip(-1,"Create a group from current scene.")
 
 $iTrayIconCount += 1
 Global $trayMergePerformers = TrayCreateItem("Merge 2 Performers")		; 16
@@ -408,7 +423,7 @@ Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
 $iTrayIconCount += 1
 Global $trayMenuPlayList = TrayCreateMenu("Play List")		; 19
 _TrayMenuAddImage($hIcons[16], 18)
-Global $trayAddItemToList = TrayCreateItem("Add Scene/Movie/Image/Gallery to Play List        Ctrl-Alt-A", $trayMenuPlayList)
+Global $trayAddItemToList = TrayCreateItem("Add Scene/Group/Image/Gallery to Play List        Ctrl-Alt-A", $trayMenuPlayList)
 Global $trayManageList =	TrayCreateItem("Manage Current Play List                     Ctrl-Alt-M", $trayMenuPlayList)
 Global $trayListPlay = 		TrayCreateItem("Send the Current Play List to Media Player   Ctrl-Alt-P", $trayMenuPlayList)
 Global $trayClearList = 	TrayCreateItem("Clear the Play List                          Ctrl-Alt-C", $trayMenuPlayList)
@@ -436,16 +451,19 @@ _IconDestroy($hIcons)
 ; Now sub menu items. 0 is the handle, 1 is title, 2 is the link
 Global $traySceneLinks[$iMaxSubItems][3]
 Global $trayImageLinks[$iMaxSubItems][3]
-Global $trayMovieLinks[$iMaxSubItems][3]
+Global $trayGroupLinks[$iMaxSubItems][3]
 Global $trayMarkerLinks[$iMaxSubItems][3]
 Global $trayGalleryLinks[$iMaxSubItems][3]
 Global $trayPerformerLinks[$iMaxSubItems][3]
 Global $trayStudioLinks[$iMaxSubItems][3]
 Global $trayTagLinks[$iMaxSubItems][3]
 
-Global $customScenes, $customImages, $customMovies, $customMarkers, $customGalleries
+Global $customScenes, $customImages, $customGroups, $customMarkers, $customGalleries
 Global $customPerformers, $customStudios, $customTags
 
+#EndRegion
+
+#Region Webdriver Start
 ; Now get WebDriver Ready
 
 ; Hide the console, OR NOT
@@ -493,7 +511,6 @@ If @error <> $_WD_ERROR_Success Then
 	endswitch
 
 EndIf
-
 
 ; $sDesiredCapabilities =  StringReplace( $sDesiredCapabilities, "\/", "/" )
 c("Cap:" & $sDesiredCapabilities)
@@ -559,12 +576,11 @@ c("Session ID:" & $sSession )
 Global $gsBrowserHandle = _WD_Window($sSession, "window")
 ; c( "Browser Handle:" & $gsBrowserHandle )
 
-
-#EndRegion Forms and browsers startup globals
+#EndRegion
 
 #Region Tray Menu Handling
 
-; Create all the bookmark sub menu for scenes, movies, studio...etc
+; Create all the bookmark sub menu for scenes, groups, studio...etc
 CreateSubMenu()
 
 TraySetState($TRAY_ICONSTATE_SHOW)
@@ -595,7 +611,7 @@ EndIf
 ; Create the css menu with a function. It can only becalled after ApiKey is checked.
 CreateCSSMenu()
 
-; Ctrl+Alt+A to add scene/movie to the playlist.
+; Ctrl+Alt+A to add scene/group to the playlist.
 HotKeySet("^!a", "AddItemToList")
 ; Ctrl+Alt+C to clear the playlist.
 HotKeySet("^!c", "ClearPlayList")
@@ -627,8 +643,8 @@ While True
 			CustomList("Scenes", $traySceneLinks)
 		Case $customImages
 			CustomList("Images", $trayImageLinks)
-		Case $customMovies
-			CustomList("Movies", $trayMovieLinks)
+		Case $customGroups
+			CustomList("Groups", $trayGroupLinks)
 		Case $customMarkers
 			CustomList("Markers", $trayMarkerLinks)
 		Case $customGalleries
@@ -643,8 +659,8 @@ While True
  			PlayCurrentTab()
 		Case $trayScan
 			ScanFiles()
-		Case $trayMovie2Scene
-			Scene2Movie()
+		Case $trayGroup2Scene
+			Scene2Group()
 		Case $trayMergePerformers
 			MergePerformers()
 		Case $trayAddItemToList
@@ -676,9 +692,9 @@ While True
 					ContinueLoop 2
 				EndIf
 			Next
-			For $i = 0 to UBound($trayMovieLinks)-1
-				If $trayMovieLinks[$i][$ITEM_HANDLE] = $nMsg Then
-					OpenURL($trayMovieLinks[$i][$ITEM_LINK])
+			For $i = 0 to UBound($trayGroupLinks)-1
+				If $trayGroupLinks[$i][$ITEM_HANDLE] = $nMsg Then
+					OpenURL($trayGroupLinks[$i][$ITEM_LINK])
 					; Continue 2nd level of loops
 					ContinueLoop 2
 				EndIf
@@ -941,6 +957,7 @@ Func SetApiKey()
 				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _ 
 					& @CRLF & "You need to generate an apikey in order for most features to work properly." ,0)
 			Else
+				c("ApiKey:|" & $gsApiKey & "|")
 				OpenURL($stashURL)				
 			EndIf
 		EndIf 
@@ -956,8 +973,7 @@ Func IsLoginScreen()
 	Local $aURL = _WinHttpCrackUrl($sActualURL)
 	If @error or Not IsArray($aURL) Then Return SetError(2,  0,  False )
 
-	; c( "$aURL[6]:" & $aURL[6] )
-	
+	; c( "IsLoginScreen? $aURL[6]:" & $aURL[6] )
 	If $aURL[6] = "/login" Then Return True 
 	Return False
 EndFunc
@@ -1152,25 +1168,25 @@ Func InitCSSArray(ByRef $a)
 
 	AddCSStoArray($a, "Images - Disable Lightbox Animation", ".Lightbox-carousel { transition: none;}" )
 
-	AddCSStoArray($a, "Movies - Better Layout for Desktops 1 - Regular Posters", _
-		"#movie-page .detail-header-image { max-width: 80%;}" & @LF _
-		& "#movie-page .detail-header-image .movie-images img {max-width:50rem;}" )
+	AddCSStoArray($a, "Groups - Better Layout for Desktops 1 - Regular Posters", _
+		"#group-page .detail-header-image { max-width: 80%;}" & @LF _
+		& "#group-page .detail-header-image .group-images img {max-width:50rem;}" )
 
-	AddCSStoArray($a, "Movies - Better Layout for Desktops 2 - Larger Posters", _
-		"#movie-page .detail-header-image { max-width: 80%;}" & @LF _
-		& "#movie-page .detail-header-image .movie-images img {max-width:100rem;}" )
+	AddCSStoArray($a, "Groups - Better Layout for Desktops 2 - Larger Posters", _
+		"#group-page .detail-header-image { max-width: 80%;}" & @LF _
+		& "#group-page .detail-header-image .group-images img {max-width:100rem;}" )
 
 	AddCSStoArray($a, "Global - Hide the Donation Button", ".btn-primary.btn.donate.minimal { display: none;}" )
 
 	AddCSStoArray($a, "Global - Blur NSFW Images", _
 		".scene-card-preview-video, .scene-card-preview-image, .image-card-preview-image, .image-thumbnail, .gallery-card-image," & @LF _
-		& ".performer-card-image, img.performer, .movie-card-image, .gallery .flexbin img, .wall-item-media, .scene-studio-overlay .image-thumbnail," & @LF _
+		& ".performer-card-image, img.performer, .group-card-image, .gallery .flexbin img, .wall-item-media, .scene-studio-overlay .image-thumbnail," & @LF _
 		& ".image-card-preview-image, #scene-details-container .text-input, #scene-details-container .scene-header, #scene-details-container .react-select__single-value," & @LF _
-		& ".scene-details .pre, #scene-tabs-tabpane-scene-file-info-panel span.col-8.text-truncate > a, .gallery .flexbin img, .movie-details .logo " & @LF _
+		& ".scene-details .pre, #scene-tabs-tabpane-scene-file-info-panel span.col-8.text-truncate > a, .gallery .flexbin img, .group-details .logo " & @LF _
 		& "{filter: blur(8px);}" & @LF _
 		& ".scene-card-video {filter: blur(13px);}" & @LF _
 		& ".jw-video, .jw-preview, .jw-flag-floating, .image-container, .studio-logo, .scene-cover { filter: blur(20px);}" & @LF _
-		& ".movie-card .text-truncate, .scene-card .card-section { filter: blur(4px); }" )
+		& ".group-card .text-truncate, .scene-card .card-section { filter: blur(4px); }" )
 
 	$sCSS = GetCSSstring()
 	If @error Then Return SetError(2)
@@ -1235,7 +1251,7 @@ Func OpenMediaFolder()
 	; Return string is like "scenes-11" or "scenes"
 	If StringInStr($sResult, "-") = 0 Then
 		; in main category or collection
-		MsgBox(0, "Need specific item", "The current browser is showing a collection, need to show specific scene/movie/image/gallery." )
+		MsgBox(0, "Need specific item", "The current browser is showing a collection, need to show specific scene/group/image/gallery." )
 		Return
 	EndIf
 
@@ -1250,9 +1266,9 @@ Func OpenMediaFolder()
 		Case "markers"
 			MsgBox(0, "Cannot be markers", "Sorry, no support for markers.")
 			Return
-		Case "movies"
-			; Now get the movie info
-			$sQuery = '{ "query": "{findMovie(id: ' & $aStr[2] & '){name,scene_count,scenes{id}}}" }'
+		Case "groups"
+			; Now get the group info
+			$sQuery = '{ "query": "{findGroup(id: ' & $aStr[2] & '){name,scene_count,scenes{id}}}" }'
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 
@@ -1261,17 +1277,16 @@ Func OpenMediaFolder()
 				MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
 				Return SetError(1)
 			EndIf
-			Local $oMovieData = Json_ObjGet($oResult, "data.findMovie")
+			Local $oGroupData = Json_ObjGet($oResult, "data.findGroup")
 			; name, scene_count, scenes->id
-			Local $iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
+			Local $iCount = Int( $oGroupData.Item("scene_count") )  ; better to convert it.
 			If $iCount = 0 Then
-				MsgBox(0, "No scene", "There is no scene in this movie.")
+				MsgBox(0, "No scene", "There is no scene in this group.")
 				Return SetError(1)
 			EndIf
 			; Just need the first scene location
-			Local $nSceneID = $oMovieData.Item("scenes")[0].Item("id")
-			; $sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path}}"}'		; For v16 and below
-			$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){files{path}}}"}'	; For v17 and above
+			Local $nSceneID = $oGroupData.Item("scenes")[0].Item("id")
+			$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){files{path}}}"}'
 			$sResult = Query($sQuery)
 			If @error Then Return SetError(1)
 			; Query and Get the full path\filename
@@ -1468,7 +1483,7 @@ Func BookmarkCurrentTab()
 
 	If $aStr[0] = 2 Then
 		If StringIsDigit($aStr[2]) Then
-			; Single scene/movie
+			; Single scene/group
 			$sThing = StringTrimRight($sCategory, 1)
 		ElseIf $aStr[2] = "c" Then
 			$sThing = StringTrimRight($sCategory, 1) & " collection"
@@ -1498,12 +1513,12 @@ Func BookmarkCurrentTab()
 			$customImages = TrayCreateItem("Customize...", $trayMenuImages)
 			SaveMenuItems($sCategory, $trayImageLinks)
 
-		Case "movies"
-			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMovieLinks )
-			TrayItemDelete($customMovies)
-			$trayMovieLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuMovies )
-			$customMovies = TrayCreateItem("Customize...", $trayMenuMovies)
-			SaveMenuItems($sCategory, $trayMovieLinks)
+		Case "groups"
+			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayGroupLinks )
+			TrayItemDelete($customGroups)
+			$trayGroupLinks[$iRow][$ITEM_HANDLE] = TrayCreateItem($sDescription, $trayMenuGroups )
+			$customGroups = TrayCreateItem("Customize...", $trayMenuGroups)
+			SaveMenuItems($sCategory, $trayGroupLinks)
 
 		Case "markers"
 			$iRow = AddBookmarkToArray($sDescription, $sURL, $trayMarkerLinks )
@@ -1634,10 +1649,10 @@ Func AddItemToList()
 				If @error then Return
 				MsgBox(262208, "Done", "One image was added to the current play list." & @CRLF _
 					& "Total entities in play list:  " & UBound($aPlayList), 10)
-			Case "movies"
-				$iNo = AddMovieToList($sID)
+			Case "groups"
+				$iNo = AddGroupToList($sID)
 				If @error then Return
-				MsgBox(262208, "Done", "One movie with " & $iNo & " scenes was added to the current play list." & @CRLF _
+				MsgBox(262208, "Done", "One group with " & $iNo & " scenes was added to the current play list." & @CRLF _
 					& "Total entities in play list:  " & UBound($aPlayList), 10)
 			Case "galleries"
 				$iNo = AddGalleryToList($sID)
@@ -1660,7 +1675,7 @@ Func AddItemToList()
 		Return SetError(1)
 	EndIf
 
-	; Start to add scenes, movies... to the play list.
+	; Start to add scenes, groups... to the play list.
 	Switch $sCategory
 		Case "scenes"
 			Local $aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
@@ -1688,17 +1703,17 @@ Func AddItemToList()
 			MsgBox(262208, "Done", "Totally "& $i & " images was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
 				& "Beware: Most media players do not support playing images stored in .zip files.", 10 )
-		Case "movies"
-			Local $aMovies = Json_ObjGet($oData, "data.findMovies.movies")
-			If UBound($aMovies) = 0 Then
+		Case "groups"
+			Local $aGroups = Json_ObjGet($oData, "data.findGroups.groups")
+			If UBound($aGroups) = 0 Then
 				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
 				Return SetError(1)
 			EndIf
 			Local $i = 0
-			For $oMovie in $aMovies
-				$i += AddMovieToList($oMovie.item("id"))
+			For $oGroup in $aGroups
+				$i += AddGroupToList($oGroup.item("id"))
 			Next
-			MsgBox(262208, "Done", "Totally "& UBound($aMovies) & " movies with "& $i & " scenes was added to the current play list." & @CRLF _
+			MsgBox(262208, "Done", "Totally "& UBound($aGroups) & " groups with "& $i & " scenes was added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList), 10)
 		Case "galleries"
 			Local $aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
@@ -1714,7 +1729,7 @@ Func AddItemToList()
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
 				& "Beware: Most media players do not support playing images stored in .zip files.", 10 )
 		Case Else
-			MsgBox(262192, "Not supported", "Sorry, only scene/image/movie/gallery are supported.", 20)
+			MsgBox(262192, "Not supported", "Sorry, only scene/image/group/gallery are supported.", 20)
 	EndSwitch
 
 EndFunc
@@ -1773,7 +1788,7 @@ Func AddGalleryToList($sID)
 	EndIf
 	Local $aImages = $oData.Item("images")
 	If UBound($aImages) = 0 Then Return 0
-	; Treat a gallery like a movie, just add all images to the list
+	; Treat a gallery like a group, just add all images to the list
 	Local $iCount = 0
 	For $oImage In $aImages
 		$iCount += 1
@@ -1827,10 +1842,10 @@ Func SendPlayerList()
 	Play(@TempDir & "\StashPlayList.m3u")
 EndFunc
 
-Func AddMovieToList($sID)
+Func AddGroupToList($sID)
 	If $sID = "" Then Return 0 ; Just in case.
-	; Now get the movie info
-	$sQuery = '{ "query": "{findMovie(id: ' & $sID & '){name,scene_count,scenes{id}}}" }'
+	; Now get the group info
+	$sQuery = '{ "query": "{findGroup(id: ' & $sID & '){name,scene_count,scenes{id}}}" }'
 	$sResult = Query($sQuery)
 	If @error Then Return SetError(1)
 
@@ -1839,18 +1854,17 @@ Func AddMovieToList($sID)
 		MsgBox(0, "Error decoding result", "Error getting result:" & $sResult)
 		Return SetError(1)
 	EndIf
-	Local $oMovieData = Json_ObjGet($oResult, "data.findMovie")
-	If $oMovieData = "" Then Return 0
+	Local $oGroupData = Json_ObjGet($oResult, "data.findGroup")
+	If $oGroupData = "" Then Return 0
 	; name, scene_count, scenes->id
-	Local $iCount = Int( $oMovieData.Item("scene_count") )  ; better to convert it.
+	Local $iCount = Int( $oGroupData.Item("scene_count") )  ; better to convert it.
 	If $iCount = 0 Then
 		Return 0
 	EndIf
 	For $i = 0 to $iCount-1
-		Local $nSceneID = $oMovieData.Item("scenes")[$i].Item("id")
+		Local $nSceneID = $oGroupData.Item("scenes")[$i].Item("id")
 		; Now add this scene to the  play list
-		; $sQuery = '{"query":"{findScene(id:' & $nSceneID & '){path,file{duration},paths{stream} }}"}'	; For v16
-		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){ files{path,duration},paths{stream} }}"}'	; For v17
+		$sQuery = '{"query":"{findGroup(id:' & $nSceneID & '){ files{path,duration},paths{stream} }}"}'
 		$sResult = Query($sQuery)
 		If @error Then Return SetError(1)
 
@@ -1863,17 +1877,11 @@ Func AddMovieToList($sID)
 		; path
 		Local $j = UBound($aPlayList)
 		ReDim $aPlayList[$j+1][3]
-		$aPlayList[$j][$LIST_TITLE] = "Movie: " & $oMovieData.Item("name") & " - Scene " & ($i+1)
-		; $aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("file").Item("duration") )		; For v16
-		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("files")[0].Item("duration") )		; For v17
+		$aPlayList[$j][$LIST_TITLE] = "Group: " & $oGroupData.Item("name") & " - Scene " & ($i+1)
+		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("files")[0].Item("duration") )	
 		If $stashType = "Local" Then
-			; $aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("path"))					; for v16
-			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("files")[0].Item("path"))	; for v17
+			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("files")[0].Item("path"))
 		ElseIf $stashType = "Remote" Then
-			; disable for now. stash has very poor performance after adding extension
-;~ 			$sPath = $oSceneData.Item("path")
-;~ 			$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-;~ 			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream") & $sExt
 			$aPlayList[$j][$LIST_FILE] = $oSceneData.Item("paths").Item("stream")
  		EndIf
 	Next
@@ -1968,20 +1976,20 @@ Func ScanFiles()
 	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.", 10)
 EndFunc
 
-Func PlayMovie()
-	; Play the current movie with external media player
+Func PlayGroup()
+	; Play the current group with external media player
 	CheckMediaPlayer()
 	If @error Then Return SetError(1)
 
-	SwitchToTab("movies")
+	SwitchToTab("groups")
 	If @error then return SetError(1)
 
-	; Movie tab found and set current
+	; Group tab found and set current
 	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
 
-	Local $nMovie = GetNumber($sURL, "movies")
-	PlayMovieInCurrentTab($nMovie)
+	Local $nGroup = GetNumber($sURL, "groups")
+	PlayGroupInCurrentTab($nGroup)
 EndFunc
 
 Func CheckMediaPlayer()
@@ -2025,7 +2033,7 @@ Func SwitchToTab($sCategory)
 
 	Local $sSearchRegEx = "\/" & $sCategory & "\/\d+"
 	If StringRegExp($sURL, $sSearchRegEx) Then
-		; Current tab matches. It's a scene or movie.
+		; Current tab matches. It's a scene or group.
 		Return
 	EndIf
 	; Not the current tab, get the scenes list
@@ -2053,10 +2061,9 @@ Func SwitchToTab($sCategory)
 	EndIf
 EndFunc
 
-Func PlayMovieInCurrentTab($nMovie)
-	; Use graphql to get the scenes in movies
-	; $sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{path,paths{stream}}}}"}' ) 			; for v16
-	$sResult = Query( '{"query": "{findMovie(id:' & $nMovie & '){scenes{files{path},paths{stream}}}}"}' )		; for v17
+Func PlayGroupInCurrentTab($nGroup)
+	; Use graphql to get the scenes in groups
+	$sResult = Query( '{"query": "{findGroup(id:' & $nGroup & '){scenes{files{path},paths{stream}}}}"}' )
 	If @error Then Return
 	Local $oData = Json_Decode($sResult)
 	If Not IsObj($oData) Then
@@ -2064,7 +2071,7 @@ Func PlayMovieInCurrentTab($nMovie)
 		Return SetError(1)
 	EndIf
 	; Get the scenes array
-	Local $aScenes = Json_ObjGet($oData, "data.findMovie.scenes")
+	Local $aScenes = Json_ObjGet($oData, "data.findGroup.scenes")
 	c("aScenes:" & UBound($aScenes))
 	Switch UBound($aScenes)
 		Case 0
@@ -2073,21 +2080,16 @@ Func PlayMovieInCurrentTab($nMovie)
 			; Just play it.
 			If $stashType = "Local" Then
 				; Play the local file
-				; Play( $aScenes[0].Item("path") )					; for v16		
-				Play( $aScenes[0].Item("files")[0].Item("path") )			; For v17
+				Play( $aScenes[0].Item("files")[0].Item("path") )
 			ElseIf $stashType = "Remote" Then
 				; Add the stream its extension
-;~ 				$sPath = $aScenes[0].Item("path")
-;~ 				$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-;~ 				; Play the stream with extension
-;~ 				Play( $aScenes[0].Item("paths").Item("stream") & $sExt )
 				Play( $aScenes[0].Item("paths").Item("stream") )
 			EndIf
 		Case Else
 			; write a temp m3u file
-			Local $hFile = FileOpen(@TempDir & "\StashMovie.m3u", $FO_OVERWRITE )
+			Local $hFile = FileOpen(@TempDir & "\StashGroup.m3u", $FO_OVERWRITE )
 			If $hFile = -1 Then
-				MsgBox(0, "m3u create error", "failed to create a m3u file for this movie.")
+				MsgBox(0, "m3u create error", "failed to create a m3u file for this group.")
 				Return
 			EndIf
 			; First line
@@ -2096,21 +2098,15 @@ Func PlayMovieInCurrentTab($nMovie)
 			For $i = 0 to UBound($aScenes) - 1
 				FileWriteLine($hFile, "#EXTINF:-1,")
 				If $stashType = "Local" Then
-					; FileWriteLine($hFile, $aScenes[$i].Item("path") )		; for v16
-					FileWriteLine($hFile, FixPath( $aScenes[$i].Item("files")[0].Item("path") )	)	; for v17
+					FileWriteLine($hFile, FixPath( $aScenes[$i].Item("files")[0].Item("path") )	)
 				Elseif $stashType ="Remote" Then
-;~ 					$sPath = $aScenes[$i].Item("path")
-;~ 					$sExt = StringMid( $sPath, StringInStr($sPath, ".", 1, -1) )
-;~ 					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") & $sExt )
-
 					FileWriteLine($hFile, $aScenes[$i].Item("paths").Item("stream") )
-
 				EndIf
 			Next
 			FileClose($hFile)
 
 			; Now play the m3u file
-			Play(@TempDir & "\StashMovie.m3u")
+			Play(@TempDir & "\StashGroup.m3u")
 	EndSwitch
 EndFunc
 
@@ -2256,21 +2252,21 @@ Func PlayScene()
 EndFunc
 
 Func PlayCurrentTab()
-	; Play the current tab's media. Can be scene/movie/galery
+	; Play the current tab's media. Can be scene/group/galery
 	Local $sURL = GetURL()
 	If @error Then  Return SetError(1)
 	c( "Current Tab URL: " & $sURL)
 	Select 
 		Case StringInStr($sURL, "/scenes/")
 			PlayCurrentScene()
-		Case StringInStr($sURL, "/movies/")
-			Local $nMovie = GetNumber($sURL, "movies")
-			PlayMovieInCurrentTab($nMovie)
+		Case StringInStr($sURL, "/groups/")
+			Local $nGroup = GetNumber($sURL, "groups")
+			PlayGroupInCurrentTab($nGroup)
 		Case StringInStr($sURL, "/images") Or StringInStr($sURL, "/galleries/")
 			CurrentImagesViewer()
 		Case Else
 			; The current tab is not 
-			MsgBox(0, "Not support", "Sorry, this operation only supports current movie/scene/images/gallery.")
+			MsgBox(0, "Not support", "Sorry, this operation only supports current scene/group/images/gallery.")
 	EndSelect 
 EndFunc
 
@@ -2709,7 +2705,7 @@ Func CreateSubMenu()
 		SetMenuItem($traySceneLinks,0, 0, "All Scenes", $stashURL & "scenes")	
 	Else
 		; Setting all the data
-		; Data is like "0|All Movies|http://localhost...@crlf 1|Second Item|http:..."
+		; Data is like "0|All Groups|http://localhost...@crlf 1|Second Item|http:..."
 		DataToArray($sData, $traySceneLinks)
 	EndIf
 
@@ -2722,13 +2718,13 @@ Func CreateSubMenu()
 		DataToArray($sData, $trayImageLinks)
 	EndIf
 
-	; Movie data
+	; Group data
 	
-	Local $sData = RegRead($gsRegBase, "MoviesList")
+	Local $sData = RegRead($gsRegBase, "GroupsList")
 	If @error Then
-		SetMenuItem($trayMovieLinks,0 , 0, "All Movies", $stashURL & "movies")
+		SetMenuItem($trayGroupLinks,0 , 0, "All Groups", $stashURL & "groups")
 	Else 
-		DataToArray($sData, $trayMovieLinks)
+		DataToArray($sData, $trayGroupLinks)
 	EndIf
 
 	; Marker data
@@ -2784,10 +2780,10 @@ Func CreateSubMenu()
 			$trayImageLinks[$i][$ITEM_HANDLE] = TrayCreateItem($trayImageLinks[$i][$ITEM_TITLE], $trayMenuImages)
 		EndIf
 	Next
-	; Populate the movies sub menu
-	For $i = 0 To UBound($trayMovieLinks) -1
-		If $trayMovieLinks[$i][$ITEM_TITLE] <> "" Then
-			$trayMovieLinks[$i][$ITEM_HANDLE] = TrayCreateItem($trayMovieLinks[$i][$ITEM_TITLE], $trayMenuMovies)
+	; Populate the groups sub menu
+	For $i = 0 To UBound($trayGroupLinks) -1
+		If $trayGroupLinks[$i][$ITEM_TITLE] <> "" Then
+			$trayGroupLinks[$i][$ITEM_HANDLE] = TrayCreateItem($trayGroupLinks[$i][$ITEM_TITLE], $trayMenuGroups)
 		EndIf
 	Next
 	; Populate the markers sub menu
@@ -2824,7 +2820,7 @@ Func CreateSubMenu()
 	; Add Custom... to the last
 	$customScenes = TrayCreateItem("Customize...", $trayMenuScenes)
 	$customImages = TrayCreateItem("Customize...", $trayMenuImages)
-	$customMovies = TrayCreateItem("Customize...", $trayMenuMovies)
+	$customGroups = TrayCreateItem("Customize...", $trayMenuGroups)
 	$customMarkers = TrayCreateItem("Customize...", $trayMenuMarkers)
 	$customGalleries = TrayCreateItem("Customize...", $trayMenuGalleries)
 	$customPerformers = TrayCreateItem("Customize...", $trayMenuPeformers)
@@ -2850,10 +2846,10 @@ Func ReloadMenu($sCategory)
 			ReloadSubMenu($sCategory, $trayImageLinks)
 			$customScenes = TrayCreateItem("Customize...", $trayMenuImages)
 
-		Case "movies"
-			TrayItemDelete($customMovies)
-			ReloadSubMenu($sCategory, $trayMovieLinks)
-			$customScenes = TrayCreateItem("Customize...", $trayMenuMovies)
+		Case "groups"
+			TrayItemDelete($customGroups)
+			ReloadSubMenu($sCategory, $trayGroupLinks)
+			$customScenes = TrayCreateItem("Customize...", $trayMenuGroups)
 
 		Case "markers"
 			TrayItemDelete($customMarkers)
@@ -2885,7 +2881,7 @@ Func ReloadMenu($sCategory)
 EndFunc
 
 Func ReloadSubMenu($sCategory, ByRef $aArray)
-	; $sCategory is like "movies","scenes"...
+	; $sCategory is like "groups","scenes"...
 	; Make the first one capital letter.
 	Local $sCat = StringUpper(stringleft($sCategory, 1)) & StringMid($sCategory, 2)
 	; Delete all the submenu items
@@ -2902,8 +2898,8 @@ Func ReloadSubMenu($sCategory, ByRef $aArray)
 		; No data yet. Set the first item in array
 		SetMenuItem($aArray,0, 0, "All " & $sCat, $stashURL & $sCategory)
 	Else
-		; Setting all the data after "All Movies/Scenes..."
-		; Data is like "0|All Movies|http://localhost...@@@1|Second Item|http:..."
+		; Setting all the data after "All Groups/Scenes..."
+		; Data is like "0|All Groups|http://localhost...@@@1|Second Item|http:..."
 		DataToArray($sData, $aArray)
 	EndIf
 	; Now $aArray is like [1][null][Title1][Link1],[2][null][title2][link2]...
@@ -2923,8 +2919,8 @@ Func GetMenuHandle($sCategory)
 			Return $trayMenuScenes
 		Case "images"
 			Return  $trayMenuImages
-		Case "movies"
-			Return  $trayMenuMovies
+		Case "groups"
+			Return  $trayMenuGroups
 		Case "markers"
 			Return $trayMenuMarkers
 		Case "galleries"
@@ -2958,13 +2954,13 @@ Func DeleteAllSubMenu()
 	Next
 	TrayItemDelete($customImages)
 
-	; Delete Movies submenu
-	For $i = 0 to UBound($trayMovieLinks)-1
-		If $trayMovieLinks[$i][$ITEM_HANDLE] Then
-			TrayItemDelete($trayMovieLinks[$i][$ITEM_HANDLE])
+	; Delete Groups submenu
+	For $i = 0 to UBound($trayGroupLinks)-1
+		If $trayGroupLinks[$i][$ITEM_HANDLE] Then
+			TrayItemDelete($trayGroupLinks[$i][$ITEM_HANDLE])
 		EndIf
 	Next
-	TrayItemDelete($customMovies)
+	TrayItemDelete($customGroups)
 
 	; Delete Markers submenu
 	For $i = 0 to UBound($trayMarkerLinks)-1
@@ -3009,7 +3005,7 @@ Func DeleteAllSubMenu()
 EndFunc
 
 Func DataToArray($sData, ByRef $aLink)
-	; Data is like "1|All Movies|http://localhost...@@@2|Second Item|http:..."
+	; Data is like "1|All Groups|http://localhost...@@@2|Second Item|http:..."
 	; Data in $aLink will be changed.
 	Local $aLines = StringSplit($sData, "@@@", $STR_ENTIRESPLIT + $STR_NOCOUNT)
 	If @error Then Return SetError(1)
@@ -3069,11 +3065,11 @@ Func ExitScript()
 		_WD_Shutdown()
 	EndIf
 
-	If $iStashPID <> 0 Then
+	If $iStashPID <> 0 And $gbRunStashFromHelper Then
 		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
 	EndIf
 	
-	If $iConsolePID <> 0 Then
+	If $iConsolePID <> 0 And $gbRunStashFromHelper Then
 		ProcessClose($iConsolePID)
 	EndIf
 	

@@ -8,7 +8,7 @@
 Global $customList
 
 Func CustomList($sCategory, ByRef $aCategory)
-	; sCategory is "Scenes","Movies"...
+	; sCategory is "Scenes","Groups"...
 	; aCategory is the array that contains Item_Handle, Item_Title, Item_Link
 	; Global Enum $ITEM_HANDLE, $ITEM_TITLE, $ITEM_LINK
 	; Global $iMaxSubItems

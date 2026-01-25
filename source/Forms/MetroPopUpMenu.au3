@@ -8,7 +8,7 @@ Func MetroPopUpMenu()
 	Local $iGuiX = $aPos[0], $iGuiY = $aPos[1]
 	#include "MetroPopup.isf"
 	Local $aButtonIDs = [ $btnMetroPlay, $btnMetroAddToList, $btnMetroSendList, _
-						$btnMetroEditList, $btnMetroCreateMovie, $btnMetroCopyScene, $btnMetroCancel]
+						$btnMetroEditList, $btnMetroCreateGroup, $btnMetroCopyScene, $btnMetroCancel]
 	GUISetIcon("helper2.ico")
 	GUISetState()
 	While True 
@@ -19,12 +19,12 @@ Func MetroPopUpMenu()
 			Case $btnMetroPlay
 				$sCatNo = GetCurrentTabCategoryAndNumber()
 				If StringInStr($sCatNo, "-") = 0 Then 
-					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or movie." )
+					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or group." )
 				Else
 					$aCatNo = StringSplit($sCatNo, "-")
 					If $aCatNo[0] = 2 and StringIsDigit( $aCatNo[2]) Then 
 						Switch $aCatNo[1]
-							Case "scenes", "movies", "images", "galleries"
+							Case "scenes", "groups", "images", "galleries"
 							GUISetState( @SW_HIDE, $guiMetroPopup )
 							PlayCurrentTab()
 							ExitLoop 
@@ -38,23 +38,6 @@ Func MetroPopUpMenu()
 				
 			Case $btnMetroAddToList
 				AddItemToList()
-;~ 				$sCatNo = GetCurrentTabCategoryAndNumber()
-;~ 				If StringInStr($sCatNo, "-") = 0 Then 
-;~ 					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene or movie.")
-;~ 				Else
-;~ 					$aCatNo = StringSplit($sCatNo, "-")
-;~ 					If $aCatNo[0] = 2 And StringIsDigit( $aCatNo[2] ) Then 
-;~ 						Switch $aCatNo[1]
-;~ 							Case "scenes", "movies", "images", "galleries"
-;~ 								GUISetState( @SW_HIDE, $guiMetroPopup )
-;~ 								AddItemToList()
-;~ 								ExitLoop 
-;~ 						EndSwitch
-;~ 					EndIf 
-;~ 					c( "$sCatNo:" & $sCatNo)
-;~ 					MsgBox(262192,"Not supported","The current page is not supported.",0)
-;~ 					ContinueLoop 
-;~ 				EndIf				
 				
 			Case $btnMetroSendList
 				GUISetState( @SW_HIDE, $guiMetroPopup )
@@ -64,7 +47,7 @@ Func MetroPopUpMenu()
 				GUISetState( @SW_HIDE, $guiMetroPopup )
 				ManagePlayList()
 				ExitLoop 
-			Case $btnMetroCreateMovie
+			Case $btnMetroCreateGroup
 				$sCatNo = GetCurrentTabCategoryAndNumber()
 				If StringInStr($sCatNo, "-") = 0 Then 
 					MsgBox(0, "Not support", "You are in category: " & $sCatNo & ". You need to browse to one scene.")
@@ -72,7 +55,7 @@ Func MetroPopUpMenu()
 					$aCatNo = StringSplit($sCatNo, "-")
 					If $aCatNo[0] = 2 And $aCatNo[1] = "scenes" And StringIsDigit( $aCatNo[2] ) Then 
 							GUISetState( @SW_HIDE, $guiMetroPopup )
-							Scene2Movie()
+							Scene2Group()
 							ExitLoop 
 					Else
 							c( "$sCatNo:" & $sCatNo)

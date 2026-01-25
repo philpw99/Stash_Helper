@@ -71,7 +71,7 @@
 #EndRegion Many thanks to:
 
 #Region Global Constants
-Global Const $__WDVERSION = "1.4.0"
+Global Const $__WDVERSION = "1.5.0"
 
 Global Const $_WD_ELEMENT_ID = "element-6066-11e4-a52e-4f735466cecf"
 Global Const $_WD_SHADOW_ID = "shadow-6066-11e4-a52e-4f735466cecf"
@@ -223,9 +223,9 @@ Global Const $_WD_SupportedBrowsers[][$_WD_BROWSER__COUNTER] = _
 				"msedgedriver.exe", _
 				True,  _
 				"ms:edgeOptions", _
-				"'https://msedgedriver.azureedge.net/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1) & '_WINDOWS'", _
+				"'https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/LATEST_RELEASE_' & StringLeft($sBrowserVersion, StringInStr($sBrowserVersion, '.') - 1) & '_WINDOWS'", _
 				"", _
-				'"https://msedgedriver.azureedge.net/" & $sDriverLatest & "/edgedriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")' _
+				'"https://msedgedriver.microsoft.com/" & $sDriverLatest & "/edgedriver_" & (($bFlag64) ? "win64.zip" : "win32.zip")' _
 			], _
 			[ _
 				"opera", _
@@ -878,7 +878,7 @@ EndFunc   ;==>_WD_ElementAction
 
 ; #FUNCTION# ====================================================================================================================
 ; Name ..........: _WD_ExecuteScript
-; Description ...: Execute Javascipt commands.
+; Description ...: Execute Javascript commands.
 ; Syntax ........: _WD_ExecuteScript($sSession, $sScript[, $sArguments = Default[, $bAsync = Default[, $vSubNode = Default]]])
 ; Parameters ....: $sSession   - Session ID from _WD_CreateSession
 ;                  $sScript    - Javascript command(s) to run

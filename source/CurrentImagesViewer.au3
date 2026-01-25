@@ -33,7 +33,7 @@ Func CurrentImagesViewer()
 	
 	Switch $sCategory
 		
-		Case "movies", "scenes", "markers", "performers", "studios", "tags"
+		Case "groups", "scenes", "markers", "performers", "studios", "tags"
 			MsgBox(0, "Not support", "Sorry, this operation only supports images and galleries.")
 			Return
 		Case "images"

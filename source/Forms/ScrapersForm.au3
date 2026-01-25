@@ -30,7 +30,7 @@ Func ScrapersManager()
 	GUISetIcon("helper2.ico")
 
 	
-	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Movie|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$WS_EX_CLIENTEDGE, $LVS_EX_DOUBLEBUFFER))
+	Global $scraperList = GUICtrlCreatelistview("Website|Scraper|Scene|Gallery|Group|Performers|Installed|ExtraReq|Contents",40,290,1620,680,-1,BitOr($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES,$LVS_EX_CHECKBOXES,$WS_EX_CLIENTEDGE, $LVS_EX_DOUBLEBUFFER))
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetResizing(-1,102)
 	; Website
@@ -43,7 +43,7 @@ Func ScrapersManager()
 	; Gallery
 	_GUICtrlListView_SetColumnWidth($scraperList, 3, 100)
 	_GUICtrlListView_JustifyColumn($scraperList, 3, 2)
-	; Movie
+	; Group
 	_GUICtrlListView_SetColumnWidth($scraperList, 4, 100)
 	_GUICtrlListView_JustifyColumn($scraperList, 4, 2)
 	; Performer
