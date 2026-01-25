@@ -1864,7 +1864,7 @@ Func AddGroupToList($sID)
 	For $i = 0 to $iCount-1
 		Local $nSceneID = $oGroupData.Item("scenes")[$i].Item("id")
 		; Now add this scene to the  play list
-		$sQuery = '{"query":"{findGroup(id:' & $nSceneID & '){ files{path,duration},paths{stream} }}"}'
+		$sQuery = '{"query":"{findScene(id:' & $nSceneID & '){files{path,duration},paths{stream}}}"}'
 		$sResult = Query($sQuery)
 		If @error Then Return SetError(1)
 
