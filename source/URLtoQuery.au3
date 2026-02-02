@@ -387,7 +387,8 @@ EndFunc
 
 Func QueryQ($str)
 	; Quote within a query
-	Return '\"' & $str & '\"'
+	; Also if $str contains " , it needs to be converted to single quote
+	Return '\"' & StringReplace($str, '"', "'") & '\"'
 EndFunc
 
 Func MakeCriteria2($type, $value)
@@ -408,4 +409,34 @@ EndFunc
 
 Func PairValue($str, $separator = "=")
 	Return stringmid( $str, stringinstr($str, $separator, 2) + 1 )
+EndFunc
+
+Func ArrayAdd(ByRef $Array, $value)
+	$c = UBound($Array)
+	ReDim $Array[$c+1]
+	$Array[$c] = $value
+EndFunc
+
+Func ArrayToString(ByRef $Array)
+	; Simple Array of strings to string like ["a","b","c"]
+	If UBound($Array) = 0 Then Return "[]"
+
+	$result = "["
+	For $item in $array
+		$result &= Q($item) & ","
+	Next
+	; Remove the last "," and add "]"
+	Return StringLeft( $result, StringLen($result)-1) & "]"
+EndFunc
+
+Func ArrayToStringQuery(ByRef $Array)
+	; Simple Array of strings to string like ["a","b","c"]
+	If UBound($Array) = 0 Then Return "[]"
+
+	$result = "["
+	For $item in $array
+		$result &= QueryQ($item) & ","
+	Next
+	; Remove the last "," and add "]"
+	Return StringLeft( $result, StringLen($result)-1) & "]"
 EndFunc

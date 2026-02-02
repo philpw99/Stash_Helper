@@ -1,3 +1,5 @@
+v2.5.2
+	* Add Auto Handle JAV to the popup menu. Require R18 scraper.
 v2.5.1
 	* Update Webdriver to 2025-09 version.
 	* Change all "movie" instance to "group".

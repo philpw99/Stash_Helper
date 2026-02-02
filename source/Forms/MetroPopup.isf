@@ -1,5 +1,5 @@
 ; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
-Local $guiMetroPopup = GUICreate( "MetroPopup", 436, 346, $iGuiX, $iGuiY, -2143289216, 9 )
+Local $guiMetroPopup = GUICreate( "MetroPopup", 436, 388, $iGuiX, $iGuiY, -2143289216, 9 )
 GUISetBkColor( 0x808080 )
 Local $btnMetroPlay = GUICtrlCreateButton("Play In External Player",3,0,426,48,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
@@ -31,7 +31,12 @@ GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
 GUICtrlSetBkColor(-1,"0x202B33")
 GUICtrlSetTip(-1,"Copy Scene information from another scene by ID and apply to the current scene.")
-Local $btnMetroCancel = GUICtrlCreateButton("Cancel",3,288,426,48,-1,-1)
+Local $btnMetroAutoJAV = GUICtrlCreateButton("Auto Handle JAV Scenes",3,288,426,48,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetColor(-1,"0xFFFFFF")
+GUICtrlSetBkColor(-1,"0x202B33")
+GUICtrlSetTip(-1,"Need to have R18 scraper installed.")
+Local $btnMetroCancel = GUICtrlCreateButton("Cancel",3,336,426,48,-1,-1)
 GUICtrlSetFont(-1,12,400,0,"Tahoma")
 GUICtrlSetColor(-1,"0xFFFFFF")
 GUICtrlSetBkColor(-1,"0x202B33")
@@ -45,7 +50,7 @@ Handle_deklaration=local
 Handle_deklaration_const=false
 title=MetroPopup
 breite=436
-hoehe=346
+hoehe=388
 style=$WS_POPUP+$WS_DLGFRAME+$DS_MODALFRAME
 exstyle=$WS_EX_TOPMOST+$WS_EX_DLGMODALFRAME
 bgcolour=0x444444
@@ -77,9 +82,9 @@ gui_event_secoundarydown=
 gui_event_secoundaryup=
 gui_event_resized=
 gui_event_dropped=
-defaultfont=Tahoma
-defaultfontsize=11
-[0x00122026]
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x00082096]
 type=button
 handle=445
 locked=0
@@ -108,7 +113,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0012202C]
+[0x00012098]
 type=button
 handle=446
 locked=0
@@ -136,8 +141,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=2
-[0x00171EE8]
+order=1
+[0x0001209A]
 type=button
 handle=447
 locked=0
@@ -165,8 +170,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=3
-[0x000A2028]
+order=2
+[0x0001209C]
 type=button
 handle=448
 locked=0
@@ -194,8 +199,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=4
-[0x000A202A]
+order=3
+[0x0001209E]
 type=button
 handle=449
 locked=0
@@ -223,8 +228,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=5
-[0x00102002]
+order=4
+[0x000120A0]
 type=button
 handle=450
 locked=0
@@ -252,14 +257,14 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=6
-[0x000E2010]
+order=5
+[0x000120A2]
 type=button
 handle=451
 locked=0
 resize=
 x=3
-y=288
+y=336
 width=426
 height=48
 func=
@@ -282,4 +287,33 @@ iconindex=
 iconlarge=0
 textmode=text
 order=7
+[0x000120A4]
+type=button
+handle=452
+locked=0
+resize=
+x=3
+y=288
+width=426
+height=48
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Need to have R18 scraper installed.
+bgimage=
+textcolour=0xFFFFFF
+id=$btnMetroAutoJAV
+text=Auto Handle JAV Scenes
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=0x202B33
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=6
 #ce

@@ -31,7 +31,7 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.5.1"
+Global Const $currentVersion = "v2.5.2"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
@@ -335,7 +335,7 @@ EndIf
 
 #include "URLtoQuery.au3"
 #include "CurrentImagesViewer.au3"
-
+#include "AutoHandleJAV.au3"
 
 #Region Initialize tray menus
 Opt("TrayMenuMode", 3) ; The default tray menu items will not be shown and items are not checked when selected.
@@ -588,7 +588,11 @@ TraySetState($TRAY_ICONSTATE_SHOW)
 ; If not remember the URL, $gsLastURL is $stashURL anyway.
 ; Now browser will open last url for the first run.
 ; c( "Last Url:" & $gsLastURL )
-OpenURL($gsLastURL)
+if $gsLastURL = "" Then
+	OpenURL($stashURL)
+Else  
+	OpenURL($gsLastURL)
+EndIf
 
 ; Find out if this site is password protected and set ApiKey accordingly
 Global $gbUserPass = False, $gsApiKey = ""
@@ -1602,7 +1606,7 @@ Func AddItemToList()
 	c("Add current URL:" & $sURL)
 
 	Local $sCategory = GetCategory($sURL)
-	if @error Then Return SetError(1)
+	if @error Then Return SetError(2)
 
 	Local $sQueryCount = URLtoQuery($sURL, "count")
 	c("sQueryCount: " & $sQueryCount)
@@ -1632,7 +1636,7 @@ Func AddItemToList()
 
 	; Get the full list of ids.
 	$sQuery = URLtoQuery($sURL, "id")
-	if @error then Return SetError(1)
+	if @error then Return SetError(3)
 
 	; If return just a single id.
 	If StringLeft($sQuery, 3) = "id=" Then
@@ -1666,13 +1670,13 @@ Func AddItemToList()
 		Return
 	EndIf
 
-
+	; Batch processing
 	$sResult = Query2($sQuery)
 	if @error Then Return SetError(1)
 	Local $oData = Json_Decode($sResult)
 	If Not IsObj($oData) Then
 		MsgBox(262192, "Error decoding result", "Error getting result:" & $sResult)
-		Return SetError(1)
+		Return SetError(4)
 	EndIf
 
 	; Start to add scenes, groups... to the play list.
@@ -1681,20 +1685,20 @@ Func AddItemToList()
 			Local $aScenes = Json_ObjGet($oData, "data.findScenes.scenes")
 			If UBound($aScenes) = 0 Then
 				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
-				Return SetError(1)
+				Return SetError(5)
 			EndIf
 			Local $i = 0
 			For $oScene in $aScenes
 				$i += AddSceneToList($oScene.item("id"))
 			Next
 			
-			MsgBox(262208, "Done", "Totally "& $i & " scenes was added to the current play list." & @CRLF _
+			MsgBox(262208, "Done", "Totally "& $i & " scenes were added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList), 10)
 		Case "images"
 			Local $aImages = Json_ObjGet($oData, "data.findImages.images")
 			If UBound($aImages) = 0 Then
 				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
-				Return SetError(1)
+				Return SetError(6)
 			EndIf
 			Local $i = 0
 			For $oImage in $aImages
@@ -1707,7 +1711,7 @@ Func AddItemToList()
 			Local $aGroups = Json_ObjGet($oData, "data.findGroups.groups")
 			If UBound($aGroups) = 0 Then
 				MsgBox(262192, "strange", "Weird, program error. There is nothing to add to the list.")
-				Return SetError(1)
+				Return SetError(7)
 			EndIf
 			Local $i = 0
 			For $oGroup in $aGroups
@@ -1719,13 +1723,13 @@ Func AddItemToList()
 			Local $aGalleries = Json_ObjGet($oData, "data.findGalleries.galleries")
 			If UBound($aGalleries) = 0 Then
 				MsgBox(0, "strange", "Weird, program error. There is nothing to add to the list.")
-				Return SetError(1)
+				Return SetError(8)
 			EndIf
 			Local $i = 0
 			For $oGallery in $aGalleries
 				$i += AddGalleryToList($oGallery.item("id"))
 			Next
-			MsgBox(262208, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images was added to the current play list." & @CRLF _
+			MsgBox(262208, "Done", "Totally "& UBound($aGalleries) & " galleries with "& $i & " images were added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList) & @CRLF _
 				& "Beware: Most media players do not support playing images stored in .zip files.", 10 )
 		Case Else
@@ -2131,12 +2135,16 @@ Func Query2($sQuery, $bIgnoreError = False )
 	; This one will wrap the {"query":" "} around $sQuery. Easier to program.
  	c("QueryString:" & '{"query":"'& $sQuery& '"}')
  	$sResult = Query('{"query":"'& $sQuery& '"}', $bIgnoreError)
-	If @error Then Return SetError(1, 0, $sResult)
+	If @error Then Return SetError(@error, 0, $sResult)
 	Return $sResult
 EndFunc
 
 Func QueryMutation($sQuery, $bIgnoreError = False )
 	; This one will wrap the {"mutation":" "} around $sQuery. Easier to program.
+	if StringLower( StringLeft($sQuery, 8)) = "mutation" Then 
+		; Remove the "mutation" from left.
+		$sQuery = StringTrimLeft($sQuery, 8)
+	EndIf
 	
 	c("QueryString:" & '{"query": "mutation' & $sQuery & '"}'  )
 	$sResult = Query('{"query": "mutation' & $sQuery & '"}' , $bIgnoreError)
@@ -2156,10 +2164,10 @@ Func Query($sQuery, $bIgnoreError = False )
 	Local $hOpen = _WinHttpOpen()
 	Local $hConnect = _WinHttpConnect($hOpen, $aStashURL[2], $aStashURL[3])
 	If $hConnect = 0 Then
-		If Not $bIgnoreError Then MsgBox(0, "error connect",  "error connecting to stash server.")
+		c("error connecting to stash server.")
 		; Close handles
 		_WinHttpCloseHandle($hOpen)
-		Return SetError(1)
+		Return SetError(2)
 	EndIf
 	Local $sPath = $aStashURL[6]	; Get the start relative path
 	If StringRight($sPath,1) = "/" Then $sPath = StringTrimRight($sPath,1)	; Remove the right slash
@@ -2169,8 +2177,8 @@ Func Query($sQuery, $bIgnoreError = False )
 	; Use full http Request for query
 	$hRequest = _WinHttpOpenRequest($hConnect, "POST", $sPath)
 	If @error Then 
-		MsgBox(0, "error in request", "Error in opening a request to server.")
-		Return SetError(2)
+		MsgBox(0, "Error opening request", "Error in opening a request to server.")
+		Return SetError(3)
 	EndIf
 	
  	; Add headers
@@ -2178,7 +2186,7 @@ Func Query($sQuery, $bIgnoreError = False )
 		_WinHttpAddRequestHeaders($hRequest, "ApiKey: " & $gsApiKey)
 		If @error Then
 			MsgBox(0, "error in request", "Error in adding apikey header to server.")
-			Return SetError(3)
+			Return SetError(4)
 		EndIf
 	EndIf
 
@@ -2186,7 +2194,7 @@ Func Query($sQuery, $bIgnoreError = False )
 	_WinHttpAddRequestHeaders($hRequest, "Content-Type: application/json")
 	If @error Then
 		MsgBox(0, "error in request", "Error in adding content type header to server.")
-		Return SetError(3)
+		Return SetError(5)
 	EndIf
 
 	; Have to use binary way to communicate, otherwise Japanese and Chinese words will have errors!
@@ -2195,7 +2203,7 @@ Func Query($sQuery, $bIgnoreError = False )
 	_WinHttpSendRequest($hRequest, Default, $BinQuery )
 	If @error Then
 		MsgBox(0, "error in request", "Error in sending request to server.")
-		Return SetError(3)
+		Return SetError(6)
 	EndIf
 	
 
@@ -2230,11 +2238,11 @@ Func Query($sQuery, $bIgnoreError = False )
 	_WinHttpCloseHandle($hConnect)
 	_WinHttpCloseHandle($hOpen)
 	If $iReturnCode >= 400 Then
-		MsgBox(0, "got data error",  "Error getting data from the stash server. Returned code:" & $iReturnCode)
-		Return SetError(1)
+		c( "Error getting data from the stash server. Returned code:" & $iReturnCode)
+		Return SetError(7)
 	ElseIf QueryResultError($result) Then
-		If Not $bIgnoreError Then MsgBox(0, "oops.", "Error in the query result:" & $result, 10)
-		Return SetError(1)
+		c("Error in the query result:" & $result)
+		Return SetError(8)
 	EndIf
 	Return $result
 EndFunc
@@ -3059,7 +3067,6 @@ Func ExitScript()
 		EndIf 
 	EndIf
 
-
 	if $sSession Then
 		_WD_DeleteSession($sSession)
 		_WD_Shutdown()
@@ -3076,8 +3083,8 @@ Func ExitScript()
 	Exit
 EndFunc   ;==>ExitScript
 
-Func c($str)
-	ConsoleWrite($str & @CRLF)
+Func c($str, $script=@ScriptName, $iLine = @ScriptLineNumber)
+	ConsoleWrite(StringTrimRight($script,4) & " #" & $iline & " " & StringLeft($str,300) & @CRLF)
 EndFunc
 
 Func _IsIP($ip)

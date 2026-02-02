@@ -37,7 +37,9 @@ Func MetroPopUpMenu()
 				EndIf				
 				
 			Case $btnMetroAddToList
+				GUISetState(@SW_HIDE, $guiMetroPopup)
 				AddItemToList()
+				ExitLoop
 				
 			Case $btnMetroSendList
 				GUISetState( @SW_HIDE, $guiMetroPopup )
@@ -75,11 +77,19 @@ Func MetroPopUpMenu()
 							ExitLoop 
 					Else
 							c( "$sCatNo:" & $sCatNo)
-							MsgBox(262192,"Not supported","The current category: " & $aCatNo[1] & " is not supported.",0)
+							MsgBox(262192,"Not supported","The current category: " & $aCatNo[1] & " is not supported.")
 							ContinueLoop 
 					EndIf 
 				EndIf
-
+			Case $btnMetroAutoJAV
+				$sCatNo = GetCurrentTabCategoryAndNumber()
+				If StringLeft($sCatNo, 6) <> "scenes" Then 
+					MsgBox(262192, "Not supported", "Only scenes and scene are supported")
+					ContinueLoop 
+				EndIf
+				GUISetState(@SW_HIDE, $guiMetroPopup)
+				AutoHandleJAV()
+				ExitLoop
 		EndSwitch
 		If Not WinActive($guiMetroPopup) Then WinActivate($guiMetroPopup)
 		MetroHover( $guiMetroPopup )
