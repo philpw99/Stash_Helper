@@ -1,0 +1,126 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <EditConstants.au3>
+
+Func _guiConsole()
+	Local $mguiConsole[]
+	$guiConsole = GUICreate("Stash Helper Console",1076,1106,-1,-1,BitOr($WS_CAPTION,$WS_SIZEBOX,$WS_SYSMENU,$WS_BORDER,$WS_MAXIMIZEBOX,$WS_MINIMIZEBOX),-1)
+GUISetBkColor(0x000040,$guiConsole)
+	$mguiConsole["guiConsole"] = $guiConsole
+	$btnClear = GUICtrlCreateButton("Clear",932,10,114,45,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,512)
+	$mguiConsole["btnClear"] = $btnClear
+	$edText = GUICtrlCreateEdit("",0,60,1076,1046,BitOr($ES_AUTOVSCROLL,$ES_MULTILINE),$WS_EX_STATICEDGE)
+	GUICtrlSetFont(-1,9,400,0,"Consolas")
+	GUICtrlSetColor(-1,"0xFFFFFF")
+	GUICtrlSetBkColor(-1,"0x400080")
+	GUICtrlSetResizing(-1,102)
+	$mguiConsole["edText"] = $edText
+	return $mguiConsole
+EndFunc
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=Stash Helper Console
+breite=1076
+hoehe=1106
+style=$WS_CAPTION+$WS_SIZEBOX+$WS_SYSMENU+$WS_BORDER+$WS_MAXIMIZEBOX+$WS_MINIMIZEBOX
+exstyle=-1
+bgcolour=0x000040
+bgimage=none
+handle=$guiConsole
+parent=
+code=
+codebeforegui=
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+isf_no_includes=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=true
+gui_code_in_function_name=_guiConsole()
+gui_code_in_function_mode=map
+gui_code_in_function_map_name=$mguiConsole
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=MS Sans Serif
+defaultfontsize=8
+[0x00142186]
+type=button
+handle=445
+locked=0
+resize=512
+x=932
+y=10
+width=114
+height=45
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnClear
+text=Clear
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000A20EE]
+type=edit
+handle=446
+locked=0
+resize=102
+x=0
+y=60
+width=1076
+height=1046
+func=
+font=Consolas
+fontsize=9
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0xFFFFFF
+id=$edText
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=$ES_AUTOVSCROLL+$ES_MULTILINE
+exstyle=$WS_EX_STATICEDGE
+bgcolour=0x400080
+code=
+order=2
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+#ce

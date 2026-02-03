@@ -4,7 +4,7 @@
   <Metadata productVersion="1.6.1" projectFileVersion="2.0"/>
   <ProductInformation>
     <Name>Stash Helper</Name>
-    <Version>2.5.2</Version>
+    <Version>2.5.3</Version>
     <CompanyName/>
     <WebURI>https://github.com/philpw99/Stash_Helper</WebURI>
   </ProductInformation>
@@ -39,6 +39,7 @@
       <InstallationFile size="N/A" type="[Folder]">C:\Users\Philip\Documents\GitHub\Stash_Helper\source\release\Images</InstallationFile>
       <InstallationFile size="N/A" type="[Folder]">C:\Users\Philip\Documents\GitHub\Stash_Helper\source\release\gallery\</InstallationFile>
       <InstallationFile size="1 MB" type="exe">C:\Users\Philip\Documents\GitHub\Stash_Helper\source\release\AutoIt3_x64.exe</InstallationFile>
+      <InstallationFile size="105.4 KB" type="a3x">C:\Users\Philip\Documents\GitHub\Stash_Helper\source\release\Console.a3x</InstallationFile>
     </InstallationFiles>
     <Languages>
       <Language>English</Language>

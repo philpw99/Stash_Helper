@@ -64,15 +64,20 @@ Func ShowSettings()
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group
 	
-	Global $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",354,33,258,34,-1,-1)
+	Global $chkShowStash = GUICtrlCreateCheckbox("Show Stash Console",354,13,258,34,-1,-1)
 	If $showStashConsole = 1 Then GUICtrlSetState($chkShowStash, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the stash console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
-	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",354,74,304,34,-1,-1)
+	Local $chkShowWebDriver = GUICtrlCreateCheckbox("Show Web Driver Console",354,54,304,34,-1,-1)
 	If $showWDConsole = 1 Then GUICtrlSetState($chkShowWebDriver, $GUI_CHECKED)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Show the web driver console when running Stash helper. Can be helpful to trouble-shoot problems.")
+
+	Local $chkShowDebugConsole = GUICtrlCreateCheckbox("Show Stash Helper Console",353,94,304,34,-1,-1)
+	If $showDebugConsole = 1 Then GUICtrlSetState($chkShowDebugConsole, $GUI_CHECKED)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Show Stash Helper's debug console when running Stash helper. Can be helpful to trouble-shoot problems.")
 
 	; Group for choosing browser
 	GUICtrlCreateGroup("Preferred Browser",31,133,417,273,$BS_CENTER,-1)
@@ -351,8 +356,13 @@ Func ShowSettings()
 					GUICtrlRead($inputStashWinLocation))
 				Local $iShow = (GUICtrlRead($chkShowStash) = $GUI_CHECKED) ? 1 : 0
 				RegWrite($gsRegBase, "ShowStashConsole", "REG_DWORD", $iShow)
+				if $iShow <> $showStashConsole Then $bRestartRequired = True
 				$iShow = (GUICtrlRead($chkShowWebDriver) = $GUI_CHECKED) ? 1 : 0
 				RegWrite($gsRegBase, "ShowWDConsole", "REG_DWORD", $iShow)
+				If $iShow <> $showWDConsole Then $bRestartRequired = True
+				$iShow = (GUICtrlRead($chkShowDebugConsole) = $GUI_CHECKED) ? 1 : 0
+				RegWrite($gsRegBase, "ShowDebugConsole", "REG_DWORD", $iShow)
+				if $iShow <> $showDebugConsole Then $bRestartRequired = True
 				
 				$stashURL = GUICtrlRead($inputStashURL)
 				RegWrite($gsRegBase, "StashURL", "REG_SZ", $stashURL)

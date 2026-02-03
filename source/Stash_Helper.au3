@@ -31,7 +31,7 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.5.2"
+Global Const $currentVersion = "v2.5.3"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
@@ -113,7 +113,7 @@ Global $aStashURL =  _WinHttpCrackUrl($stashURL)
 ;                  |$array[6] - URL path  Note: relative path. Default is "/"
 ;                  |$array[7] - extra information
 
-If @error Then 
+If @error Then
 	RegWrite($gsRegBase, "StashURL", "REG_SZ", "")
 	MsgExit("Error in StashURL: " & $stashURL & @CRLF & "Resetting it.")
 EndIf
@@ -158,7 +158,7 @@ EndIf
 
 ; Get the browser type and profile type
 Global $stashBrowser = RegRead($gsRegBase, "Browser")
-If $stashBrowser =  "" Then 
+If $stashBrowser =  "" Then
 	InitialSettingsForm()
 	ExitScript()
 EndIf
@@ -169,6 +169,9 @@ If $stashBrowserProfile = "" Then $stashBrowserProfile = "Private"
 ; show the webdriver console or not
 Global $showWDConsole = RegRead($gsRegBase, "ShowWDConsole")
 if @error Then $showWDConsole = 0
+
+Global $showDebugConsole =  RegRead($gsRegBase, "ShowDebugConsole")
+If @error Then $showDebugConsole = 0
 
 Global $sDesiredCapabilities, $sSession
 Global $stashVersion
@@ -197,7 +200,7 @@ If @error Then MsgExit("Error Creating global $minfo object.")
 ; Set Mini Menu shortcut combo
 ; If $giMouseButtonRight = 1, use mouse right button instead of middle button.
 Global $giMouseButtonRight = RegRead($gsRegBase, "MouseButtonRight")
-If @error Then 
+If @error Then
 	; Default to be enabled.
 	RegWrite( $gsRegBase, "MouseButtonRight", "REG_DWORD", 0)
 	$giMouseButtonRight =  0
@@ -250,7 +253,7 @@ Else
 				MsgExit( "Error parsing StashURL:" & $stashURL & @CRLF & "Resetting it again.")
 			EndIf
 		EndIf
-		
+
 		Local $sHost = $aStashURL[2], $sPort = $aStashURL[3]
 		If $sHost = "localhost" or $sHost = "127.0.0.1" Then
 			; All below is just to get the right PID for stash, in case two stashes are running at the same time.
@@ -328,7 +331,7 @@ EndIf
 ;~ 	endswitch
 ;~ Else
 ;~ 	c( "tcp connect:" &  $bTcpConnect )
-;~ 	c( "Done Tcp listening at " & TimerDiff($Timer) & "ms" )	
+;~ 	c( "Done Tcp listening at " & TimerDiff($Timer) & "ms" )
 ;~ EndIf
 #EndRegion
 
@@ -463,6 +466,14 @@ Global $customPerformers, $customStudios, $customTags
 
 #EndRegion
 
+#Region Launch Debug console
+Global $pidDebugConsole
+If $showDebugConsole Then
+	$pidDebugConsole = Run( @ScriptDir & "\AutoIt3.exe " & @ScriptDir & "\Console.a3x", @ScriptDir, @SW_SHOW, $STDIN_CHILD)
+EndIf
+
+#EndRegion Launch Debug console
+
 #Region Webdriver Start
 ; Now get WebDriver Ready
 
@@ -561,7 +572,7 @@ If @error <> $_WD_ERROR_Success Then
 
 		$sSession = _WD_CreateSession($sDesiredCapabilities)
 		If @error <> $_WD_ERROR_Success Then BrowserError($_WD_HTTPRESULT, @ScriptLineNumber, "Too bad it still doesn't work.")
-		
+
 	ElseIf $_WD_HTTPRESULT >= 400 Then
 		BrowserError( $_WD_HTTPRESULT,  @ScriptLineNumber, "Web client error.")	; Show error and exit
 	Else
@@ -590,7 +601,7 @@ TraySetState($TRAY_ICONSTATE_SHOW)
 ; c( "Last Url:" & $gsLastURL )
 if $gsLastURL = "" Then
 	OpenURL($stashURL)
-Else  
+Else
 	OpenURL($gsLastURL)
 EndIf
 
@@ -599,9 +610,9 @@ Global $gbUserPass = False, $gsApiKey = ""
 If IsLoginScreen() Then
 	$gbUserPass = True
 	TraySetClick(0)		; Disable tray menu
-	While True 
+	While True
 		Sleep(1000)
-		If Not IsLoginScreen() Then ExitLoop 
+		If Not IsLoginScreen() Then ExitLoop
 	Wend
 	SetApiKey()
 	TraySetClick(9)		; Enable tray menu
@@ -779,12 +790,12 @@ While True
 			Next
 
 	EndSwitch
-	
+
 	; Check for mini menu combo
-	If $giMouseButtonRight = 1 Then 
+	If $giMouseButtonRight = 1 Then
 		; Check mouse right button
 		If _IsPressed("02") And _IsPressed("11") Then MouseWheelClick()
-	Else 
+	Else
 		; Check mouse middle button
 		if _IsPressed("04") And _IsPressed("11") Then MouseWheelClick()
 	EndIf
@@ -808,24 +819,24 @@ Func MouseWheelClick($bReset = False)
 	; Add current tab to the play list.
 	Static $hBrowser = 0	; Just need to get the win handle once.
 	Static $hTimer = 0 ; Prevent clicking too many times
-	
-	
-	If $hTimer = 0 Then 
+
+
+	If $hTimer = 0 Then
 		$hTimer = TimerInit()	; First time, just start timer. No judgement.
 	Else
 		If TimerDiff($hTimer) < 2000 Then Return ; Too fast. Each click should be 2 seconds apart.
 		$hTimer = TimerInit()	; Accepted. Timer reset.
 	EndIf
-	
+
 	If $bReset Then			; If browser was closed and relaunched.
 		$hBrowser = 0
 		Return
 	EndIf
-	
+
 	If $hBrowser = 0 Then
 		$hBrowser = CurrentBrowserWinHandle()
 	EndIf
-	
+
 	; Get winhandle under the mouse
 	; https://www.autoitscript.com/forum/topic/122147-window-handletitle-under-mouse-pointer/?do=findComment&comment=848114
 	Local $stPoint=DllStructCreate($tagPOINT), $aPos, $hControl, $hWin
@@ -837,7 +848,7 @@ Func MouseWheelClick($bReset = False)
 	If $hWin = $hBrowser Then
 		; Metro style buttons
 		MetroPopUpMenu()
-	EndIf 
+	EndIf
 EndFunc
 
 
@@ -848,20 +859,20 @@ Func CheckStashVersion()
 		; no api key, no access to any query
 		Return SetError(1)
 	EndIf
-	
+
 	Local $sResult = Query('{"query":"{version{version,hash}}"}')
 	If @error Then
 		MsgBox(0, "Error getting current version", "Error getting data for current verion.")
 		Return SetError(1)
 	EndIf
-	
+
 	; Query and Get current version.
 	Local $oResult = Json_Decode($sResult)
 	If Not IsObj($oResult) Then
 		MsgBox(0, "Error getting current version", "Error decoding data for current verion.")
 		Return SetError(2)
-	EndIf 
-		
+	EndIf
+
 	Local $oVersion = Json_ObjGet($oResult, "data.version")
 	$stashVersion = $oVersion.Item("version")
 	Local $stashVersionHash = $oVersion.Item("hash")
@@ -871,19 +882,19 @@ Func CheckStashVersion()
 	If @error Then
 		MsgBox(0, "Error getting latest version", "Error getting data for the latest version.")
 		Return SetError(3)
-	EndIf 
+	EndIf
 	; Successfully get the info about latest version.
 	$oResult = Json_Decode($sResult)
 	If Not IsObj($oResult) Then
 		MsgBox(0, "Error getting latest version", "Error decoding data for the latest version.")
 		Return SetError(4)
 	EndIf
-	
+
 	Local $oLatestVersion = Json_ObjGet($oResult, "data.latestversion")
 	Local $sLatestVersionHash = $oLatestVersion.Item("shorthash")
 	Local $sLatestVersionURL = $oLatestVersion.Item("url")
 	Local $sIgnoreHash = RegRead($gsRegBase, "IgnoreHash")
-	
+
 	; c( "Latest Version Hash:" & $sLatestVersionHash & " VersionHash:" & $stashVersionHash & " latestVersionURL:" & $sLatestVersionURL)
 	If $sLatestVersionHash <> $stashVersionHash And $sLatestVersionHash <> $sIgnoreHash And $stashType = "Local" Then
 		; A new version is waiting.
@@ -927,44 +938,44 @@ EndFunc
 
 Func SetApiKey()
 	; Get the Api key from $gsConfigContent
-	
-	If $gbUserPass Then 
-		If $stashType = "Local" Then 
+
+	If $gbUserPass Then
+		If $stashType = "Local" Then
 			Local $iPos1 = StringInStr($gsConfigContent, "api_key: ")
-			If $iPos1 <> 0 Then 
+			If $iPos1 <> 0 Then
 				$iPos1 += 9
 				Local $iPos2 = StringInStr($gsConfigContent, @LF, 1, 1, $iPos1)
 				If $iPos2 = 0 Then $iPos2 = StringLen($gsConfigContent) + 1
 				$gsApiKey = StringMid($gsConfigContent, $iPos1, $iPos2-$iPos1)
 				c("ApiKey:|" & $gsApiKey & "|")
-			Else 
-				$gsApiKey = ""			
+			Else
+				$gsApiKey = ""
 			EndIf
-			If $gsApiKey = "" Or $gsApiKey = '""' Then 
-				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _ 
+			If $gsApiKey = "" Or $gsApiKey = '""' Then
+				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _
 					& @CRLF & "You need to generate an apikey in order for most features to work properly." ,0)
-						
+
 				OpenURL($stashURL & "settings?tab=security" )
 				$gsApiKey = ""
 			EndIf
-			
-		ElseIf $stashType = "Remote" Then 
+
+		ElseIf $stashType = "Remote" Then
 			; Open the security tab to get the api key
 			OpenURL($stashURL & "settings?tab=security" )
 			_WD_WaitElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='value text-break']", 0, 10000 )
 			Local $sKey
 			Local $sElement = _WD_FindElement($sSession, $_WD_LOCATOR_ByXPath, "//div[@class='value text-break']" )
-			If $sElement <> "" Then 
+			If $sElement <> "" Then
 				$gsApiKey = _WD_ElementAction( $sSession, $sElement, "Text")
 			EndIf
-			If $gsApiKey = "" Then 
-				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _ 
+			If $gsApiKey = "" Then
+				MsgBox(266288,"Need to create ApiKey","Your stash has username/password, but do not have apikey yet." _
 					& @CRLF & "You need to generate an apikey in order for most features to work properly." ,0)
 			Else
 				c("ApiKey:|" & $gsApiKey & "|")
-				OpenURL($stashURL)				
+				OpenURL($stashURL)
 			EndIf
-		EndIf 
+		EndIf
 
 	EndIf
 EndFunc
@@ -973,12 +984,12 @@ Func IsLoginScreen()
 	; return true if current screen is login screen
 	Local $sActualURL = GetURL()
 	If @error Then Return SetError(1,  0,  False )	; no browser opened.
-	
+
 	Local $aURL = _WinHttpCrackUrl($sActualURL)
 	If @error or Not IsArray($aURL) Then Return SetError(2,  0,  False )
 
 	; c( "IsLoginScreen? $aURL[6]:" & $aURL[6] )
-	If $aURL[6] = "/login" Then Return True 
+	If $aURL[6] = "/login" Then Return True
 	Return False
 EndFunc
 
@@ -986,12 +997,12 @@ Func SetHandleToActiveTab()
 	; Set the browser handle to the active tab
 	Local $sCurrentTitle = CurrentBrowserTitle()  ; Long name with extra
 	If $sCurrentTitle = "" Then Return SetError(1)
-	
+
 	Local $sTitle = _WD_Action( $sSession, "title")
 	c( "title:" & $sTitle)
 	c( "Current Title" & $sCurrentTitle)
 
-	Local $bFound = False 
+	Local $bFound = False
 	if $sTitle <> stringleft( $sCurrentTitle, StringLen($sTitle) ) Then
 		Local $aHandles = _WD_Window($sSession, 'handles')
 		If @error = $_WD_ERROR_Success Then
@@ -999,7 +1010,7 @@ Func SetHandleToActiveTab()
 			For $sHandle In $aHandles
 				_WD_Window($sSession, 'Switch', '{"handle":"' & $sHandle & '"}')
 				$sTitle = _WD_Action($sSession, "title")
-				
+
 				If $sTitle = stringleft( $sCurrentTitle, StringLen($sTitle) ) Then
 					$bFound = True
 					$gsBrowserHandle = $sHandle
@@ -1009,9 +1020,9 @@ Func SetHandleToActiveTab()
 		EndIf
 	Else
 		$bFound = True
-	EndIf 
+	EndIf
 
-	If Not $bFound Then 
+	If Not $bFound Then
 		; MsgBox(0, "Error", "Error switching to active tab. Line:" & @ScriptLineNumber)
 		c( "error switching to active tab.")
 		Return SetError(2)
@@ -1023,7 +1034,7 @@ Func CurrentBrowserWinHandle()
 	; Return the browser's win handle
 	Opt( "WinTitleMatchMode", 2 )
 	Local $hWnd
-	If $gsBrowserLocation = "" Then 
+	If $gsBrowserLocation = "" Then
 		; Regular situation.
 		Switch $stashBrowser
 			Case "Firefox"
@@ -1042,7 +1053,7 @@ Func CurrentBrowserWinHandle()
 		$sExe = StringLeft( $sExe, StringInStr( $sExe, ".") -1 )  ; Remove the ".exe"
 		$hWnd = WinGetHandle( " - " & $sExe )
 		if @error Then $hWnd = 0
-	EndIf 
+	EndIf
 	Opt( "WinTitleMatchMode", 1 )	; Restore to default
 	Return $hWnd
 EndFunc
@@ -1051,7 +1062,7 @@ Func CurrentBrowserTitle()
 	; Return the browser's active tab's title
 	Opt( "WinTitleMatchMode", 2 )
 	Local $sTitle
-	If $gsBrowserLocation = "" Then 
+	If $gsBrowserLocation = "" Then
 		; Regular situation.
 		Switch $stashBrowser
 			Case "Firefox"
@@ -1068,7 +1079,7 @@ Func CurrentBrowserTitle()
 		Local $sExe = StringMid( $gsBrowserLocation, StringInStr($gsBrowserLocation, "\", 0, -1) + 1 )
 		$sExe = StringLeft( $sExe, StringInStr( $sExe, ".") -1 )  ; Remove the ".exe"
 		$sTitle = WinGetTitle( " - " & $sExe )
-	EndIf 
+	EndIf
 	Opt( "WinTitleMatchMode", 1 )	; Restore to default
 	Return $sTitle
 EndFunc
@@ -1076,17 +1087,17 @@ EndFunc
 Func IsEmpty( $item )
 	Switch VarGetType($item)
 		Case "String"
-			if $item = "" or $item = Null  Then Return True 
+			if $item = "" or $item = Null  Then Return True
 		Case "Array"
-			if UBound($item) = 0 Then Return True 
+			if UBound($item) = 0 Then Return True
 		Case "Binary"
-			If $item = Null Or StringLen( $item) = 0 Then Return True 
+			If $item = Null Or StringLen( $item) = 0 Then Return True
 		Case "Object"
 			If UBound($item.Items) = 0 Then Return True
 		Case Else
 			If $item = Null Then return true
 	EndSwitch
-	Return False 
+	Return False
 EndFunc
 
 
@@ -1096,7 +1107,7 @@ Func AddToList($sList, $sItem, $sep = "|" )
 EndFunc
 
 Func StartBrowser()
-	If Not FileExists($gsWebDriverPath) Then 
+	If Not FileExists($gsWebDriverPath) Then
 		DirCreate($gsWebDriverPath)
 	EndIf
 	Switch StringLower($stashBrowser)
@@ -1131,12 +1142,12 @@ Func CreateCSSMenu()
 	; Global $trayMenuCSS
 	; Global $aCSSItems[0][4]
 	; Global Enum $CSS_TITLE, $CSS_CONTENT, $CSS_ENABLE, $CSS_HANDLE
-	
+
 	; It will have problems when a user/pass is set
 	If $gbUserPass And $gsApiKey = "" Then
 		Return SetError(1)
 	EndIf
-	
+
 	If UBound($aCSSItems) = 0 Then InitCSSArray($aCSSItems)
 
 	For $i = 0 To UBound($aCSSItems) -1
@@ -1313,7 +1324,7 @@ Func OpenMediaFolder()
 				Return SetError(1)
 			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findScene")
-			
+
 		Case "images"
 			; $sQuery = '{"query":"{findImage(id:' & $aStr[2] & '){path}}"}'		; For v16
 			$sQuery = '{"query":"{findImage(id:' & $aStr[2] & '){files{path}}}"}'	; For v17
@@ -1339,15 +1350,15 @@ Func OpenMediaFolder()
 				Return SetError(1)
 			EndIf
 			$oSceneData = Json_ObjGet($oResult, "data.findGallery")
-		Case Else 
+		Case Else
 			Return
 	EndSwitch
-	
-	If IsObj($oSceneData) Then 
+
+	If IsObj($oSceneData) Then
 		; $sFilePath = $oSceneData.Item("path")					; For v16
 		$sFilePath = $oSceneData.Item("files")[0].Item("path")	; For v17
 		$sFilePath = FixPath($sFilePath)		; v17 need fixing
-		
+
 		; Geth the path only
 		$iPos =  StringInStr($sFilePath, "\", 2, -1)
 		$sPath = StringLeft($sFilePath, $iPos)
@@ -1423,7 +1434,7 @@ Func GetURL()
 			MsgBox(0, "No Stash browser", "Currently no Stash browser is opened. Please open one by using the bookmarks.")
 			Return SetError(1)
 		case Else
-			If Not BrowserTabIsFront() Then 
+			If Not BrowserTabIsFront() Then
 				; Set the current handle to the front tab of the browser
 				SetHandleToActiveTab()
 			EndIf
@@ -1445,8 +1456,8 @@ Func BrowserTabIsFront()
 	Local $sScript = "return document.visibilityState;"
 	Local $sResult = _WD_ExecuteScript( $sSession, $sScript, Default , Default )
 	; c( "error :" & @error & " result :" & $sResult)
-	If @error = $_WD_ERROR_Success Then 
-		if $sResult = '{"value":"visible"}' Then Return True 
+	If @error = $_WD_ERROR_Success Then
+		if $sResult = '{"value":"visible"}' Then Return True
 	EndIf
 	Return False
 EndFunc
@@ -1691,7 +1702,7 @@ Func AddItemToList()
 			For $oScene in $aScenes
 				$i += AddSceneToList($oScene.item("id"))
 			Next
-			
+
 			MsgBox(262208, "Done", "Totally "& $i & " scenes were added to the current play list." & @CRLF _
 				& "Total entities in play list:  " & UBound($aPlayList), 10)
 		Case "images"
@@ -1882,7 +1893,7 @@ Func AddGroupToList($sID)
 		Local $j = UBound($aPlayList)
 		ReDim $aPlayList[$j+1][3]
 		$aPlayList[$j][$LIST_TITLE] = "Group: " & $oGroupData.Item("name") & " - Scene " & ($i+1)
-		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("files")[0].Item("duration") )	
+		$aPlayList[$j][$LIST_DURATION] = Floor( $oSceneData.Item("files")[0].Item("duration") )
 		If $stashType = "Local" Then
 			$aPlayList[$j][$LIST_FILE] = FixPath($oSceneData.Item("files")[0].Item("path"))
 		ElseIf $stashType = "Remote" Then
@@ -1911,7 +1922,7 @@ Func AddSceneToList($sID)
 	; $oData.Item("title") $oData.Item("path")
 	$i = UBound($aPlayList)
 	ReDim $aPlayList[$i+1][3]
-	If $oData.Item("title") = "" Then 
+	If $oData.Item("title") = "" Then
 		; No title yet
 		$aPlayList[$i][$LIST_TITLE] = "Scene: " & $oData.Item("files")[0].Item("basename")
 	Else
@@ -1963,7 +1974,7 @@ Func GetNumber($sURL, $sCategory)
 	Local $str =  StringMid($sURL, $iPos1 + StringLen($sCategory) + 2 ) ; rest of the url after /
 	Local $aMatch = StringRegExp( $str, "^\d+", $STR_REGEXPARRAYMATCH )
 	if @error Then Return SetError(2)
-	
+
 	Return $aMatch[0]
 	; like "589" in string mode.
 EndFunc
@@ -1971,11 +1982,11 @@ EndFunc
 Func ScanFiles()
 	; Scan new files in Stash
 	QueryMutation('{metadataScan(input:{ useFileMetadata:true})}')
-	If @error Then 
+	If @error Then
 		MsgBox(0, "Error", "Error sending the scan command.")
 		Return SetError(1)
 	EndIf
-	
+
 	OpenURL( $stashURL & "settings?tab=tasks" )
 	MsgBox(0, "Command sent", "The scan command is sent. You can check the progress in Settings->Tasks.", 10)
 EndFunc
@@ -2010,13 +2021,13 @@ Func RefreshAllTabs()
 	; This will refresh all tabs. Useful after mutations.
 	Local $sCurrentTab = _WD_Window($sSession, "Window")	; Current Tab handle
 	If @error <> $_WD_ERROR_Success Then $sCurrentTab = ""
-		
+
 	Local $aHandles = _WD_WINDOW($sSession, "Handles")
 	If @error <> $_WD_ERROR_Success Or Not IsArray($aHandles) Then
 		; MsgBox(48,"Error in browser.","Error retrieving browser handles.",0)
 		Return SetError(1)
 	EndIf
-	
+
 	Local $iTabCount = UBound($aHandles)
 	For $i = 0 To $iTabCount-1
 		; Switch to this tab
@@ -2024,7 +2035,7 @@ Func RefreshAllTabs()
 		_WD_Action($sSession, "refresh")
 	Next
 	; Switch back to the current tab
-	If $sCurrentTab <> "" Then 
+	If $sCurrentTab <> "" Then
 		_WD_Window($sSession, "Switch", '{"handle":"' & $sCurrentTab & '"}' )
 	EndIf
 EndFunc
@@ -2141,11 +2152,11 @@ EndFunc
 
 Func QueryMutation($sQuery, $bIgnoreError = False )
 	; This one will wrap the {"mutation":" "} around $sQuery. Easier to program.
-	if StringLower( StringLeft($sQuery, 8)) = "mutation" Then 
+	if StringLower( StringLeft($sQuery, 8)) = "mutation" Then
 		; Remove the "mutation" from left.
 		$sQuery = StringTrimLeft($sQuery, 8)
 	EndIf
-	
+
 	c("QueryString:" & '{"query": "mutation' & $sQuery & '"}'  )
 	$sResult = Query('{"query": "mutation' & $sQuery & '"}' , $bIgnoreError)
 	If @error Then Return SetError(1, 0, $sResult)
@@ -2155,12 +2166,12 @@ EndFunc
 
 Func Query($sQuery, $bIgnoreError = False )
 	; Use Stash's graphql to get results or do something
-	If $gbUserPass And $gsApiKey = "" Then 
+	If $gbUserPass And $gsApiKey = "" Then
 		; It won't work. Need to set ApiKey
 		c("Query without ApiKey, won't work")
 		Return SetError(1)
 	EndIf
-	
+
 	Local $hOpen = _WinHttpOpen()
 	Local $hConnect = _WinHttpConnect($hOpen, $aStashURL[2], $aStashURL[3])
 	If $hConnect = 0 Then
@@ -2171,18 +2182,18 @@ Func Query($sQuery, $bIgnoreError = False )
 	EndIf
 	Local $sPath = $aStashURL[6]	; Get the start relative path
 	If StringRight($sPath,1) = "/" Then $sPath = StringTrimRight($sPath,1)	; Remove the right slash
-	
+
 	$sPath &= "/graphql"
-	
+
 	; Use full http Request for query
 	$hRequest = _WinHttpOpenRequest($hConnect, "POST", $sPath)
-	If @error Then 
+	If @error Then
 		MsgBox(0, "Error opening request", "Error in opening a request to server.")
 		Return SetError(3)
 	EndIf
-	
+
  	; Add headers
-	If $gsApiKey <> "" Then 
+	If $gsApiKey <> "" Then
 		_WinHttpAddRequestHeaders($hRequest, "ApiKey: " & $gsApiKey)
 		If @error Then
 			MsgBox(0, "error in request", "Error in adding apikey header to server.")
@@ -2199,18 +2210,18 @@ Func Query($sQuery, $bIgnoreError = False )
 
 	; Have to use binary way to communicate, otherwise Japanese and Chinese words will have errors!
 	Local $BinQuery = StringToBinary($sQuery, $SB_UTF8)
-	
+
 	_WinHttpSendRequest($hRequest, Default, $BinQuery )
 	If @error Then
 		MsgBox(0, "error in request", "Error in sending request to server.")
 		Return SetError(6)
 	EndIf
-	
+
 
 	; wait for receiving response, maximum 10 seconds.
 	_WinHttpReceiveResponse($hRequest)
 	Local $hTimer = TimerInit()
-	While _WinHttpQueryDataAvailable($hRequest) = 0 
+	While _WinHttpQueryDataAvailable($hRequest) = 0
 		Sleep(1)
 		If TimerDiff($hTimer) > 10000 Then ExitLoop		; Wait max 10 seconds for response.
 	Wend
@@ -2264,7 +2275,7 @@ Func PlayCurrentTab()
 	Local $sURL = GetURL()
 	If @error Then  Return SetError(1)
 	c( "Current Tab URL: " & $sURL)
-	Select 
+	Select
 		Case StringInStr($sURL, "/scenes/")
 			PlayCurrentScene()
 		Case StringInStr($sURL, "/groups/")
@@ -2273,16 +2284,16 @@ Func PlayCurrentTab()
 		Case StringInStr($sURL, "/images") Or StringInStr($sURL, "/galleries/")
 			CurrentImagesViewer()
 		Case Else
-			; The current tab is not 
+			; The current tab is not
 			MsgBox(0, "Not support", "Sorry, this operation only supports current scene/group/images/gallery.")
-	EndSelect 
+	EndSelect
 EndFunc
 
 
 Func PlayCurrentScene()
 	Local $sURL = GetURL()
 	If @error Then Return SetError(1)
-	
+
 	c( "Play current scene, URL:" & $sURL )
 
 	Local $aMatch = StringRegExp($sURL, "\/scenes\/(\d+)\?", $STR_REGEXPARRAYMATCH )
@@ -2307,7 +2318,7 @@ Func PlayCurrentScene()
 		; Get the scenes file path and play
 		; $sFile = Json_ObjGet($oData, "data.findScene.path")				; For v16
 		Local $aFiles = Json_ObjGet($oData, "data.findScene.files")			; for v17
-		if UBound($aFiles) =  0 Then 
+		if UBound($aFiles) =  0 Then
 			MsgBox(0, "Error in files array", "Find scene returns empty file array")
 			Return SetError(1)
 		EndIf
@@ -2376,7 +2387,7 @@ Func SetupFirefox()
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', $iPort )
 	_WD_Option('DriverParams', '--port=' &  $iPort & ' --log trace')
-	
+
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
 	_WD_CapabilitiesAdd("firstMatch", "firefox")
@@ -2389,38 +2400,38 @@ Func SetupFirefox()
 		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
 	EndIf
 
-	If $stashBrowserProfile = "Default" Then 
+	If $stashBrowserProfile = "Default" Then
 		_WD_Option('DriverParams', '--marionette-port 2828')
 		_WD_CapabilitiesAdd( "args", "-profile", GetDefaultFFProfile() )
 	Else
 		; Private profile. Do nothing for now.
 	EndIf
-	
-	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.	
+
+	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
 	; The old way
 ;~ 	Switch $stashBrowserProfile
 ;~ 		Case "Private"
-;~ 			if $gsBrowserLocation <> "" Then 
+;~ 			if $gsBrowserLocation <> "" Then
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true,' _
 ;~ 					& '"moz:firefoxOptions":{"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '"}' _
 ;~ 					& '}}}'
 ;~ 			Else
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true}}}'
 ;~ 			EndIf
-;~ 			
+;~
 ;~ 		Case "Default"
 ;~ 			_WD_Option('DriverParams', '--marionette-port 2828')
-;~ 			
-;~ 			If $gsBrowserLocation <> "" Then 
+;~
+;~ 			If $gsBrowserLocation <> "" Then
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": { "browserName": "firefox", "acceptInsecureCerts":true, "moz:firefoxOptions": {' _
 ;~ 				& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '",' _
 ;~ 				& '"args": ["-profile", "' & GetDefaultFFProfile() & '"]}}}}'
 ;~ 			Else
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "firefox", "acceptInsecureCerts":true, "moz:firefoxOptions": {"args": ["-profile", "' & GetDefaultFFProfile() & '"]}}}}'
 ;~ 			EndIf
-;~ 			
+;~
 ;~ 	EndSwitch
 
 EndFunc   ;==>SetupFirefox
@@ -2455,9 +2466,9 @@ Func SetupChrome()
 			Exit
 		EndIf
 	EndIf
-	
-	If ProcessExists( "chrome.exe") Then 
-		$iReply = MsgBox(52,"Other Chrome Browser Is Running","This program need other Chrome browsers to close to run properly." _ 
+
+	If ProcessExists( "chrome.exe") Then
+		$iReply = MsgBox(52,"Other Chrome Browser Is Running","This program need other Chrome browsers to close to run properly." _
 					& @CRLF & "Do you want to close them now?" _
 					& @CRLF & "Click Yes to force close them all. Click No to exit this program.",0)
 		switch $iReply
@@ -2468,7 +2479,7 @@ Func SetupChrome()
 					Sleep(500)
 				Wend
 			case 7 ;NO
-				ExitScript()		
+				ExitScript()
 		endswitch
 	EndIf
 
@@ -2477,7 +2488,7 @@ Func SetupChrome()
 	Local $iPort =  5555
 	_WD_Option('Port', $iPort)
 	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\chrome.log"')
-	
+
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
 	_WD_CapabilitiesAdd("alwaysMatch", "chrome")
@@ -2489,7 +2500,7 @@ Func SetupChrome()
 		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
 	EndIf
 
-	If $stashBrowserProfile = "Default" Then 
+	If $stashBrowserProfile = "Default" Then
 		_WD_CapabilitiesAdd( "args", "--no-sandbox")
 		; _WD_CapabilitiesAdd( "args", "--disable-dev-shm-usage")
 		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultChromeProfile() )
@@ -2497,24 +2508,24 @@ Func SetupChrome()
 	Else
 		; Private profile. Do nothing for now.
 	EndIf
-	
-	; _WD_CapabilitiesAdd( "args", "--app=" & $gsLastURL)	; Launch the last remembered URL or just stash.	
-	
+
+	; _WD_CapabilitiesAdd( "args", "--app=" & $gsLastURL)	; Launch the last remembered URL or just stash.
+
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
-	
+
 	; The old way
 ;~ 	Switch $stashBrowserProfile
 ;~ 		Case "Private"
-;~ 			If $gsBrowserLocation <> "" Then 
+;~ 			If $gsBrowserLocation <> "" Then
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "chrome", "goog:chromeOptions": {"w3c": true, ' _
 ;~ 					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
 ;~ 					& '"excludeSwitches": [ "enable-automation"]}}}}'
 ;~ 			Else
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"browserName": "chrome", "goog:chromeOptions": {"w3c": true, "excludeSwitches": [ "enable-automation"]}}}}'
 ;~ 			EndIf
-;~ 			
+;~
 ;~ 		Case "Default"
-;~ 			If $gsBrowserLocation <> "" Then 
+;~ 			If $gsBrowserLocation <> "" Then
 ;~ 				$sDesiredCapabilities = '{"capabilities": {"alwaysMatch": {"goog:chromeOptions": {"w3c": true, ' _
 ;~ 					& '"binary":"' & StringReplace($gsBrowserLocation, "\", "\\") & '", ' _
 ;~ 					& '"excludeSwitches": [ "enable-automation"], "args":["--user-data-dir=' & GetDefaultChromeProfile() & '", "--profile-directory=Default"]}}}}'
@@ -2541,8 +2552,8 @@ Func SetupEdge()
 			Exit
 		EndIf
 	EndIf
-	
-	If ProcessExists( "msedge.exe") Then 
+
+	If ProcessExists( "msedge.exe") Then
 		$iReply = MsgBox(52,"Other Edge Browser Is Running","This program need other Edge browsers to close to run properly." _
 						& @CRLF & "Do you want to close them now?" _
 						& @CRLF & "Click Yes to force close them all. Click No to exit this program.",0)
@@ -2554,7 +2565,7 @@ Func SetupEdge()
 					Sleep(500)
 				Wend
 			case 7 ;NO
-				ExitScript()		
+				ExitScript()
 		endswitch
 
 	EndIf
@@ -2564,7 +2575,7 @@ Func SetupEdge()
 	_WD_Option('DriverClose', True)
 	_WD_Option('Port', $iPort)
 	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\msedge.log"')
-	
+
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
 	_WD_CapabilitiesAdd("alwaysMatch", "msedge")
@@ -2584,9 +2595,9 @@ Func SetupEdge()
 	Else
 		; Private profile. Do nothing for now.
 	EndIf
-	
-	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.	
-	
+
+	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.
+
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
 	; c( "Browser Path:" & _WD_GetBrowserPath('msedge') )
@@ -2602,9 +2613,9 @@ EndFunc   ;==>SetupEdge
 
 Func GetDefaultEdgeProfile()
 	; C:\\Users\\user\\AppData\\Local\\Microsoft\\Edge\\User Data\\
-	; Local $sPath = StringReplace( @AppDataDir, "\Roaming", "\Local", 1) & "\Microsoft\Edge\User Data\" 
+	; Local $sPath = StringReplace( @AppDataDir, "\Roaming", "\Local", 1) & "\Microsoft\Edge\User Data\"
 	; Return $sPath
-	Return StringReplace( @AppDataDir, "\Roaming", "\Local", 1) & "\Microsoft\Edge\User Data" 
+	Return StringReplace( @AppDataDir, "\Roaming", "\Local", 1) & "\Microsoft\Edge\User Data"
 EndFunc
 
 Func SetupOpera()
@@ -2625,7 +2636,7 @@ Func SetupOpera()
 	Local $iPort = _WD_GetFreePort( 9515, 9600 )
 	_WD_Option('Port', $iPort)
 	_WD_Option('DriverParams', '--port=' & $iPort & ' --verbose --log-path="' & $gsWebDriverPath & '\opera.log"')
-	
+
 	; Use new UDF for capabilities
 	_WD_CapabilitiesStartup()
 	_WD_CapabilitiesAdd("firstMatch", "opera")
@@ -2637,16 +2648,16 @@ Func SetupOpera()
 		_WD_CapabilitiesAdd("binary", $gsBrowserLocation )
 	EndIf
 
-	If $stashBrowserProfile = "Default" Then 
+	If $stashBrowserProfile = "Default" Then
 		_WD_CapabilitiesAdd( "args", "--no-sandbox" )
 		_WD_CapabilitiesAdd( "args", "--user-data-dir", GetDefaultOperaProfile() )
 		_WD_CapabilitiesAdd( "args", "--profile-directory", "Default" )
 	Else
 		; Private profile. Do nothing for now.
 	EndIf
-	
-	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.	
-	
+
+	; _WD_CapabilitiesAdd( "args", $gsLastURL)	; Launch the last remembered URL or just stash.
+
 	$sDesiredCapabilities = _WD_CapabilitiesGet()
 
 EndFunc   ;==>SetupOpera
@@ -2668,10 +2679,10 @@ Func OpenURL($url)
 	; Probably it's close or no windows at all.
 	Local $sCurrentHandle = _WD_Window($sSession, 'Window')
 	c( "current handle:" & $sCurrentHandle)
-	If @error <> $_WD_ERROR_Success Then 
+	If @error <> $_WD_ERROR_Success Then
 		$sCurrentHandle = ""
 	EndIf
-	
+
 	Local $aHandles =  _WD_Window($sSession, 'Handles')
 	Local $iCount = UBound($aHandles)
 	If $iCount = 0 Then
@@ -2710,7 +2721,7 @@ Func CreateSubMenu()
 	Local $sData = RegRead($gsRegBase, "ScenesList")
 	If @error Then
 		; Empty. All Scenes only.
-		SetMenuItem($traySceneLinks,0, 0, "All Scenes", $stashURL & "scenes")	
+		SetMenuItem($traySceneLinks,0, 0, "All Scenes", $stashURL & "scenes")
 	Else
 		; Setting all the data
 		; Data is like "0|All Groups|http://localhost...@crlf 1|Second Item|http:..."
@@ -2718,20 +2729,20 @@ Func CreateSubMenu()
 	EndIf
 
 	; Image data
-	
+
 	Local $sData = RegRead($gsRegBase, "ImagesList")
 	If @error Then
 		SetMenuItem($trayImageLinks,0, 0, "All Images", $stashURL & "images")
-	Else 
+	Else
 		DataToArray($sData, $trayImageLinks)
 	EndIf
 
 	; Group data
-	
+
 	Local $sData = RegRead($gsRegBase, "GroupsList")
 	If @error Then
 		SetMenuItem($trayGroupLinks,0 , 0, "All Groups", $stashURL & "groups")
-	Else 
+	Else
 		DataToArray($sData, $trayGroupLinks)
 	EndIf
 
@@ -2747,7 +2758,7 @@ Func CreateSubMenu()
 	Local $sData = RegRead($gsRegBase, "GalleriesList")
 	If @error Then
 		SetMenuItem($trayGalleryLinks,0, 0, "All Galleries", $stashURL & "galleries")
-	Else 
+	Else
 		DataToArray($sData, $trayGalleryLinks)
 	EndIf
 
@@ -2755,7 +2766,7 @@ Func CreateSubMenu()
 	Local $sData = RegRead($gsRegBase, "PerformersList")
 	If @error Then
 		SetMenuItem($trayPerformerLinks,0, 0, "All Performers", $stashURL & "performers")
-	Else 
+	Else
 		DataToArray($sData, $trayPerformerLinks)
 	EndIf
 
@@ -2763,7 +2774,7 @@ Func CreateSubMenu()
 	Local $sData = RegRead($gsRegBase, "StudiosList")
 	If @error Then
 		SetMenuItem($trayStudioLinks,0, 0, "All Studios", $stashURL & "studios")
-	Else 
+	Else
 		DataToArray($sData, $trayStudioLinks)
 	EndIf
 
@@ -2912,7 +2923,7 @@ Func ReloadSubMenu($sCategory, ByRef $aArray)
 	EndIf
 	; Now $aArray is like [1][null][Title1][Link1],[2][null][title2][link2]...
 		; Populate the scenes sub menu
-	
+
 	For $i = 0 To UBound($aArray) -1
 		If $aArray[$i][$ITEM_TITLE] <> "" Then
 			$aArray[$i][$ITEM_HANDLE] = TrayCreateItem($aArray[$i][$ITEM_TITLE], GetMenuHandle($sCategory) )
@@ -2939,7 +2950,7 @@ Func GetMenuHandle($sCategory)
 			Return  $trayMenuStudios
 		Case "tags"
 			Return  $trayMenuTags
-		Case Else 
+		Case Else
 			Return SetError(1)
 	EndSwitch
 
@@ -3017,24 +3028,24 @@ Func DataToArray($sData, ByRef $aLink)
 	; Data in $aLink will be changed.
 	Local $aLines = StringSplit($sData, "@@@", $STR_ENTIRESPLIT + $STR_NOCOUNT)
 	If @error Then Return SetError(1)
-	
+
 	For $i = 0 To $iMaxSubItems-1
-		If $i < UBound($aLines) Then 
+		If $i < UBound($aLines) Then
 			; c("Line:" & $aLines[$i])
 			Local $aItem = StringSplit($aLines[$i], "|", $STR_NOCOUNT)
-			If UBound($aItem) = 3 Then 
+			If UBound($aItem) = 3 Then
 				$aLink[$i][$ITEM_TITLE] = $aItem[$ITEM_TITLE]
 				$aLink[$i][$ITEM_LINK] = $aItem[$ITEM_LINK]
 			Else
 				$aLink[$i][$ITEM_TITLE] = ""
 				$aLink[$i][$ITEM_LINK] = ""
-			EndIf 
+			EndIf
 		Else
 			; Clean up the data no longer used
-			$aLink[$i][$ITEM_HANDLE] = Null 
+			$aLink[$i][$ITEM_HANDLE] = Null
 			$aLink[$i][$ITEM_TITLE] = ""
 			$aLink[$i][$ITEM_LINK] = ""
-		EndIf 
+		EndIf
 	Next
 EndFunc
 
@@ -3056,15 +3067,15 @@ EndFunc
 
 Func ExitScript()
 	If $giSaveLastURL and $sSession Then
-		If CurrentBrowserWinHandle() <> 0 Then 
+		If CurrentBrowserWinHandle() <> 0 Then
 			; The browser is still running.
 			$sURL = GetURL()
 			If @error Then
 				RegWrite($gsRegBase, "LastURL", "REG_SZ", $stashURL )
-			Else 
+			Else
 				RegWrite($gsRegBase, "LastURL", "REG_SZ", $sURL )
 			EndIf
-		EndIf 
+		EndIf
 	EndIf
 
 	if $sSession Then
@@ -3075,16 +3086,26 @@ Func ExitScript()
 	If $iStashPID <> 0 And $gbRunStashFromHelper Then
 		If ProcessExists($iStashPID) Then ProcessClose($iStashPID)
 	EndIf
-	
+
 	If $iConsolePID <> 0 And $gbRunStashFromHelper Then
 		ProcessClose($iConsolePID)
 	EndIf
-	
+
+	If $pidDebugConsole And ProcessExists($pidDebugConsole) Then ProcessClose($pidDebugConsole)
+
 	Exit
 EndFunc   ;==>ExitScript
 
 Func c($str, $script=@ScriptName, $iLine = @ScriptLineNumber)
-	ConsoleWrite(StringTrimRight($script,4) & " #" & $iline & " " & StringLeft($str,300) & @CRLF)
+	$sLine = StringTrimRight($script,4) & " #" & $iline & " " & StringLeft($str,300) & @CRLF
+	ConsoleWrite($sLine)
+	if $pidDebugConsole Then
+		StdinWrite( $pidDebugConsole, $sLine)
+		If @error Then
+			ConsoleWrite( "Error in writing to debug console")
+			$pidDebugConsole = ""
+		EndIf
+	EndIf
 EndFunc
 
 Func _IsIP($ip)
