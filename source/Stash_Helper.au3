@@ -469,7 +469,7 @@ Global $customPerformers, $customStudios, $customTags
 #Region Launch Debug console
 Global $pidDebugConsole
 If $showDebugConsole Then
-	$pidDebugConsole = Run( @ScriptDir & "\AutoIt3.exe " & @ScriptDir & "\Console.a3x", @ScriptDir, @SW_SHOW, $STDIN_CHILD)
+	$pidDebugConsole = Run( Q(@ScriptDir & "\AutoIt3.exe") & " " & Q(@ScriptDir & "\Console.a3x") , @ScriptDir, @SW_SHOW, $STDIN_CHILD)
 EndIf
 
 #EndRegion Launch Debug console
