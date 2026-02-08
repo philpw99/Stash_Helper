@@ -117,20 +117,24 @@ Func ScrapeJAVScene($SceneID)
 		; Patch for filenames like "4k2.com@KAVR00123.MP4"
 		$sBaseName = StringMid($sBaseName, StringInStr($sBaseName, "@") + 1)
 	EndIf
-	If StringInStr($sBaseName, "dsvr") <> 0 Then
-		; 2nd patch for 13dsvr
-		$aStr = StringRegExp($sBaseName, '.*?((?i)dsvr)-?(\d+)[zZ]?[eE]?(?:-pt)?(\d{1,2})?.*', $STR_REGEXPARRAYMATCH )
-		$aStr[0] = "13DSVR"
-	ElseIf StringInStr($sBaseName, "tmavr") <> 0 Then 
-		$aStr = StringRegExp($sBaseName, '.*?((?i)tmavr)-?(\d+)[zZ]?[eE]?(?:-pt)?(\d{1,2})?.*', $STR_REGEXPARRAYMATCH )
-		$aStr[0] = "55TMAVR"
-	ElseIf StringInStr($sBaseName, "h_1127vosm") <> 0 Then
-		$aStr = StringRegExp($sBaseName, '.*?((?i)h_1127vosm)-?(\d+)[zZ]?[eE]?(?:-pt)?(\d{1,2})?.*', $STR_REGEXPARRAYMATCH )
-	Else 
-		$aStr = StringRegExp($sBaseName, '.*?([a-zA-Z|tT28]+)-?(\d+)[zZ]?[eE]?(?:-pt)?(\d{1,2})?.*', $STR_REGEXPARRAYMATCH )
+	
+	; Use global array $gaJAVStudioData
+	Local $aStr[2]
+	If UBound($gaJAVStudioData) <> 0 Then 
+		For $i = 0 to UBound($gaJAVStudioData) -1
+			If StringInStr($sBaseName, $gaJAVStudioData[$i][0]) <> 0 Then 
+				$aStr = StringRegExp($sBaseName, '.*?((?i)' & $gaJAVStudioData[$i][0] & ')-?(\d+)[zZ]?[eE]?(?:-pt)?(\d{1,2})?.*', $STR_REGEXPARRAYMATCH )
+				$aStr[0] = $gaJAVStudioData[$i][1]
+				ExitLoop 
+			EndIf
+		Next
+		if $aStr[0] = "" Then 
+			; No match, use default 
+			$aStr = StringRegExp($sBaseName, '.*?([a-zA-Z|tT28]+)-?(\d+)[zZ]?[eE]?(?:-pt)?(\d{1,2})?.*', $STR_REGEXPARRAYMATCH )
+		EndIf
 	EndIf
 	
-	If @error Then
+	If UBound($aStr) < 2 or $aStr[0] = "" or $aStr[1] = "" Then
 		c( "Scene " & $SceneID & " basename: " & $sBaseName & " is not a JAV file.")
 		Return SetError(2)
 	EndIf

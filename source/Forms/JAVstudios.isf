@@ -1,0 +1,392 @@
+; -- Created with ISN Form Studio 2 for ISN AutoIt Studio -- ;
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#Include <GuiButton.au3>
+#include <GuiListView.au3>
+#include <EditConstants.au3>
+
+Func _JAVstudios()
+	Local $mJAVstudios[]
+	$JAVstudios = GUICreate("JAVstudios",522,698,-1,-1,BitOr($WS_SIZEBOX,$WS_DLGFRAME,$WS_BORDER,$WS_POPUPWINDOW,$DS_MODALFRAME),BitOr($WS_EX_TOPMOST,$WS_EX_DLGMODALFRAME))
+	$mJAVstudios["JAVstudios"] = $JAVstudios
+	$lstStudios = GUICtrlCreatelistview("Fragment|Studio Code",20,20,480,473,BitOr($LVS_ALIGNLEFT,$LVS_SINGLESEL,$LVS_SHOWSELALWAYS),BitOr($LVS_EX_FULLROWSELECT,$LVS_EX_GRIDLINES,$LVS_EX_TRACKSELECT,$LVS_EX_TWOCLICKACTIVATE))
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,102)
+	$mJAVstudios["lstStudios"] = $lstStudios
+	_GUICtrlListView_SetColumnWidth($lstStudios, 0, 235)
+_GUICtrlListView_SetColumnWidth($lstStudios, 1, 235)
+	GUICtrlCreateLabel("Fragment:",30,510,112,31,$SS_RIGHT,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,834)
+	$inpFragment = GUICtrlCreateInput("",155,507,230,44,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,834)
+	$mJAVstudios["inpFragment"] = $inpFragment
+	GUICtrlCreateLabel("Studio:",32,565,112,31,$SS_RIGHT,-1)
+	GUICtrlSetFont(-1,10,400,0,"Tahoma")
+	GUICtrlSetBkColor(-1,"-2")
+	GUICtrlSetResizing(-1,834)
+	$inpStudio = GUICtrlCreateInput("",155,562,230,44,-1,$WS_EX_CLIENTEDGE)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,834)
+	$mJAVstudios["inpStudio"] = $inpStudio
+	$btnPlus = GUICtrlCreateButton("+",16,626,60,44,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Add a row.")
+	GUICtrlSetResizing(-1,834)
+	$mJAVstudios["btnPlus"] = $btnPlus
+	$btnMinus = GUICtrlCreateButton("-",90,626,60,44,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Remove a row.")
+	GUICtrlSetResizing(-1,834)
+	$mJAVstudios["btnMinus"] = $btnMinus
+	$btnOK = GUICtrlCreateButton("OK",188,626,137,44,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,836)
+	$mJAVstudios["btnOK"] = $btnOK
+	$btnCancel = GUICtrlCreateButton("Cancel",358,626,137,44,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,836)
+	$mJAVstudios["btnCancel"] = $btnCancel
+	$btnSet = GUICtrlCreateButton("Set",400,530,100,44,$BS_CENTER,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetResizing(-1,834)
+	$mJAVstudios["btnSet"] = $btnSet
+	return $mJAVstudios
+EndFunc
+
+
+
+#cs
+[gui]
+Handle_deklaration=default
+Handle_deklaration_const=false
+title=JAVstudios
+breite=522
+hoehe=698
+style=$WS_SIZEBOX+$WS_DLGFRAME+$WS_BORDER+$WS_POPUPWINDOW+$DS_MODALFRAME
+exstyle=$WS_EX_TOPMOST+$WS_EX_DLGMODALFRAME
+bgcolour=0xF0F0F0
+bgimage=none
+handle=$JAVstudios
+parent=
+code=
+codebeforegui=
+xpos=-1
+ypos=-1
+center_gui=true
+title_textmode=normal
+isf_include_once=false
+isf_no_includes=false
+only_controls_in_isf=false
+const_modus=default
+gui_code_in_function=true
+gui_code_in_function_name=_JAVstudios()
+gui_code_in_function_mode=map
+gui_code_in_function_map_name=$mJAVstudios
+gui_event_close=
+gui_event_minimize=
+gui_event_restore=
+gui_event_maximize=
+gui_event_mousemove=
+gui_event_primarydown=
+gui_event_primaryup=
+gui_event_secoundarydown=
+gui_event_secoundaryup=
+gui_event_resized=
+gui_event_dropped=
+defaultfont=Tahoma
+defaultfontsize=12
+[0x00040572]
+type=listview
+handle=445
+locked=0
+resize=102
+x=20
+y=20
+width=480
+height=473
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$lstStudios
+text=Fragment|Studio Code
+state=$GUI_SHOW+$GUI_ENABLE
+style=$LVS_ALIGNLEFT+$LVS_SINGLESEL+$LVS_SHOWSELALWAYS
+exstyle=$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES+$LVS_EX_TRACKSELECT+$LVS_EX_TWOCLICKACTIVATE
+bgcolour=
+code=_GUICtrlListView_SetColumnWidth($lstStudios, 0, 235)[BREAK]_GUICtrlListView_SetColumnWidth($lstStudios, 1, 235)
+order=0
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00070558]
+type=button
+handle=446
+locked=0
+resize=836
+x=188
+y=626
+width=137
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnOK
+text=OK
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=7
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x0008055A]
+type=button
+handle=447
+locked=0
+resize=836
+x=358
+y=626
+width=137
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnCancel
+text=Cancel
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=8
+[0x00190262]
+type=button
+handle=448
+locked=0
+resize=834
+x=16
+y=626
+width=60
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Add a row.
+bgimage=
+textcolour=0x000000
+id=$btnPlus
+text=+
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=5
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x00131F72]
+type=button
+handle=449
+locked=0
+resize=834
+x=90
+y=626
+width=60
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Remove a row.
+bgimage=
+textcolour=0x000000
+id=$btnMinus
+text=-
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=6
+[0x00161F5A]
+type=label
+handle=450
+locked=0
+resize=834
+x=30
+y=510
+width=112
+height=31
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Fragment:
+state=$GUI_SHOW+$GUI_ENABLE
+style=$SS_RIGHT
+exstyle=
+bgcolour=-2
+code=
+order=1
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x000E201C]
+type=input
+handle=451
+locked=0
+resize=834
+x=155
+y=507
+width=230
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$inpFragment
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+order=2
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+[0x0034201A]
+type=label
+handle=452
+locked=0
+resize=834
+x=32
+y=565
+width=112
+height=31
+func=
+font=Tahoma
+fontsize=10
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=
+text=Studio:
+state=$GUI_SHOW+$GUI_ENABLE
+style=$SS_RIGHT
+exstyle=
+bgcolour=-2
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=3
+[0x001C200A]
+type=input
+handle=453
+locked=0
+resize=834
+x=155
+y=562
+width=230
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$inpStudio
+text=
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=$WS_EX_CLIENTEDGE
+bgcolour=
+code=
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+order=4
+[0x001B215A]
+type=button
+handle=454
+locked=0
+resize=834
+x=400
+y=530
+width=100
+height=44
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=
+bgimage=
+textcolour=0x000000
+id=$btnSet
+text=Set
+state=$GUI_SHOW+$GUI_ENABLE
+style=$BS_CENTER
+exstyle=
+bgcolour=
+code=
+order=10
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
+#ce

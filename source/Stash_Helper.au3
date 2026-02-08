@@ -31,7 +31,7 @@
 #include <WinAPIGdi.au3>
 
 #Region Globals
-Global Const $currentVersion = "v2.5.3"
+Global Const $currentVersion = "v2.5.4"
 Global Const $gsRegBase = "HKEY_CURRENT_USER\Software\Stash_Helper"
 Global Const $gsWebDriverPath = @AppDataDir & "\WebDriver"
 
@@ -219,6 +219,9 @@ Global $gbRunStashFromHelper = False
 #include <Forms\CopySceneInfo.au3>
 #include <Forms\ManagePlayListForm.au3>
 #include <Forms\MergePerformers.au3>
+#include <Forms\JavStudios.au3>
+GetJAVStudioData()
+
 ; Seems special scraper is no longer needed when visible CDP works much better.
 
 ; Now this is running in the tray

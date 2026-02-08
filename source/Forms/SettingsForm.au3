@@ -135,13 +135,17 @@ Func ShowSettings()
 	GUICtrlCreateGroup("", -99, -99, 1, 1) ;close group Browser Profile
 	
 	; Option to remember last URL
-	$chkSaveLastURL = GUICtrlCreateCheckbox("Remember Last Visit",477,334,249,60,-1,-1)
+	$chkSaveLastURL = GUICtrlCreateCheckbox("Remember Last Visit",477,326,249,48,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Tahoma")
 	GUICtrlSetTip(-1,"Remember the last page you visit when closing the Stash Helper. SH will open that page again when it run next time.")
 	If $giSaveLastURL = 1 Then 
 		GUICtrlSetState(-1, $GUI_CHECKED)
 	EndIf
-
+	
+	; Set fragment to studio code for JAV
+	$btnJAVStudioCode = GUICtrlCreateButton("JAV Studio Code",477,394,245,41,-1,-1)
+	GUICtrlSetFont(-1,12,400,0,"Tahoma")
+	GUICtrlSetTip(-1,"Set the fragment matching for JAV studios.")
 
 	GUICtrlCreateLabel("Stash-win.exe location:",34,431,299,33,-1,-1)
 	GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
@@ -505,6 +509,10 @@ Func ShowSettings()
 			Case $btnPlayerDeo
 				; For SteamVR
 				GUICtrlSetData($inputMediaPlayerLocation, @ProgramFilesDir & "\Steam\steamapps\common\DeoVR Video Player\DeoVR.exe")
+
+			Case $btnJAVStudioCode
+				; Manually set fragment to Studio code for JAV handling.
+				JavStudios()
 
 			Case $GUI_EVENT_CLOSE
 				ExitLoop

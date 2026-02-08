@@ -53,9 +53,12 @@ $choosePrivate = GUICtrlCreateRadio("Private Profile",504,194,174,20,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 $chooseDefault = GUICtrlCreateRadio("Default Profile",504,252,184,20,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
-$chkSaveLastURL = GUICtrlCreateCheckbox("Remember Last Visit",477,334,249,60,-1,-1)
+$chkSaveLastURL = GUICtrlCreateCheckbox("Remember Last Visit",477,326,249,48,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Tahoma")
 GUICtrlSetTip(-1,"Remember the last page you visit when closing the Stash Helper. SH will open that page again when it run next time.")
+$btnJAVStudioCode = GUICtrlCreateButton("JAV Studio Code",477,394,245,41,-1,-1)
+GUICtrlSetFont(-1,12,400,0,"Tahoma")
+GUICtrlSetTip(-1,"Set the fragment matching for JAV studios.")
 GUICtrlCreateLabel("Stash-win.exe location:",34,431,299,33,-1,-1)
 GUICtrlSetFont(-1,10,400,0,"Palatino Linotype")
 GUICtrlSetBkColor(-1,"-2")
@@ -169,7 +172,7 @@ gui_event_resized=
 gui_event_dropped=
 defaultfont=MS Sans Serif
 defaultfontsize=8
-[0x00082402]
+[0x00082244]
 type=label
 handle=445
 locked=0
@@ -193,12 +196,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=19
+order=20
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012404]
+[0x00012246]
 type=input
 handle=446
 locked=0
@@ -222,12 +225,12 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=20
+order=21
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012406]
+[0x00012248]
 type=button
 handle=447
 locked=0
@@ -251,12 +254,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=21
+order=22
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012408]
+[0x0001224A]
 type=radio
 handle=448
 locked=0
@@ -285,7 +288,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001240A]
+[0x0001224C]
 type=group
 handle=449
 locked=0
@@ -314,7 +317,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001240C]
+[0x0001224E]
 type=radio
 handle=450
 locked=0
@@ -343,7 +346,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=8
-[0x0001240E]
+[0x00012250]
 type=radio
 handle=451
 locked=0
@@ -372,7 +375,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=9
-[0x00012410]
+[0x00012252]
 type=button
 handle=452
 locked=0
@@ -396,12 +399,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=38
+order=39
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012412]
+[0x00012254]
 type=button
 handle=453
 locked=0
@@ -430,7 +433,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012414]
+[0x00012256]
 type=button
 handle=454
 locked=0
@@ -459,7 +462,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=12
-[0x00012416]
+[0x00012258]
 type=button
 handle=455
 locked=0
@@ -488,7 +491,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=13
-[0x00012418]
+[0x0001225A]
 type=checkbox
 handle=456
 locked=0
@@ -517,7 +520,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001241A]
+[0x0001225C]
 type=checkbox
 handle=457
 locked=0
@@ -546,7 +549,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=4
-[0x0001241C]
+[0x0001225E]
 type=label
 handle=458
 locked=0
@@ -574,8 +577,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=25
-[0x0001241E]
+order=26
+[0x00012260]
 type=input
 handle=459
 locked=0
@@ -603,8 +606,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=26
-[0x00012420]
+order=27
+[0x00012262]
 type=button
 handle=460
 locked=0
@@ -632,8 +635,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=27
-[0x00012422]
+order=28
+[0x00012264]
 type=input
 handle=461
 locked=0
@@ -661,8 +664,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=23
-[0x00012424]
+order=24
+[0x00012266]
 type=label
 handle=462
 locked=0
@@ -690,8 +693,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=22
-[0x00012426]
+order=23
+[0x00012268]
 type=button
 handle=463
 locked=0
@@ -715,12 +718,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=33
+order=34
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012428]
+[0x0001226A]
 type=label
 handle=464
 locked=0
@@ -744,12 +747,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=28
+order=29
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001242A]
+[0x0001226C]
 type=button
 handle=465
 locked=0
@@ -777,8 +780,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=34
-[0x0001242C]
+order=35
+[0x0001226E]
 type=button
 handle=466
 locked=0
@@ -806,8 +809,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=35
-[0x0001242E]
+order=36
+[0x00012270]
 type=button
 handle=467
 locked=0
@@ -835,8 +838,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=36
-[0x00012430]
+order=37
+[0x00012272]
 type=button
 handle=468
 locked=0
@@ -864,8 +867,8 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=37
-[0x00012432]
+order=38
+[0x00012274]
 type=checkbox
 handle=469
 locked=0
@@ -889,12 +892,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=29
+order=30
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012434]
+[0x00012276]
 type=label
 handle=470
 locked=0
@@ -918,12 +921,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=30
+order=31
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012436]
+[0x00012278]
 type=input
 handle=471
 locked=0
@@ -947,12 +950,12 @@ style=
 exstyle=$WS_EX_CLIENTEDGE
 bgcolour=
 code=
-order=31
+order=32
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012438]
+[0x0001227A]
 type=label
 handle=472
 locked=0
@@ -976,12 +979,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=32
+order=33
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001243A]
+[0x0001227C]
 type=radio
 handle=473
 locked=0
@@ -1010,7 +1013,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001243C]
+[0x0001227E]
 type=radio
 handle=474
 locked=0
@@ -1039,7 +1042,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001243E]
+[0x00012280]
 type=group
 handle=475
 locked=0
@@ -1068,7 +1071,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012440]
+[0x00012282]
 type=radio
 handle=476
 locked=0
@@ -1097,7 +1100,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012442]
+[0x00012284]
 type=group
 handle=477
 locked=0
@@ -1126,7 +1129,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012444]
+[0x00012286]
 type=radio
 handle=478
 locked=0
@@ -1155,7 +1158,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012446]
+[0x00012288]
 type=button
 handle=479
 locked=0
@@ -1184,7 +1187,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012448]
+[0x0001228A]
 type=group
 handle=480
 locked=0
@@ -1208,12 +1211,12 @@ style=$BS_CENTER
 exstyle=
 bgcolour=
 code=
-order=24
+order=25
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0001244A]
+[0x0001228C]
 type=radio
 handle=481
 locked=0
@@ -1242,7 +1245,7 @@ iconindex=
 iconlarge=0
 textmode=text
 order=10
-[0x0001244C]
+[0x0001228E]
 type=button
 handle=482
 locked=0
@@ -1270,16 +1273,16 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-order=40
-[0x0001244E]
+order=41
+[0x00012290]
 type=checkbox
 handle=483
 locked=0
 resize=
 x=477
-y=334
+y=326
 width=249
-height=60
+height=48
 func=
 font=Tahoma
 fontsize=10
@@ -1300,7 +1303,7 @@ tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012450]
+[0x00012292]
 type=label
 handle=484
 locked=0
@@ -1324,12 +1327,12 @@ style=
 exstyle=
 bgcolour=-2
 code=
-order=39
+order=40
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012452]
+[0x00012294]
 type=radio
 handle=485
 locked=0
@@ -1353,12 +1356,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=42
+order=43
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012454]
+[0x00012296]
 type=radio
 handle=486
 locked=0
@@ -1382,12 +1385,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=43
+order=44
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x00012456]
+[0x00012298]
 type=group
 handle=487
 locked=0
@@ -1411,12 +1414,12 @@ style=
 exstyle=
 bgcolour=
 code=
-order=41
+order=42
 tabpage=-1
 iconindex=
 iconlarge=0
 textmode=text
-[0x0005245C]
+[0x0001229A]
 type=checkbox
 handle=488
 locked=0
@@ -1445,4 +1448,33 @@ iconindex=
 iconlarge=0
 textmode=text
 order=5
+[0x000422A6]
+type=button
+handle=489
+locked=0
+resize=
+x=477
+y=394
+width=245
+height=41
+func=
+font=Tahoma
+fontsize=12
+fontstyle=400
+fontattribute=0
+tooltip=Set the fragment matching for JAV studios.
+bgimage=
+textcolour=0x000000
+id=$btnJAVStudioCode
+text=JAV Studio Code
+state=$GUI_SHOW+$GUI_ENABLE
+style=
+exstyle=
+bgcolour=
+code=
+order=19
+tabpage=-1
+iconindex=
+iconlarge=0
+textmode=text
 #ce

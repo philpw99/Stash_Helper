@@ -1,6 +1,10 @@
+v2.5.4
+	* Add many filename fragment to studio code for JAV handler.
+	* Now in the setting you can manually set fragment to studio code list.
+v2.5.3
+	* Add Show Stash Helper's debug console in settings.
 v2.5.2
 	* Add Auto Handle JAV to the popup menu. Require R18 scraper.
-	* Add Show Stash Helper Debug Console feature in settings.
 v2.5.1
 	* Update Webdriver to 2025-09 version.
 	* Change all "movie" instance to "group".
